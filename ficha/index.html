@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#8a2f45">
 <title>Ficha de cadastro | Psi Bárbara Serra</title>
-<script>window.AGENDA_CFG={endpoint:"https://script.google.com/macros/s/AKfycbyadBZ2dAZO1FfFE8L2G9RC0huCkFIKN-2EkFcB4E7b11p684nai2lyI0JaroBt4sCLUw/exec"};</script>
+<script>window.AGENDA_CFG={endpoint:"https://script.google.com/macros/s/AKfycbzH-PQI7xncek8Cpi7a7GVpxbfVyukjJxyL5AzkMdCQhMtwyvl27N2H_ycPL--i4o1kmg/exec"};</script>
 <link rel="icon" type="image/png" href="../icons/icon-192.png">
 <style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -328,15 +328,22 @@ a.cta { display: inline-block; }
       if (btn) btn.disabled = true;
       var ctl = ('AbortController' in window) ? new AbortController() : null;
       var to = setTimeout(function () { if (ctl) ctl.abort(); }, 20000);
-      fetch(CFG.endpoint, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ code: 'BS1:' + enc(o) }), signal: ctl ? ctl.signal : undefined })
-        .then(function () { clearTimeout(to); finish(true); }, function () { clearTimeout(to); finish(false); });
+      var corpo = JSON.stringify({ code: 'BS1:' + enc(o) });
+      var opts = function (m) { return { method: 'POST', mode: m, headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: corpo, signal: ctl ? ctl.signal : undefined }; };
+      // 1) tenta ler a resposta do Google; só mostra "enviado" se ele confirmar que gravou
+      fetch(CFG.endpoint, opts('cors')).then(function (r) { return r.text(); }).then(function (t) {
+        var j = null; try { j = JSON.parse(t); } catch (e) {}
+        clearTimeout(to); finish(!!(j && j.ok));
+      }, function () {
+        // 2) se o navegador não deixar ler a resposta, envia sem ler (não dá para confirmar)
+        fetch(CFG.endpoint, opts('no-cors')).then(function () { clearTimeout(to); finish(true); }, function () { clearTimeout(to); finish(false); });
+      });
     } else {
       finish(false);
     }
   });
 
-  $('ver').textContent = 'v8 · envio direto ' + ((window.AGENDA_CFG || {}).endpoint ? 'ativo' : 'inativo');
+  $('ver').textContent = 'v11 · envio direto ' + ((window.AGENDA_CFG || {}).endpoint ? 'ativo' : 'inativo');
   $('back').addEventListener('click', function () { $('done').hidden = true; $('formpanel').hidden = false; window.scrollTo(0, 0); });
   $('copy').addEventListener('click', function () {
     var el = $('code');
