@@ -1,6 +1,6 @@
 // Guarda o aplicativo no aparelho para abrir mesmo sem internet.
 // Ao publicar uma versão nova, troque o número de VERSAO para o aparelho atualizar.
-const VERSAO = 'agenda-psi-v8';
+const VERSAO = 'agenda-psi-v9';
 const ARQUIVOS = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 
 self.addEventListener('install', (e) => {
@@ -20,14 +20,26 @@ self.addEventListener('fetch', (e) => {
   const mesmaOrigem = url.origin === self.location.origin;
   const fonte = url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com';
   if (!mesmaOrigem && !fonte) return;
-  // abre o que está guardado e atualiza em segundo plano
+  // páginas: busca primeiro na internet (sempre a versão mais nova); sem internet, abre a guardada
+  if (req.mode === 'navigate' || req.destination === 'document') {
+    e.respondWith(
+      fetch(req.url, { cache: 'no-cache' }).then((r) => {
+        if (r && r.ok) caches.open(VERSAO).then((c) => c.put(req, r.clone()));
+        return r;
+      }).catch(() =>
+        caches.open(VERSAO).then((c) => c.match(req, { ignoreSearch: true }).then((g) => g || c.match('index.html')))
+      )
+    );
+    return;
+  }
+  // demais arquivos: abre o guardado e atualiza em segundo plano
   e.respondWith(
     caches.open(VERSAO).then((cache) =>
       cache.match(req, { ignoreSearch: true }).then((guardado) => {
         const rede = fetch(req).then((r) => {
           if (r && (r.ok || r.type === 'opaque')) cache.put(req, r.clone());
           return r;
-        }).catch(() => guardado || (req.mode === 'navigate' ? cache.match('index.html') : undefined));
+        }).catch(() => guardado);
         return guardado || rede;
       })
     )
