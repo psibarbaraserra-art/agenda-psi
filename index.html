@@ -10,6 +10,7 @@
 <meta name="apple-mobile-web-app-title" content="Agenda Psi">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<script src="config.js"></script>
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -382,10 +383,11 @@ body.sheet-open .wrap { display: none; }
         </section>
         <section class="panel">
           <h2>Cadastro pelo paciente</h2>
-          <div class="hint">Envie o link para o paciente preencher a ficha. Ele devolve uma mensagem com um código, e você importa aqui.</div>
+          <div class="hint">Envie o link para o paciente preencher a ficha. Quando ele enviar, o cadastro chega aqui (toque em Buscar cadastros recebidos). Se a conexão dele falhar, ele manda um código pelo WhatsApp e você importa.</div>
           <div class="linkbox" id="fichalink">https://psibarbaraserra-art.github.io/agenda-psi/ficha/</div>
           <div class="stackbtn">
             <button class="cta" id="copymsg">Copiar mensagem com o link</button>
+            <button class="ghost" id="fetchbtn" hidden>Buscar cadastros recebidos</button>
             <button class="ghost" id="importbtn">Importar cadastro recebido</button>
           </div>
         </section>
@@ -1532,6 +1534,15 @@ body.sheet-open .wrap { display: none; }
       cpf: cl(o.c, 14).replace(/\D/g, ''), rc: cl(o.rc, 14).replace(/\D/g, '')
     };
   }
+  function importarCadastro(o) {
+    var ex = pats.filter(function (x) { return x.nome.toLowerCase() === o.nome.toLowerCase() && (x.nasc || '') === o.nasc; })[0];
+    var p = ex ? Object.assign({}, ex, o) : o;
+    if (!ex && o.tipo === 'casal') {
+      var sc = SERVICES.filter(function (s) { return s.id === 'casal'; })[0];
+      if (sc) p.fin = { servico: sc.id, valor: sc.valor };
+    }
+    return psave(p).then(function () { return { ex: ex }; });
+  }
   function closeI() { $('ioverlay').hidden = true; }
   $('importbtn').addEventListener('click', function () {
     $('i-text').value = ''; $('i-err').hidden = true; $('ioverlay').hidden = false;
@@ -1543,15 +1554,57 @@ body.sheet-open .wrap { display: none; }
     e.preventDefault();
     var o = decodeCode($('i-text').value);
     if (!o) { $('i-err').textContent = 'Não encontrei um código de cadastro válido. Cole a mensagem inteira, incluindo a linha que começa com "Código: BS1:".'; $('i-err').hidden = false; return; }
-    var ex = pats.filter(function (x) { return x.nome.toLowerCase() === o.nome.toLowerCase() && (x.nasc || '') === o.nasc; })[0];
-    var p = ex ? Object.assign({}, ex, o) : o;
-    if (!ex && o.tipo === 'casal') {
-      var sc = SERVICES.filter(function (s) { return s.id === 'casal'; })[0];
-      if (sc) p.fin = { servico: sc.id, valor: sc.valor };
-    }
-    psave(p).then(function () { closeI(); setView('pac'); toast(ex ? 'Cadastro atualizado: ' + o.nome : 'Paciente importado: ' + o.nome); },
+    importarCadastro(o).then(function (r) { closeI(); setView('pac'); toast(r.ex ? 'Cadastro atualizado: ' + o.nome : 'Paciente importado: ' + o.nome); },
       function () { toast('Não foi possível importar. Tente de novo.'); });
   });
+
+  /* ---------- cadastros enviados direto pelo paciente (planilha do Google) ---------- */
+  var CFG = window.AGENDA_CFG || {};
+  var LSK = 'agenda-barbara-serra-senha-v1';
+  var buscando = false;
+  function gget(q) {
+    return fetch(CFG.endpoint + '?' + q, { cache: 'no-store' }).then(function (r) { return r.json(); });
+  }
+  function buscarCadastros(manual) {
+    if (!STANDALONE || !CFG.endpoint || buscando) return Promise.resolve(0);
+    var senha = ''; try { senha = localStorage.getItem(LSK) || ''; } catch (e) {}
+    if (!senha) {
+      if (!manual) return Promise.resolve(0);
+      senha = (window.prompt('Digite a senha de recebimento dos cadastros (a mesma que você colocou na planilha do Google):') || '').trim();
+      if (!senha) return Promise.resolve(0);
+    }
+    buscando = true;
+    return gget('token=' + encodeURIComponent(senha)).then(function (j) {
+      if (!j || !j.ok) {
+        if (j && j.erro === 'token') { try { localStorage.removeItem(LSK); } catch (e) {} if (manual) toast('Senha incorreta. Tente de novo.'); }
+        else if (manual) toast('Não foi possível buscar os cadastros agora.');
+        return 0;
+      }
+      try { localStorage.setItem(LSK, senha); } catch (e) {}
+      var itens = (j.itens || []).slice().sort(function (x, y) { return String(x.ts).localeCompare(String(y.ts)); });
+      var feitos = [], novos = 0, nomes = [], chain = Promise.resolve();
+      itens.forEach(function (it) {
+        chain = chain.then(function () {
+          var o = decodeCode(it.code);
+          if (!o) { feitos.push(it.id); return; }
+          return importarCadastro(o).then(function (r) { feitos.push(it.id); novos++; nomes.push(o.nome); }, function () {});
+        });
+      });
+      return chain.then(function () {
+        if (feitos.length) gget('action=done&ids=' + encodeURIComponent(feitos.join(',')) + '&token=' + encodeURIComponent(senha)).catch(function () {});
+        if (novos) { toast(novos === 1 ? 'Novo cadastro recebido: ' + nomes[0] : novos + ' novos cadastros recebidos'); setView('pac'); }
+        else if (manual) toast('Nenhum cadastro novo por enquanto.');
+        return novos;
+      });
+    }).catch(function () { if (manual) toast('Sem conexão para buscar os cadastros.'); return 0; })
+      .then(function (n) { buscando = false; return n; }, function () { buscando = false; return 0; });
+  }
+  if (STANDALONE && CFG.endpoint) {
+    $('fetchbtn').hidden = false;
+    $('fetchbtn').addEventListener('click', function () { buscarCadastros(true); });
+    setTimeout(function () { buscarCadastros(false); }, 2500);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) buscarCadastros(false); });
+  }
 
   $('copymsg').addEventListener('click', function () {
     var link = $('fichalink').textContent.trim();

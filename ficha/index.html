@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#8a2f45">
 <title>Ficha de cadastro | Psi Bárbara Serra</title>
+<script src="../config.js"></script>
 <link rel="icon" type="image/png" href="../icons/icon-192.png">
 <style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -83,6 +84,7 @@ button { cursor: pointer; }
 a.cta { display: inline-block; }
 .small { font-size: 12.5px; color: var(--muted); }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 9px 16px; border-radius: 999px; font-size: 14px; z-index: 30; max-width: calc(100% - 32px); }
+.done.sent .manual { display: none; }
 </style>
 </head>
 <body>
@@ -189,7 +191,9 @@ a.cta { display: inline-block; }
   </section>
 
   <section class="panel done" id="done" hidden>
-    <h2>Quase pronto</h2>
+    <h2 id="done-h">Quase pronto</h2>
+    <p id="sent-msg" hidden>Pronto! O seu cadastro foi enviado para a psicóloga Bárbara Serra. Não precisa enviar mais nada. Obrigada!</p>
+    <div class="manual">
     <ol class="steps">
       <li>Toque em <b>Abrir WhatsApp</b> e escolha o contato da psicóloga.</li>
       <li>Envie a mensagem sem alterar o código.</li>
@@ -200,6 +204,7 @@ a.cta { display: inline-block; }
     </div>
     <textarea class="code" id="code" readonly aria-label="Mensagem com o código de cadastro"></textarea>
     <p class="small">Se o WhatsApp não abrir, copie a mensagem e cole na conversa com a psicóloga.</p>
+    </div>
     <button class="ghost" id="back" type="button">Corrigir meus dados</button>
   </section>
 </div>
@@ -298,8 +303,26 @@ a.cta { display: inline-block; }
     var msg = lines.join('\n');
     $('code').value = msg;
     $('wa').href = 'https://wa.me/?text=' + encodeURIComponent(msg);
-    $('formpanel').hidden = true; $('done').hidden = false;
-    window.scrollTo(0, 0);
+    var CFG = window.AGENDA_CFG || {};
+    var btn = ev.submitter || document.querySelector('#form button[type=submit]');
+    var finish = function (ok) {
+      $('done').classList.toggle('sent', ok);
+      $('sent-msg').hidden = !ok;
+      $('done-h').textContent = ok ? 'Cadastro enviado' : 'Quase pronto';
+      if (btn) btn.disabled = false;
+      $('formpanel').hidden = true; $('done').hidden = false;
+      window.scrollTo(0, 0);
+    };
+    if (CFG.endpoint) {
+      if (btn) btn.disabled = true;
+      var ctl = ('AbortController' in window) ? new AbortController() : null;
+      var to = setTimeout(function () { if (ctl) ctl.abort(); }, 20000);
+      fetch(CFG.endpoint, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ code: 'BS1:' + enc(o) }), signal: ctl ? ctl.signal : undefined })
+        .then(function () { clearTimeout(to); finish(true); }, function () { clearTimeout(to); finish(false); });
+    } else {
+      finish(false);
+    }
   });
 
   $('back').addEventListener('click', function () { $('done').hidden = true; $('formpanel').hidden = false; window.scrollTo(0, 0); });
