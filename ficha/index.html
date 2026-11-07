@@ -84,7 +84,11 @@ button { cursor: pointer; }
 a.cta { display: inline-block; }
 .small { font-size: 12.5px; color: var(--muted); }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 9px 16px; border-radius: 999px; font-size: 14px; z-index: 30; max-width: calc(100% - 32px); }
-.done.sent .manual { display: none; }
+.done.sent .manual, .done.sent #back { display: none; }
+.thanks { display: grid; gap: 10px; text-align: center; padding: 6px 2px; }
+.thanks p { margin: 0; line-height: 1.55; }
+.thanks .big { font: 600 22px/1.2 var(--font-display); color: var(--wine); }
+.thanks .sign { margin-top: 6px; color: var(--wine); }
 </style>
 </head>
 <body>
@@ -98,7 +102,7 @@ a.cta { display: inline-block; }
 
   <section class="panel" id="formpanel">
     <h2>Seus dados</h2>
-    <p class="intro">Preencha com calma. Ao final você recebe um código para enviar à psicóloga pelo WhatsApp. Nada é enviado automaticamente por esta página.</p>
+    <p class="intro">Preencha com calma. Ao tocar em <b>Confirmar cadastro</b>, os seus dados são enviados diretamente para a psicóloga.</p>
     <form class="f" id="form" autocomplete="on" novalidate>
       <label for="tipo">Tipo de atendimento
         <select id="tipo"><option value="individual">Individual</option><option value="casal">Casal</option></select>
@@ -186,13 +190,19 @@ a.cta { display: inline-block; }
         <span>Autorizo a psicóloga a guardar estes dados para agendamento, contato e mensagem de aniversário, conforme a LGPD. Posso pedir a exclusão quando quiser.</span>
       </label>
       <div class="err" id="err" hidden role="alert"></div>
-      <button class="cta" type="submit">Gerar código de cadastro</button>
+      <button class="cta" type="submit">Confirmar cadastro</button>
     </form>
   </section>
 
   <section class="panel done" id="done" hidden>
     <h2 id="done-h">Quase pronto</h2>
-    <p id="sent-msg" hidden>Pronto! O seu cadastro foi enviado para a psicóloga Bárbara Serra. Não precisa enviar mais nada. Obrigada!</p>
+    <div id="sent-msg" class="thanks" hidden>
+      <p class="big">Cadastro enviado com sucesso.</p>
+      <p>Obrigada pela confiança. Dar este primeiro passo já é um ato de cuidado com você, e eu fico muito feliz por você ter chegado até aqui.</p>
+      <p>Em breve eu entro em contato pelo WhatsApp para combinarmos o seu atendimento. Não precisa enviar mais nada.</p>
+      <p class="sign">Com carinho,<br><b>Bárbara Serra</b><br>Psicóloga · CRP 20/13.134</p>
+      <p class="small">Se você estiver passando por um momento muito difícil antes do nosso contato, o CVV atende 24 horas pelo telefone 188, de graça.</p>
+    </div>
     <div class="manual">
     <ol class="steps">
       <li>Toque em <b>Abrir WhatsApp</b> e escolha o contato da psicóloga.</li>
@@ -309,7 +319,7 @@ a.cta { display: inline-block; }
     var finish = function (ok) {
       $('done').classList.toggle('sent', ok);
       $('sent-msg').hidden = !ok;
-      $('done-h').textContent = ok ? 'Cadastro enviado' : 'Quase pronto';
+      $('done-h').textContent = ok ? 'Tudo certo!' : 'Quase pronto';
       if (btn) btn.disabled = false;
       $('formpanel').hidden = true; $('done').hidden = false;
       window.scrollTo(0, 0);
@@ -326,7 +336,7 @@ a.cta { display: inline-block; }
     }
   });
 
-  $('ver').textContent = 'v7 · envio direto ' + ((window.AGENDA_CFG || {}).endpoint ? 'ativo' : 'inativo');
+  $('ver').textContent = 'v8 · envio direto ' + ((window.AGENDA_CFG || {}).endpoint ? 'ativo' : 'inativo');
   $('back').addEventListener('click', function () { $('done').hidden = true; $('formpanel').hidden = false; window.scrollTo(0, 0); });
   $('copy').addEventListener('click', function () {
     var el = $('code');

@@ -1563,7 +1563,9 @@ body.sheet-open .wrap { display: none; }
   var LSK = 'agenda-barbara-serra-senha-v1';
   var buscando = false;
   function gget(q) {
-    return fetch(CFG.endpoint + '?' + q, { cache: 'no-store' }).then(function (r) { return r.json(); });
+    return fetch(CFG.endpoint + '?' + q, { cache: 'no-store' }).then(function (r) { return r.text(); }).then(function (t) {
+      try { return JSON.parse(t); } catch (e) { return { ok: false, erro: 'formato' }; }
+    });
   }
   function buscarCadastros(manual) {
     if (!STANDALONE || !CFG.endpoint || buscando) return Promise.resolve(0);
@@ -1576,7 +1578,8 @@ body.sheet-open .wrap { display: none; }
     buscando = true;
     return gget('token=' + encodeURIComponent(senha)).then(function (j) {
       if (!j || !j.ok) {
-        if (j && j.erro === 'token') { try { localStorage.removeItem(LSK); } catch (e) {} if (manual) toast('Senha incorreta. Tente de novo.'); }
+        if (j && j.erro === 'token') { try { localStorage.removeItem(LSK); } catch (e) {} if (manual) toast('Senha incorreta. Confira a senha e se a implantação do Google foi atualizada.'); }
+        else if (j && j.erro === 'formato') { if (manual) toast('O Google não devolveu os dados. Confira a implantação: acesso para Qualquer pessoa.'); }
         else if (manual) toast('Não foi possível buscar os cadastros agora.');
         return 0;
       }

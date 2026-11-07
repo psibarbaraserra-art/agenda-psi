@@ -1,9 +1,12 @@
 /**
  * Caixa de entrada dos cadastros da Agenda Psi (Bárbara Serra).
  * Cole este código em Extensões > Apps Script de uma planilha do Google.
- * Troque SENHA por uma senha só sua (letras e números) antes de implantar.
+ * Troque SENHA (só aqui, na linha abaixo) por uma senha só sua, com letras e números.
+ * Depois de salvar, implante de novo: Implantar > Gerenciar implantações > lápis > Nova versão > Implantar.
+ * Para testar: abra o endereço /exec no navegador, com ?ping=1 no final.
  */
 const SENHA = 'TROQUE-AQUI';
+const PADRAO = ['TROQUE', 'AQUI'].join('-');
 
 function aba_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -26,10 +29,11 @@ function doPost(e) {
   return resp_({ ok: true });
 }
 
-// O aplicativo busca os cadastros novos (precisa da senha).
+// O aplicativo busca os cadastros novos. A senha é verificada acima, você não precisa mexer aqui.
 function doGet(e) {
   const p = (e && e.parameter) || {};
-  if (SENHA === 'TROQUE-AQUI' || p.token !== SENHA) return resp_({ ok: false, erro: 'token' });
+  if (p.ping) return resp_({ ok: true, versao: 2, senhaConfigurada: SENHA !== PADRAO });
+  if (SENHA === PADRAO || p.token !== SENHA) return resp_({ ok: false, erro: 'token' });
   const sh = aba_();
   const dados = sh.getDataRange().getValues();
   if (p.action === 'done') {
