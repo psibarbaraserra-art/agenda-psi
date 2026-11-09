@@ -382,16 +382,6 @@ body.sheet-open .wrap { display: none; }
           <div id="bdlist"></div>
         </section>
         <section class="panel">
-          <h2>Cadastro pelo paciente</h2>
-          <div class="hint">Envie o link para o paciente preencher a ficha. Quando ele enviar, o cadastro chega aqui (toque em Buscar cadastros recebidos). Se a conexão dele falhar, ele manda um código pelo WhatsApp e você importa.</div>
-          <div class="linkbox" id="fichalink">https://psibarbaraserra-art.github.io/agenda-psi/ficha/</div>
-          <div class="stackbtn">
-            <button class="cta" id="copymsg">Copiar mensagem com o link</button>
-            <button class="ghost" id="fetchbtn" hidden>Buscar cadastros recebidos</button>
-            <button class="ghost" id="importbtn">Importar cadastro recebido</button>
-          </div>
-        </section>
-        <section class="panel">
           <h2>Atividades terapêuticas</h2>
           <div class="hint">Biblioteca de atividades interativas de TCC, Humanista e DBT para enviar aos pacientes e receber as respostas.</div>
           <div class="stackbtn">
@@ -629,22 +619,6 @@ body.sheet-open .wrap { display: none; }
         <button type="button" class="ghost" id="p-sched" hidden>Agendar sessão</button>
         <button type="button" class="ghost" id="p-cancel">Cancelar</button>
         <button type="submit" class="cta">Salvar</button>
-      </div>
-    </div>
-  </form>
-</div>
-
-<div class="overlay" id="ioverlay" hidden>
-  <form class="sheet f" id="iform" role="dialog" aria-modal="true" aria-labelledby="ittl" autocomplete="off">
-    <h2 id="ittl">Importar cadastro</h2>
-    <label for="i-text">Cole aqui a mensagem que o paciente enviou
-      <textarea id="i-text" class="big" placeholder="Olá, Bárbara! Segue o meu cadastro: …  Código: BS1:…"></textarea>
-    </label>
-    <div class="warn" id="i-err" hidden></div>
-    <div class="actions">
-      <div class="r">
-        <button type="button" class="ghost" id="i-cancel">Cancelar</button>
-        <button type="submit" class="cta">Importar</button>
       </div>
     </div>
   </form>
@@ -1068,7 +1042,7 @@ body.sheet-open .wrap { display: none; }
       .filter(function (p) { return !q || (p.nome + ' ' + (p.n1 || '') + ' ' + (p.n2 || '')).toLowerCase().indexOf(q) > -1; });
     $('tab-pac').textContent = 'Pacientes' + (pats.length ? ' (' + pats.length + ')' : '');
     if (!pats.length) {
-      $('plist').innerHTML = '<div class="note">Nenhum paciente cadastrado ainda. Cadastre aqui ou envie o link da ficha para o paciente.</div>';
+      $('plist').innerHTML = '<div class="note">Nenhum paciente cadastrado ainda. Toque em Novo paciente para cadastrar.</div>';
     } else if (!list.length) {
       $('plist').innerHTML = '<div class="note">Nenhum paciente com esse nome.</div>';
     } else {
@@ -1512,127 +1486,12 @@ body.sheet-open .wrap { display: none; }
     }, function () { toast('Não foi possível salvar. Tente de novo.'); });
   });
 
-  /* importar o código enviado pelo paciente */
+  /* máscara do CPF */
   function fmtCpf(s) { var d = String(s || '').replace(/\D/g, '').slice(0, 11); return d.replace(/^(\d{3})(\d)/, '$1.$2').replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3').replace(/\.(\d{3})(\d)/, '.$1-$2'); }
   ['p-cpf', 'p-rc'].forEach(function (id) { $(id).addEventListener('input', function () { this.value = fmtCpf(this.value); }); });
-  function decodeCode(txt) {
-    var m = /BS1:([A-Za-z0-9+\/=]+)/.exec(txt || '');
-    if (!m) return null;
-    var o;
-    try { o = JSON.parse(decodeURIComponent(escape(atob(m[1])))); } catch (err) { return null; }
-    if (!o || typeof o.n !== 'string' || !o.n.trim()) return null;
-    var cl = function (s, n) { return String(s || '').slice(0, n); };
-    if (o.k === 'casal') {
-      var f1 = String(o.n).trim().split(/\s+/)[0], f2 = String(o.n2 || '').trim().split(/\s+/)[0];
-      return {
-        tipo: 'casal', nome: cl(f2 ? f1 + ' e ' + f2 : f1, 90), n1: cl(o.n, 90).trim(), n2: cl(o.n2, 90).trim(),
-        nasc: /^\d{4}-\d{2}-\d{2}$/.test(o.b || '') ? o.b : '', tel: cl(o.t, 20), email: cl(o.e, 90), cpf: cl(o.c, 14).replace(/\D/g, ''),
-        nasc2: /^\d{4}-\d{2}-\d{2}$/.test(o.b2 || '') ? o.b2 : '', tel2: cl(o.t2, 20), email2: cl(o.e2, 90), cpf2: cl(o.c2, 14).replace(/\D/g, ''),
-        rel: cl(o.rel, 30), desde: cl(o.ds, 40), filhos: cl(o.fi, 60),
-        mod: ['Presencial', 'Online', 'Sem preferência'].indexOf(o.m) > -1 ? o.m : 'Presencial'
-      };
-    }
-    return {
-      tipo: 'individual',
-      nome: cl(o.n, 90).trim(),
-      nasc: /^\d{4}-\d{2}-\d{2}$/.test(o.b || '') ? o.b : '',
-      tel: cl(o.t, 20), email: cl(o.e, 90),
-      mod: ['Presencial', 'Online', 'Sem preferência'].indexOf(o.m) > -1 ? o.m : 'Presencial',
-      rn: cl(o.rn, 90), rp: cl(o.rp, 30), rt: cl(o.rt, 20),
-      cpf: cl(o.c, 14).replace(/\D/g, ''), rc: cl(o.rc, 14).replace(/\D/g, '')
-    };
-  }
-  function importarCadastro(o) {
-    var ex = pats.filter(function (x) { return x.nome.toLowerCase() === o.nome.toLowerCase() && (x.nasc || '') === o.nasc; })[0];
-    var p = ex ? Object.assign({}, ex, o) : o;
-    if (!ex && o.tipo === 'casal') {
-      var sc = SERVICES.filter(function (s) { return s.id === 'casal'; })[0];
-      if (sc) p.fin = { servico: sc.id, valor: sc.valor };
-    }
-    return psave(p).then(function () { return { ex: ex }; });
-  }
-  function closeI() { $('ioverlay').hidden = true; }
-  $('importbtn').addEventListener('click', function () {
-    $('i-text').value = ''; $('i-err').hidden = true; $('ioverlay').hidden = false;
-    setTimeout(function () { $('i-text').focus(); }, 30);
-  });
-  $('i-cancel').addEventListener('click', closeI);
-  $('ioverlay').addEventListener('click', function (e) { if (e.target === $('ioverlay')) closeI(); });
-  $('iform').addEventListener('submit', function (e) {
-    e.preventDefault();
-    var o = decodeCode($('i-text').value);
-    if (!o) { $('i-err').textContent = 'Não encontrei um código de cadastro válido. Cole a mensagem inteira, incluindo a linha que começa com "Código: BS1:".'; $('i-err').hidden = false; return; }
-    importarCadastro(o).then(function (r) { closeI(); setView('pac'); toast(r.ex ? 'Cadastro atualizado: ' + o.nome : 'Paciente importado: ' + o.nome); },
-      function () { toast('Não foi possível importar. Tente de novo.'); });
-  });
-
-  /* ---------- cadastros enviados direto pelo paciente (planilha do Google) ---------- */
-  var CFG = window.AGENDA_CFG || {};
-  var LSK = 'agenda-barbara-serra-senha-v1';
-  var buscando = false;
-  function gget(q) {
-    return fetch(CFG.endpoint + '?' + q, { cache: 'no-store' }).then(function (r) { return r.text(); }).then(function (t) {
-      try { return JSON.parse(t); } catch (e) { return { ok: false, erro: 'formato' }; }
-    });
-  }
-  function buscarCadastros(manual) {
-    if (!STANDALONE || !CFG.endpoint || buscando) return Promise.resolve(0);
-    var senha = ''; try { senha = localStorage.getItem(LSK) || ''; } catch (e) {}
-    if (!senha) {
-      if (!manual) return Promise.resolve(0);
-      senha = (window.prompt('Digite a senha de recebimento dos cadastros (a mesma que você colocou na planilha do Google):') || '').trim();
-      if (!senha) return Promise.resolve(0);
-    }
-    buscando = true;
-    return gget('token=' + encodeURIComponent(senha)).then(function (j) {
-      if (!j || !j.ok) {
-        if (j && j.erro === 'token') { try { localStorage.removeItem(LSK); } catch (e) {} if (manual) toast('Senha incorreta. Confira a senha e se a implantação do Google foi atualizada.'); }
-        else if (j && j.erro === 'formato') { if (manual) toast('O Google não devolveu os dados. Confira a implantação: acesso para Qualquer pessoa.'); }
-        else if (manual) toast('Não foi possível buscar os cadastros agora.');
-        return 0;
-      }
-      try { localStorage.setItem(LSK, senha); } catch (e) {}
-      var itens = (j.itens || []).slice().sort(function (x, y) { return String(x.ts).localeCompare(String(y.ts)); });
-      var feitos = [], novos = 0, nomes = [], chain = Promise.resolve();
-      itens.forEach(function (it) {
-        chain = chain.then(function () {
-          var o = decodeCode(it.code);
-          if (!o) { feitos.push(it.id); return; }
-          return importarCadastro(o).then(function (r) { feitos.push(it.id); novos++; nomes.push(o.nome); }, function () {});
-        });
-      });
-      return chain.then(function () {
-        if (feitos.length) gget('action=done&ids=' + encodeURIComponent(feitos.join(',')) + '&token=' + encodeURIComponent(senha)).catch(function () {});
-        if (novos) { toast(novos === 1 ? 'Novo cadastro recebido: ' + nomes[0] : novos + ' novos cadastros recebidos'); setView('pac'); }
-        else if (manual) toast('Nenhum cadastro novo por enquanto.');
-        return novos;
-      });
-    }).catch(function () { if (manual) toast('Sem conexão para buscar os cadastros.'); return 0; })
-      .then(function (n) { buscando = false; return n; }, function () { buscando = false; return 0; });
-  }
-  if (STANDALONE && CFG.endpoint) {
-    $('fetchbtn').hidden = false;
-    $('fetchbtn').addEventListener('click', function () { buscarCadastros(true); });
-    setTimeout(function () { buscarCadastros(false); }, 2500);
-    document.addEventListener('visibilitychange', function () { if (!document.hidden) buscarCadastros(false); });
-  }
-
-  $('copymsg').addEventListener('click', function () {
-    var link = $('fichalink').textContent.trim();
-    var txt = 'Olá! Para iniciar o atendimento, preencha a sua ficha de cadastro neste link:\n' + link +
-      '\n\nÉ rápido, e ao final o seu cadastro chega direto para mim.\nPsi Bárbara Serra';
-    var fb = function () {
-      var r = document.createRange(); r.selectNodeContents($('fichalink'));
-      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
-      toast('Link selecionado. Copie com o menu do aparelho.');
-    };
-    try { navigator.clipboard.writeText(txt).then(function () { toast('Mensagem copiada. Cole no WhatsApp do paciente.'); }, fb); } catch (err) { fb(); }
-  });
-
   document.addEventListener('keydown', function (e) {
     if (e.key !== 'Escape') return;
     if (!$('poverlay').hidden) closeP();
-    if (!$('ioverlay').hidden) closeI();
     if (!$('soverlay').hidden) closeS();
   });
 
@@ -1997,7 +1856,7 @@ body.sheet-open .wrap { display: none; }
     clearTimeout(showErr.h); showErr.h = setTimeout(function () { b.hidden = true; }, 12000);
   }
   window.addEventListener('error', function (e) { showErr('Erro na página: ' + (e && e.message)); });
-  var sheets = ['overlay', 'poverlay', 'ioverlay', 'soverlay'].map(function (id) { return $(id); });
+  var sheets = ['overlay', 'poverlay', 'soverlay'].map(function (id) { return $(id); });
   var savedY = 0;
   var mo = new MutationObserver(function () {
     var openEl = sheets.filter(function (o) { return !o.hidden; })[0];
