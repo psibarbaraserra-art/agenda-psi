@@ -33,3 +33,9 @@ Biblioteca com 44 atividades interativas de **TCC**, **Psicologia Humanista** (A
 Para receber direto na planilha, atualize o Apps Script com o novo `receber-cadastros.gs` (versão 5) e faça *Nova versão* da implantação. As respostas vão para a aba "Atividades". Essa versão não aceita mais cadastros de pacientes.
 
 Para incluir ou mudar atividades, edite `atividades/catalogo.js` (o formato está explicado no topo do arquivo).
+
+## Cópias de segurança do aplicativo
+A cada atualização publicada, o GitHub guarda sozinho um .zip com todos os arquivos do app em **Releases** (página do repositório → *Releases*, ou https://github.com/psibarbaraserra-art/agenda-psi/releases). As cópias antigas ficam guardadas.
+Para fazer uma cópia na hora: aba **Actions → Cópia de segurança → Run workflow**.
+
+Atenção: essa cópia é do **aplicativo**. Os dados dos pacientes ficam no seu aparelho; continue usando **Baixar cópia de segurança** no rodapé da Agenda.
