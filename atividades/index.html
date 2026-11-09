@@ -1,0 +1,959 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#8a2f45">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Atividades Terapêuticas | Psi Bárbara Serra</title>
+<link rel="icon" type="image/png" href="../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+<script src="../config.js"></script>
+<script src="catalogo.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600&display=swap">
+<style>
+/* Layout: cabeçalho com logo; abas da psicóloga (biblioteca, envio, respostas, ética) ou fluxo do paciente (aceite, lista, atividade, envio) */
+:root {
+  --bg: #fbf0ec; --surface: #fff8f6; --surface-2: #f6e3df; --line: #e7cfcb;
+  --ink: #2b2325; --muted: #7d6d70; --rose: #c9767a; --wine: #8a2f45; --on-wine: #fff8f6;
+  --ok: #4f7f63; --ok-bg: #e2eee6; --warn: #9a6a1c; --warn-bg: #f7ebd2;
+  --tcc: #8a2f45; --tcc-bg: #f6e3df; --hum: #4f7f63; --hum-bg: #e2eee6; --dbt: #55798f; --dbt-bg: #e0eaf0;
+  --blob: #f4d9d4; --logo-filter: none; --shadow: 0 10px 30px rgba(138, 47, 69, .12);
+  --font-display: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
+  --font-body: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1d1618; --surface: #281e20; --surface-2: #35282b; --line: #4a3a3d;
+    --ink: #f4e9e7; --muted: #bda9ac; --rose: #dd8f93; --wine: #eaa3b2; --on-wine: #2b1519;
+    --ok: #8fc3a2; --ok-bg: #243a2e; --warn: #e5be78; --warn-bg: #3d3220;
+    --tcc: #eaa3b2; --tcc-bg: #3a2629; --hum: #8fc3a2; --hum-bg: #243a2e; --dbt: #8fb4c9; --dbt-bg: #243540;
+    --blob: #2e2023; --logo-filter: brightness(1.35); --shadow: 0 10px 30px rgba(0, 0, 0, .35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1d1618; --surface: #281e20; --surface-2: #35282b; --line: #4a3a3d;
+  --ink: #f4e9e7; --muted: #bda9ac; --rose: #dd8f93; --wine: #eaa3b2; --on-wine: #2b1519;
+  --ok: #8fc3a2; --ok-bg: #243a2e; --warn: #e5be78; --warn-bg: #3d3220;
+  --tcc: #eaa3b2; --tcc-bg: #3a2629; --hum: #8fc3a2; --hum-bg: #243a2e; --dbt: #8fb4c9; --dbt-bg: #243540;
+  --blob: #2e2023; --logo-filter: brightness(1.35); --shadow: 0 10px 30px rgba(0, 0, 0, .35);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0; background-color: var(--bg); color: var(--ink); font: 400 15px/1.5 var(--font-body);
+  background-image: radial-gradient(60vmax 40vmax at 100% -10%, var(--blob), transparent 60%), radial-gradient(50vmax 40vmax at -10% 100%, var(--blob), transparent 60%);
+  background-attachment: fixed;
+  padding-block: max(16px, env(safe-area-inset-top, 0px)) 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--wine); outline-offset: 2px; }
+.wrap { max-width: 980px; margin: 0 auto; display: grid; gap: 16px; }
+.wrap.narrow { max-width: 640px; }
+.head { text-align: center; display: grid; justify-items: center; gap: 2px; }
+.head img { width: 150px; max-width: 46%; height: auto; filter: var(--logo-filter); }
+.head h1 { margin: 0; font: 600 clamp(28px, 6vw, 38px)/1.1 var(--font-display); text-wrap: balance; }
+.head p { margin: 0; color: var(--muted); font-size: 12.5px; letter-spacing: .06em; text-transform: uppercase; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 18px; box-shadow: var(--shadow); min-width: 0; }
+.panel h2 { margin: 0 0 8px; font: 600 24px/1.15 var(--font-display); color: var(--wine); }
+.panel h3 { margin: 16px 0 6px; font: 600 19px/1.2 var(--font-display); color: var(--wine); }
+.muted { color: var(--muted); }
+.small { font-size: 12.5px; }
+.cta { background: var(--wine); color: var(--on-wine); border: 0; border-radius: 999px; padding: 10px 18px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.cta:hover { filter: brightness(1.08); }
+.cta:disabled { opacity: .5; cursor: default; }
+.ghost { background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+.ghost:hover { background: var(--surface-2); }
+.danger { color: #b3261e; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.stack { display: grid; gap: 10px; }
+.tabs { display: flex; gap: 6px; overflow-x: auto; padding: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; scrollbar-width: none; }
+.tabs button { flex: 1 0 auto; border: 0; background: transparent; border-radius: 999px; padding: 8px 14px; font-weight: 500; color: var(--muted); }
+.tabs button[aria-selected="true"] { background: var(--wine); color: var(--on-wine); }
+.badge { display: inline-block; font-size: 11.5px; font-weight: 600; letter-spacing: .03em; padding: 2px 9px; border-radius: 999px; }
+.b-tcc { background: var(--tcc-bg); color: var(--tcc); }
+.b-hum { background: var(--hum-bg); color: var(--hum); }
+.b-dbt { background: var(--dbt-bg); color: var(--dbt); }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 11px; font-size: 13px; }
+.chip[aria-pressed="true"] { background: var(--wine); color: var(--on-wine); border-color: var(--wine); }
+.filters { display: grid; gap: 10px; }
+.search { width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 999px; padding: 10px 16px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px; display: grid; gap: 8px; align-content: start; }
+.card.sel { border-color: var(--wine); box-shadow: 0 0 0 2px var(--wine) inset; }
+.card h4 { margin: 0; font: 600 18px/1.2 var(--font-display); }
+.card p { margin: 0; font-size: 13.5px; color: var(--muted); }
+.card .meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12px; color: var(--muted); }
+.card .acts { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+.card .acts button { padding: 6px 12px; font-size: 13px; }
+.bar { position: sticky; bottom: 12px; z-index: 5; display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--wine); border-radius: 999px; padding: 8px 8px 8px 18px; box-shadow: var(--shadow); }
+.f { display: grid; gap: 14px; }
+.f label, .fl { display: grid; gap: 5px; font-size: 13.5px; color: var(--ink); font-weight: 500; min-width: 0; }
+.f input[type="text"], .f textarea, .f select, .inp {
+  width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; font-weight: 400;
+}
+.f textarea, textarea.inp { min-height: 84px; resize: vertical; line-height: 1.45; }
+.info { background: var(--surface-2); border-radius: 12px; padding: 10px 12px; font-size: 14px; }
+.warnbox { background: var(--warn-bg); color: var(--ink); border-left: 4px solid var(--warn); border-radius: 10px; padding: 10px 12px; font-size: 14px; }
+.okbox { background: var(--ok-bg); border-left: 4px solid var(--ok); border-radius: 10px; padding: 10px 12px; font-size: 14px; }
+.opts { display: grid; gap: 6px; }
+.opt, .f label.opt { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); font-weight: 400; cursor: pointer; }
+.opt input { margin-top: 3px; accent-color: var(--wine); width: 18px; height: 18px; flex: none; }
+.opts.cols { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.scale { display: grid; gap: 4px; }
+.scale .btns { display: grid; grid-template-columns: repeat(auto-fit, minmax(34px, 1fr)); gap: 4px; }
+.scale .btns button { border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 7px 0; font-weight: 600; font-size: 14px; }
+.scale .btns button[aria-pressed="true"] { background: var(--wine); color: var(--on-wine); border-color: var(--wine); }
+.scale .ends { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); font-weight: 400; }
+.scale input[type="range"] { width: 100%; accent-color: var(--wine); }
+.scale .val { font-weight: 600; color: var(--wine); }
+.rep { display: grid; gap: 10px; }
+.entry { border: 1px dashed var(--line); border-radius: 14px; padding: 12px; display: grid; gap: 12px; background: color-mix(in srgb, var(--surface-2) 35%, transparent); }
+.entry .eh { display: flex; justify-content: space-between; align-items: center; font: 600 17px/1 var(--font-display); color: var(--wine); }
+.entry .eh button { border: 0; background: transparent; color: var(--muted); font-size: 13px; }
+.widget { display: grid; justify-items: center; gap: 10px; padding: 16px; border-radius: 14px; background: var(--surface-2); text-align: center; }
+.ball { width: 150px; height: 150px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, var(--rose), var(--wine)); transform: scale(.55); opacity: .9; display: grid; place-items: center; color: var(--on-wine); font-weight: 600; }
+.phase { font: 600 22px/1.1 var(--font-display); color: var(--wine); min-height: 1.2em; }
+.clock { font: 600 42px/1 var(--font-display); color: var(--wine); font-variant-numeric: tabular-nums; }
+.progress { height: 8px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+.progress > i { display: block; height: 100%; background: var(--wine); width: 0; transition: width .3s; }
+.alist { display: grid; gap: 8px; }
+.aitem { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); background: var(--bg); border-radius: 14px; text-align: left; width: 100%; }
+.aitem .tt { flex: 1; min-width: 0; }
+.aitem b { display: block; font-weight: 600; }
+.aitem .st { font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: var(--surface-2); color: var(--muted); white-space: nowrap; }
+.aitem .st.ok { background: var(--ok-bg); color: var(--ok); }
+.linkbox { word-break: break-all; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; font-size: 13px; }
+.resp { border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; background: var(--bg); display: grid; gap: 6px; }
+.resp .rh { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: baseline; }
+.ans h4 { margin: 14px 0 4px; font: 600 19px/1.2 var(--font-display); color: var(--wine); }
+.ans dl { margin: 0; display: grid; gap: 6px; }
+.ans dt { font-size: 12.5px; color: var(--muted); }
+.ans dd { margin: 0 0 4px; white-space: pre-wrap; }
+.ans .ent { border-left: 3px solid var(--line); padding-left: 10px; margin: 6px 0; }
+.ref { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 8px; }
+.foot { text-align: center; font-size: 12px; color: var(--muted); }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 999px; font-size: 14px; z-index: 50; max-width: calc(100vw - 32px); text-align: center; }
+dialog { border: 1px solid var(--line); border-radius: 18px; background: var(--surface); color: var(--ink); padding: 0; width: min(720px, calc(100vw - 24px)); max-height: calc(100vh - 32px); }
+dialog::backdrop { background: rgba(20, 10, 12, .45); }
+dialog .dh { position: sticky; top: 0; background: var(--surface); border-bottom: 1px solid var(--line); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; gap: 10px; z-index: 2; }
+dialog .dh h2 { margin: 0; font: 600 22px/1.15 var(--font-display); color: var(--wine); }
+dialog .db { padding: 16px; display: grid; gap: 14px; }
+.crisis { font-size: 13px; text-align: center; color: var(--muted); }
+.crisis b { color: var(--ink); }
+#printarea { display: none; }
+@media (max-width: 560px) {
+  .panel { padding: 14px; }
+  .bar { border-radius: 18px; }
+}
+@media print {
+  body { background: #fff !important; color: #000; padding: 0; font-size: 12pt; }
+  body > *:not(#printarea) { display: none !important; }
+  #printarea { display: block; }
+  #printarea .ph { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #999; padding-bottom: 6px; margin-bottom: 10px; }
+  #printarea .ph img { height: 48px; filter: none; }
+  #printarea h1 { font: 600 22pt/1.1 var(--font-display); margin: 0; }
+  #printarea h4 { color: #000; break-after: avoid; }
+  #printarea .blank { border-bottom: 1px solid #bbb; height: 22pt; }
+  #printarea .blank.tall { height: 66pt; border: 1px solid #bbb; border-radius: 4pt; }
+  #printarea .pf { margin-top: 18px; border-top: 1px solid #999; padding-top: 6px; font-size: 9pt; color: #444; }
+  .ans dd, .ans dt { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===================== MODO PSICÓLOGA ===================== -->
+<div class="wrap" id="pro" hidden>
+  <header class="head">
+    <img src="../icons/logo.png" alt="Psi Bárbara Serra">
+    <h1>Atividades Terapêuticas</h1>
+    <p>Bárbara Serra Oliveira · Psicóloga · CRP 20/13.134</p>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Seções">
+    <button role="tab" data-t="bib" aria-selected="true">Biblioteca</button>
+    <button role="tab" data-t="env" aria-selected="false">Enviar <span id="selcount"></span></button>
+    <button role="tab" data-t="res" aria-selected="false">Respostas <span id="rescount"></span></button>
+    <button role="tab" data-t="eti" aria-selected="false">Ética e cuidados</button>
+  </nav>
+
+  <!-- Biblioteca -->
+  <section id="t-bib" class="stack">
+    <div class="panel filters">
+      <input type="search" class="search" id="q" placeholder="Buscar atividade, técnica ou tema…" aria-label="Buscar">
+      <div class="row" id="f-ab" aria-label="Abordagem"></div>
+      <div class="row" id="f-dem" aria-label="Demanda"></div>
+      <div class="small muted" id="nres"></div>
+    </div>
+    <div class="grid" id="lib"></div>
+    <div class="bar" id="selbar" hidden>
+      <span id="seltxt"></span>
+      <div class="row">
+        <button class="ghost" id="selclear">Limpar</button>
+        <button class="cta" id="selgo">Preparar envio</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Enviar -->
+  <section id="t-env" class="stack" hidden>
+    <div class="panel stack">
+      <h2>Enviar atividades ao paciente</h2>
+      <div id="env-empty" class="info">Nenhuma atividade escolhida. Vá até a <b>Biblioteca</b> e toque em <b>Selecionar</b> nas atividades que deseja enviar.</div>
+      <div id="env-form" class="f" hidden>
+        <div class="fl">Atividades escolhidas<div class="alist" id="env-list"></div></div>
+        <label>Primeiro nome do paciente (aparece na saudação)
+          <input type="text" id="env-nome" maxlength="40" placeholder="Ex.: Ana" autocomplete="off">
+        </label>
+        <div class="small muted">Por sigilo, use só o primeiro nome ou as iniciais: o link pode ficar salvo no histórico do celular e do WhatsApp.</div>
+        <label>Mensagem ou orientação (opcional)
+          <textarea id="env-msg" maxlength="400" placeholder="Ex.: Faça um registro por dia até a nossa próxima sessão."></textarea>
+        </label>
+        <label>Prazo (opcional)
+          <input type="text" id="env-prazo" maxlength="40" placeholder="Ex.: até quinta, 14/11">
+        </label>
+        <div class="row">
+          <button class="cta" id="env-gerar">Gerar link</button>
+          <button class="ghost" id="env-print">Imprimir em branco</button>
+        </div>
+        <div id="env-out" class="stack" hidden>
+          <div class="linkbox" id="env-link"></div>
+          <div class="row">
+            <a class="cta" id="env-wa" href="#" target="_blank" rel="noopener">Enviar pelo WhatsApp</a>
+            <button class="ghost" id="env-copy">Copiar mensagem</button>
+            <a class="ghost" id="env-open" href="#" target="_blank" rel="noopener">Ver como paciente</a>
+          </div>
+          <div class="small muted">Registre no prontuário a atividade enviada e a data (Res. CFP 01/2009).</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Respostas -->
+  <section id="t-res" class="stack" hidden>
+    <div class="panel stack">
+      <h2>Respostas recebidas</h2>
+      <div class="small muted">Quando o paciente envia, a resposta chega na sua planilha do Google. Toque em <b>Buscar respostas</b>. Se a conexão dele falhar, ele manda a mensagem pelo WhatsApp e você cola aqui.</div>
+      <div class="row">
+        <button class="cta" id="res-fetch">Buscar respostas</button>
+        <button class="ghost" id="res-paste">Colar resposta do WhatsApp</button>
+      </div>
+      <div id="res-list" class="stack"></div>
+      <div class="small muted">As respostas ficam guardadas só neste aparelho. Depois de imprimir ou salvar em PDF no prontuário, você pode apagá-las daqui.</div>
+    </div>
+  </section>
+
+  <!-- Ética -->
+  <section id="t-eti" class="stack" hidden>
+    <div class="panel">
+      <h2>Ética e cuidados no uso</h2>
+      <p class="muted">Como este aplicativo foi pensado para atender às orientações do Conselho Federal de Psicologia.</p>
+      <h3>Sigilo e proteção de dados</h3>
+      <ul>
+        <li>O paciente lê e aceita um <b>termo de consentimento</b> antes de começar (Código de Ética, art. 9º; LGPD, Lei 13.709/2018, dados sensíveis de saúde).</li>
+        <li>As respostas ficam no celular do paciente até ele tocar em <b>Enviar</b>. Depois, ele pode apagá-las do aparelho.</li>
+        <li>O envio vai direto para a <b>sua</b> planilha do Google (protegida pela sua conta e senha). Nenhum outro serviço recebe as respostas.</li>
+        <li>O link leva só o primeiro nome e as atividades; não coloque dados clínicos na mensagem do link.</li>
+        <li>A página não é indexada por buscadores e não usa rastreadores.</li>
+      </ul>
+      <h3>Registro documental</h3>
+      <ul>
+        <li>Imprima ou salve em PDF as respostas e anexe ao prontuário, que deve ser guardado por no mínimo 5 anos (Res. CFP 01/2009 e 06/2019).</li>
+        <li>Anote a atividade enviada, a data e a devolutiva feita em sessão.</li>
+      </ul>
+      <h3>Atendimento mediado por tecnologia</h3>
+      <ul>
+        <li>Mantenha seu cadastro no <b>e-Psi</b> atualizado para atendimentos e intervenções on-line (Res. CFP 11/2018).</li>
+        <li>As atividades são <b>complementares</b> à psicoterapia: são escolhidas, explicadas e discutidas em sessão.</li>
+        <li>Em situações de crise e urgência, o atendimento on-line não é o mais adequado: o app mostra ao paciente os contatos do <b>CVV (188)</b>, <b>SAMU (192)</b> e a orientação de buscar o pronto-socorro.</li>
+      </ul>
+      <h3>Instrumentos e técnicas</h3>
+      <ul>
+        <li>As escalas do app são de <b>automonitoramento</b> (0 a 10, 0 a 100), sem finalidade diagnóstica. Testes psicológicos só podem ser usados se aprovados no SATEPSI (Res. CFP 31/2022), e <b>não</b> estão incluídos aqui.</li>
+        <li>Todas as técnicas têm fundamento científico, com a referência indicada em cada atividade (Código de Ética, art. 1º, alínea c).</li>
+        <li>O material identifica a psicóloga responsável com nome e CRP.</li>
+      </ul>
+      <h3>Configurar o recebimento direto</h3>
+      <ol>
+        <li>Abra a sua planilha do Google, em <b>Extensões &gt; Apps Script</b>.</li>
+        <li>Substitua o código pelo novo arquivo <b>receber-cadastros.gs</b> (versão 5), mantendo a sua senha.</li>
+        <li><b>Implantar &gt; Gerenciar implantações &gt; lápis &gt; Nova versão &gt; Implantar</b>.</li>
+        <li>Pronto: as respostas chegam em uma aba nova, "Atividades". O endereço continua o mesmo.</li>
+      </ol>
+      <p class="small muted">Este conteúdo é um apoio prático e não substitui a leitura das resoluções do CFP e do seu Conselho Regional.</p>
+    </div>
+  </section>
+
+  <p class="foot"><a href="../" class="muted">← Voltar para a Agenda</a></p>
+</div>
+
+<!-- ===================== MODO PACIENTE ===================== -->
+<div class="wrap narrow" id="pac" hidden>
+  <header class="head">
+    <img src="../icons/logo.png" alt="Psi Bárbara Serra">
+    <h1 id="pac-h">Suas atividades</h1>
+    <p>Bárbara Serra Oliveira · Psicóloga · CRP 20/13.134</p>
+  </header>
+
+  <!-- Termo -->
+  <section class="panel stack" id="p-termo" hidden>
+    <h2>Antes de começar</h2>
+    <p id="p-saud" style="margin:0"></p>
+    <div class="info">
+      <p style="margin:0 0 8px"><b>Sobre suas respostas</b></p>
+      <ul style="margin:0;padding-left:18px">
+        <li>Estas atividades fazem parte do seu processo de psicoterapia e serão conversadas na sessão. Elas <b>não substituem</b> o atendimento.</li>
+        <li>O que você escrever é <b>sigiloso</b> e será visto apenas pela psicóloga, que guarda as informações no seu prontuário, conforme o Código de Ética Profissional do Psicólogo.</li>
+        <li>Suas respostas ficam salvas só neste aparelho enquanto você preenche. Elas só são enviadas quando você tocar em <b>Enviar</b>, e você pode apagá-las depois.</li>
+        <li>Você pode deixar perguntas em branco, parar quando quiser e trazer suas dúvidas para a sessão.</li>
+      </ul>
+    </div>
+    <div class="warnbox"><b>Se você estiver em crise ou pensando em se machucar</b>, não espere a sessão: ligue <b>188</b> (CVV, 24h, gratuito), <b>192</b> (SAMU) ou vá ao pronto-socorro mais próximo.</div>
+    <label class="opt"><input type="checkbox" id="p-aceite"> <span>Li e concordo em realizar as atividades e enviar minhas respostas para a psicóloga Bárbara Serra.</span></label>
+    <button class="cta" id="p-comecar" disabled>Começar</button>
+  </section>
+
+  <!-- Lista -->
+  <section class="panel stack" id="p-lista" hidden>
+    <h2>Suas atividades</h2>
+    <div id="p-msg" class="info" hidden></div>
+    <div class="progress" aria-hidden="true"><i id="p-prog"></i></div>
+    <div class="alist" id="p-alist"></div>
+    <button class="cta" id="p-enviar">Enviar para a psicóloga</button>
+    <div class="small muted">Você pode enviar mesmo sem concluir tudo. Seu progresso fica salvo neste aparelho.</div>
+  </section>
+
+  <!-- Atividade -->
+  <section class="panel stack" id="p-ativ" hidden>
+    <div class="row" style="justify-content:space-between">
+      <button class="ghost" id="p-voltar">← Voltar</button>
+      <span id="p-badge"></span>
+    </div>
+    <h2 id="p-nome" style="margin:0"></h2>
+    <div class="info" id="p-intro"></div>
+    <form class="f" id="p-form" onsubmit="return false"></form>
+    <div class="row">
+      <button class="cta" id="p-concluir">Concluir atividade</button>
+      <span class="small muted" id="p-salvo"></span>
+    </div>
+  </section>
+
+  <!-- Envio -->
+  <section class="panel stack" id="p-fim" hidden>
+    <h2 id="p-fim-h">Enviando…</h2>
+    <div id="p-fim-ok" class="okbox" hidden>Suas respostas chegaram para a psicóloga. Vamos conversar sobre elas na próxima sessão. Obrigada pelo seu empenho!</div>
+    <div id="p-fim-wa" class="stack" hidden>
+      <p style="margin:0">Não foi possível enviar direto. Envie pelo WhatsApp:</p>
+      <ol style="margin:0;padding-left:20px">
+        <li>Toque em <b>Abrir WhatsApp</b> e escolha a conversa com a psicóloga.</li>
+        <li>Envie a mensagem sem alterar o texto.</li>
+      </ol>
+      <a class="cta" id="p-wa" href="#" target="_blank" rel="noopener">Abrir WhatsApp</a>
+      <button class="ghost" id="p-copy">Copiar mensagem</button>
+    </div>
+    <div class="row">
+      <button class="ghost" id="p-print">Guardar uma cópia (PDF)</button>
+      <button class="ghost danger" id="p-apagar">Apagar respostas deste aparelho</button>
+      <button class="ghost" id="p-lista2">Voltar às atividades</button>
+    </div>
+    <p class="sign small muted" style="margin:0">Com carinho,<br><b>Bárbara Serra</b> · Psicóloga · CRP 20/13.134</p>
+  </section>
+
+  <section class="panel" id="p-erro" hidden>
+    <h2>Link incompleto</h2>
+    <p>Não encontrei atividades neste link. Peça à psicóloga para enviar o link novamente.</p>
+  </section>
+
+  <p class="crisis">Em crise? <b>CVV 188</b> · <b>SAMU 192</b> · pronto-socorro</p>
+</div>
+
+<!-- Visualizar / testar atividade (psicóloga) -->
+<dialog id="dlg">
+  <div class="dh"><h2 id="dlg-h"></h2><button class="ghost" id="dlg-x" aria-label="Fechar">Fechar</button></div>
+  <div class="db" id="dlg-b"></div>
+</dialog>
+
+<div id="printarea"></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function () {
+  'use strict';
+  var ATS = window.ATIVIDADES || [], ABS = window.ABORDAGENS || {}, DEMS = window.DEMANDAS || [];
+  var CFG = window.AGENDA_CFG || {};
+  var PSI = { nome: 'Bárbara Serra Oliveira', crp: 'CRP 20/13.134' };
+  var BASE = location.origin + location.pathname;
+  var LSK_SENHA = 'agenda-barbara-serra-senha-v1'; // mesma senha usada na Agenda
+  var LSK_RESP = 'atv-respostas-v1';
+  var LSK_SEL = 'atv-selecao-v1';
+  var byId = {}; ATS.forEach(function (a) { byId[a.id] = a; });
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function lsGet(k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
+  function lsDel(k) { try { localStorage.removeItem(k); } catch (e) {} }
+  function enc(o) { return btoa(unescape(encodeURIComponent(JSON.stringify(o)))); }
+  function dec(s) { try { return JSON.parse(decodeURIComponent(escape(atob(s)))); } catch (e) { return null; } }
+  var tt;
+  function toast(m) { var t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(tt); tt = setTimeout(function () { t.hidden = true; }, 3200); }
+  function copy(txt) {
+    var done = function () { toast('Copiado!'); };
+    if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(txt).then(done, function () { fallback(); });
+    fallback();
+    function fallback() { var ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); done(); } catch (e) { toast('Não foi possível copiar.'); } ta.remove(); }
+  }
+  function badge(ab) { return '<span class="badge b-' + ab + '">' + esc((ABS[ab] || {}).nome || ab) + '</span>'; }
+  function fmtData(iso) { try { return new Date(iso).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }); } catch (e) { return iso; } }
+  function rid() { var s = ''; var c = 'abcdefghjkmnpqrstuvwxyz23456789'; for (var i = 0; i < 6; i++) s += c[Math.floor(Math.random() * c.length)]; return s; }
+
+  /* ---------- formulário interativo ---------- */
+  var uid = 0;
+  function isEmpty(v) { return v == null || v === '' || (Array.isArray(v) && !v.length); }
+
+  // Monta os campos de uma atividade dentro de "box". "get/set" guardam as respostas.
+  function renderFields(fields, box, ans, onChange) {
+    fields.forEach(function (f) {
+      var el = renderField(f, ans, onChange);
+      if (el) box.appendChild(el);
+    });
+  }
+  function renderField(f, ans, onChange) {
+    var id = 'f' + (++uid), w, lab;
+    function set(v) { if (isEmpty(v)) delete ans[f.id]; else ans[f.id] = v; onChange(); }
+    switch (f.t) {
+      case 'p': w = document.createElement('p'); w.className = 'info'; w.style.margin = '0'; w.textContent = f.x; return w;
+      case 'h': w = document.createElement('h3'); w.textContent = f.x; return w;
+      case 'text': case 'area':
+        w = document.createElement('label'); w.htmlFor = id;
+        w.appendChild(document.createTextNode(f.l));
+        var inp = document.createElement(f.t === 'area' ? 'textarea' : 'input');
+        if (f.t === 'text') inp.type = 'text';
+        inp.id = id; inp.maxLength = f.t === 'area' ? 4000 : 300;
+        if (f.ph) inp.placeholder = f.ph;
+        inp.value = ans[f.id] || '';
+        inp.addEventListener('input', function () { set(inp.value.trim() ? inp.value : ''); });
+        w.appendChild(inp); return w;
+      case 'scale':
+        var min = f.min == null ? 0 : f.min, max = f.max == null ? 10 : f.max;
+        w = document.createElement('div'); w.className = 'fl scale'; w.setAttribute('role', 'group'); w.setAttribute('aria-label', f.l);
+        lab = document.createElement('div'); w.appendChild(lab);
+        var cur = ans[f.id];
+        var paint;
+        if (max - min <= 10) {
+          var btns = document.createElement('div'); btns.className = 'btns';
+          for (var i = min; i <= max; i++) (function (n) {
+            var b = document.createElement('button'); b.type = 'button'; b.textContent = n; b.setAttribute('aria-pressed', cur === n ? 'true' : 'false');
+            b.addEventListener('click', function () { cur = cur === n ? undefined : n; set(cur); paint(); });
+            btns.appendChild(b);
+          })(i);
+          w.appendChild(btns);
+          paint = function () { [].forEach.call(btns.children, function (b) { b.setAttribute('aria-pressed', +b.textContent === cur ? 'true' : 'false'); }); lab.innerHTML = esc(f.l) + (cur == null ? '' : ' · <span class="val">' + cur + '</span>'); };
+        } else {
+          var r = document.createElement('input'); r.type = 'range'; r.min = min; r.max = max; r.step = max - min >= 100 ? 5 : 1;
+          r.value = cur == null ? Math.round((min + max) / 2) : cur; r.setAttribute('aria-label', f.l);
+          r.addEventListener('input', function () { cur = +r.value; set(cur); paint(); });
+          w.appendChild(r);
+          paint = function () { lab.innerHTML = esc(f.l) + ' · <span class="val">' + (cur == null ? 'arraste para marcar' : cur) + '</span>'; };
+        }
+        var ends = document.createElement('div'); ends.className = 'ends';
+        ends.innerHTML = '<span>' + esc(min + ' · ' + (f.lo || 'Pouco')) + '</span><span>' + esc((f.hi || 'Muito') + ' · ' + max) + '</span>';
+        w.appendChild(ends); paint(); return w;
+      case 'radio': case 'check':
+        w = document.createElement('fieldset'); w.className = 'fl'; w.style.border = '0'; w.style.padding = '0'; w.style.margin = '0';
+        lab = document.createElement('legend'); lab.textContent = f.l; lab.style.marginBottom = '5px'; w.appendChild(lab);
+        var box = document.createElement('div'); box.className = 'opts' + (f.o.every(function (o) { return o.length < 22; }) ? ' cols' : '');
+        var val = ans[f.id];
+        f.o.forEach(function (o) {
+          var l = document.createElement('label'); l.className = 'opt';
+          var c = document.createElement('input'); c.type = f.t === 'radio' ? 'radio' : 'checkbox'; c.name = id; c.value = o;
+          c.checked = f.t === 'radio' ? val === o : (val || []).indexOf(o) > -1;
+          c.addEventListener('change', function () {
+            if (f.t === 'radio') set(o);
+            else set([].filter.call(box.querySelectorAll('input'), function (x) { return x.checked; }).map(function (x) { return x.value; }));
+          });
+          var s = document.createElement('span'); s.textContent = o;
+          l.appendChild(c); l.appendChild(s); box.appendChild(l);
+        });
+        w.appendChild(box); return w;
+      case 'rep':
+        w = document.createElement('div'); w.className = 'fl';
+        lab = document.createElement('div'); lab.textContent = f.l; w.appendChild(lab);
+        var list = document.createElement('div'); list.className = 'rep'; w.appendChild(list);
+        var arr = Array.isArray(ans[f.id]) && ans[f.id].length ? ans[f.id] : [{}];
+        var sync = function () { var clean = arr.filter(function (o) { return Object.keys(o).length; }); if (clean.length) ans[f.id] = arr; else delete ans[f.id]; onChange(); };
+        var draw = function () {
+          list.innerHTML = '';
+          arr.forEach(function (o, idx) {
+            var e = document.createElement('div'); e.className = 'entry';
+            var h = document.createElement('div'); h.className = 'eh'; h.innerHTML = '<span>' + esc((f.item || 'Item') + ' ' + (idx + 1)) + '</span>';
+            if (arr.length > 1) {
+              var del = document.createElement('button'); del.type = 'button'; del.textContent = 'Remover';
+              del.addEventListener('click', function () { if (Object.keys(o).length && !confirm('Remover este registro?')) return; arr.splice(idx, 1); sync(); draw(); });
+              h.appendChild(del);
+            }
+            e.appendChild(h);
+            renderFields(f.f, e, o, sync);
+            list.appendChild(e);
+          });
+        };
+        draw();
+        var add = document.createElement('button'); add.type = 'button'; add.className = 'ghost'; add.textContent = '+ Adicionar ' + (f.item || 'item').toLowerCase();
+        add.addEventListener('click', function () { arr.push({}); draw(); var es = list.querySelectorAll('.entry'); var last = es[es.length - 1]; if (last) { last.scrollIntoView({ behavior: 'smooth', block: 'start' }); var fi = last.querySelector('input,textarea'); if (fi) fi.focus({ preventScroll: true }); } });
+        w.appendChild(add); return w;
+      case 'breath': return breathWidget(f);
+      case 'timer': return timerWidget(f);
+    }
+    return null;
+  }
+
+  var stoppers = [];
+  function stopWidgets() { stoppers.forEach(function (s) { s(); }); stoppers = []; }
+  function breathWidget(f) {
+    var w = document.createElement('div'); w.className = 'widget';
+    w.innerHTML = '<div class="ball"><span></span></div><div class="phase">Pronta(o)?</div><div class="small muted"></div><button type="button" class="cta">Iniciar respiração</button>';
+    var ball = w.querySelector('.ball'), ph = w.querySelector('.phase'), cnt = w.querySelector('.small'), btn = w.querySelector('button'), num = ball.querySelector('span');
+    var on = false, timer = null, tick = null, ciclos = 0;
+    var steps = [{ n: 'Inspire', s: f.in || 4, sc: 1 }];
+    if (f.hold) steps.push({ n: 'Segure', s: f.hold, sc: 1 });
+    steps.push({ n: 'Solte o ar devagar', s: f.out || 6, sc: .55 });
+    cnt.textContent = 'Ritmo: inspire ' + (f.in || 4) + 's' + (f.hold ? ', segure ' + f.hold + 's' : '') + ', solte ' + (f.out || 6) + 's. Faça pelo menos 6 ciclos.';
+    function run(i) {
+      if (!on) return;
+      var st = steps[i]; ph.textContent = st.n;
+      ball.style.transition = 'transform ' + st.s + 's ease-in-out'; ball.style.transform = 'scale(' + st.sc + ')';
+      var left = st.s; num.textContent = left;
+      clearInterval(tick); tick = setInterval(function () { left--; if (left > 0) num.textContent = left; }, 1000);
+      timer = setTimeout(function () {
+        if (i === steps.length - 1) { ciclos++; cnt.textContent = ciclos + (ciclos === 1 ? ' ciclo' : ' ciclos') + ' completos'; }
+        run((i + 1) % steps.length);
+      }, st.s * 1000);
+    }
+    function stop() { on = false; clearTimeout(timer); clearInterval(tick); ball.style.transition = 'transform .6s'; ball.style.transform = 'scale(.55)'; num.textContent = ''; ph.textContent = ciclos ? 'Muito bem.' : 'Pronta(o)?'; btn.textContent = 'Iniciar respiração'; }
+    btn.addEventListener('click', function () { if (on) stop(); else { on = true; btn.textContent = 'Parar'; run(0); } });
+    stoppers.push(stop);
+    return w;
+  }
+  function timerWidget(f) {
+    var w = document.createElement('div'); w.className = 'widget';
+    w.innerHTML = '<div class="small muted">Cronômetro da prática</div><div class="clock"></div><div class="row" style="justify-content:center"><button type="button" class="cta">Iniciar</button><button type="button" class="ghost">Zerar</button></div>';
+    var clock = w.querySelector('.clock'), bs = w.querySelectorAll('button'), total = f.s || 180, left = total, iv = null;
+    function show() { clock.textContent = Math.floor(left / 60) + ':' + ('0' + (left % 60)).slice(-2); }
+    function stop() { clearInterval(iv); iv = null; bs[0].textContent = left < total && left > 0 ? 'Continuar' : 'Iniciar'; }
+    bs[0].addEventListener('click', function () {
+      if (iv) return stop();
+      if (left <= 0) left = total;
+      bs[0].textContent = 'Pausar';
+      iv = setInterval(function () { left--; show(); if (left <= 0) { stop(); clock.textContent = 'Pronto'; if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } }, 1000);
+    });
+    bs[1].addEventListener('click', function () { stop(); left = total; show(); bs[0].textContent = 'Iniciar'; });
+    show(); stoppers.push(stop);
+    return w;
+  }
+
+  /* ---------- respostas legíveis ---------- */
+  function valTxt(f, v) {
+    if (Array.isArray(v)) return v.join('; ');
+    if (f.t === 'scale') return v + ' (de ' + (f.min || 0) + ' a ' + (f.max == null ? 10 : f.max) + ')';
+    return String(v);
+  }
+  function ansHtml(fields, a) {
+    var h = '';
+    fields.forEach(function (f) {
+      if (!f.id || isEmpty(a[f.id])) return;
+      if (f.t === 'rep') {
+        h += '<dt>' + esc(f.l) + '</dt><dd>';
+        a[f.id].forEach(function (o, i) { if (!Object.keys(o).length) return; h += '<div class="ent"><b>' + esc((f.item || 'Item') + ' ' + (i + 1)) + '</b><dl>' + ansHtml(f.f, o) + '</dl></div>'; });
+        h += '</dd>';
+      } else h += '<dt>' + esc(f.l) + '</dt><dd>' + esc(valTxt(f, a[f.id])) + '</dd>';
+    });
+    return h;
+  }
+  function ansTxt(fields, a, pre) {
+    var out = [];
+    pre = pre || '';
+    fields.forEach(function (f) {
+      if (!f.id || isEmpty(a[f.id])) return;
+      if (f.t === 'rep') {
+        a[f.id].forEach(function (o, i) { if (!Object.keys(o).length) return; out.push(pre + '— ' + (f.item || 'Item') + ' ' + (i + 1)); out = out.concat(ansTxt(f.f, o, pre + '  ')); });
+      } else out.push(pre + '• ' + f.l + ': ' + valTxt(f, a[f.id]));
+    });
+    return out;
+  }
+  function respHtml(r) {
+    return (r.acts || []).map(function (x) {
+      var at = byId[x.id];
+      if (!at) return '<h4>Atividade ' + esc(x.id) + '</h4><p class="muted">Atividade não encontrada nesta versão.</p>';
+      var body = ansHtml(at.f, x.a || {});
+      return '<h4>' + esc(at.nome) + ' ' + badge(at.ab) + (x.ok ? '' : ' <span class="small muted">(parcial)</span>') + '</h4>' + (body ? '<dl>' + body + '</dl>' : '<p class="muted">Sem respostas.</p>');
+    }).join('');
+  }
+
+  /* ---------- impressão ---------- */
+  function blankHtml(fields) {
+    var h = '';
+    fields.forEach(function (f) {
+      if (f.t === 'p') h += '<p>' + esc(f.x) + '</p>';
+      else if (f.t === 'h') h += '<h4>' + esc(f.x) + '</h4>';
+      else if (f.t === 'text') h += '<p><b>' + esc(f.l) + '</b></p><div class="blank"></div>';
+      else if (f.t === 'area') h += '<p><b>' + esc(f.l) + '</b></p><div class="blank tall"></div>';
+      else if (f.t === 'scale') { var mn = f.min || 0, mx = f.max == null ? 10 : f.max; h += '<p><b>' + esc(f.l) + '</b> (' + mn + ' = ' + esc(f.lo || 'pouco') + ' · ' + mx + ' = ' + esc(f.hi || 'muito') + '): ______</p>'; }
+      else if (f.t === 'radio' || f.t === 'check') h += '<p><b>' + esc(f.l) + '</b><br>' + f.o.map(function (o) { return '☐ ' + esc(o); }).join('<br>') + '</p>';
+      else if (f.t === 'rep') { for (var i = 1; i <= 2; i++) h += '<div class="ent"><b>' + esc((f.item || 'Item') + ' ' + i) + '</b>' + blankHtml(f.f) + '</div>'; }
+      else if (f.t === 'breath') h += '<p><i>Respiração: inspire ' + (f.in || 4) + 's' + (f.hold ? ', segure ' + f.hold + 's' : '') + ', solte ' + (f.out || 6) + 's. Repita por 6 a 10 ciclos.</i></p>';
+      else if (f.t === 'timer') h += '<p><i>Pratique por ' + Math.round((f.s || 180) / 60) + ' minutos.</i></p>';
+    });
+    return h;
+  }
+  function printDoc(title, sub, body, refs) {
+    $('printarea').innerHTML = '<div class="ph"><div><h1>' + esc(title) + '</h1><div>' + esc(sub || '') + '</div></div><img src="../icons/logo.png" alt=""></div>' +
+      '<div class="ans">' + body + '</div>' +
+      (refs ? '<div class="pf"><b>Referências:</b> ' + esc(refs) + '</div>' : '') +
+      '<div class="pf">' + esc(PSI.nome) + ' · Psicóloga · ' + esc(PSI.crp) + ' · Documento sigiloso. Em crise: CVV 188 · SAMU 192.</div>';
+    setTimeout(function () { window.print(); }, 60);
+  }
+
+  /* ===================================================================
+     MODO PACIENTE
+     =================================================================== */
+  var qs = new URLSearchParams(location.search);
+  if (qs.get('a')) return paciente();
+  profissional();
+
+  function paciente() {
+    $('pac').hidden = false;
+    var ids = qs.get('a').split(',').filter(function (i) { return byId[i]; });
+    var nome = (qs.get('p') || '').slice(0, 40), msg = (qs.get('m') || '').slice(0, 400), prazo = (qs.get('d') || '').slice(0, 40), k = (qs.get('k') || '').slice(0, 12);
+    if (!ids.length) { $('p-erro').hidden = false; return; }
+    var KEY = 'atv-rascunho-' + (k || ids.join('-'));
+    var st = lsGet(KEY, null) || { aceite: false, ans: {}, ok: {} };
+    var atual = null, salvoT;
+    function save() { lsSet(KEY, st); $('p-salvo').textContent = 'Salvo neste aparelho'; clearTimeout(salvoT); salvoT = setTimeout(function () { $('p-salvo').textContent = ''; }, 1500); }
+    function show(sec) { ['p-termo', 'p-lista', 'p-ativ', 'p-fim'].forEach(function (s) { $(s).hidden = s !== sec; }); window.scrollTo(0, 0); }
+
+    $('p-saud').textContent = (nome ? 'Olá, ' + nome + '! ' : 'Olá! ') + 'A psicóloga Bárbara Serra preparou ' + (ids.length === 1 ? 'uma atividade' : ids.length + ' atividades') + ' para você fazer entre as sessões.';
+    if (nome) $('pac-h').textContent = 'Atividades de ' + nome;
+    if (msg || prazo) { $('p-msg').hidden = false; $('p-msg').innerHTML = (msg ? '<b>Recado da psicóloga:</b> ' + esc(msg) : '') + (prazo ? (msg ? '<br>' : '') + '<b>Prazo:</b> ' + esc(prazo) : ''); }
+
+    $('p-aceite').addEventListener('change', function () { $('p-comecar').disabled = !this.checked; });
+    $('p-comecar').addEventListener('click', function () { st.aceite = new Date().toISOString(); save(); lista(); });
+
+    function lista() {
+      var n = 0;
+      $('p-alist').innerHTML = '';
+      ids.forEach(function (id) {
+        var at = byId[id], ok = st.ok[id], tem = st.ans[id] && Object.keys(st.ans[id]).length;
+        if (ok) n++;
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'aitem';
+        b.innerHTML = '<span class="tt"><b>' + esc(at.nome) + '</b><span class="small muted">' + esc(at.obj) + ' · cerca de ' + at.min + ' min</span></span><span class="st' + (ok ? ' ok' : '') + '">' + (ok ? 'Concluída' : tem ? 'Em andamento' : 'A fazer') + '</span>';
+        b.addEventListener('click', function () { abrir(id); });
+        $('p-alist').appendChild(b);
+      });
+      $('p-prog').style.width = Math.round(n / ids.length * 100) + '%';
+      show('p-lista');
+    }
+    function abrir(id) {
+      stopWidgets();
+      atual = id; var at = byId[id];
+      st.ans[id] = st.ans[id] || {};
+      $('p-nome').textContent = at.nome; $('p-badge').innerHTML = badge(at.ab);
+      $('p-intro').textContent = at.intro;
+      var form = $('p-form'); form.innerHTML = '';
+      renderFields(at.f, form, st.ans[id], save);
+      $('p-concluir').textContent = st.ok[id] ? 'Salvar e voltar' : 'Concluir atividade';
+      show('p-ativ');
+    }
+    $('p-voltar').addEventListener('click', function () { stopWidgets(); save(); lista(); });
+    $('p-concluir').addEventListener('click', function () {
+      stopWidgets();
+      var a = st.ans[atual] || {};
+      if (!Object.keys(a).length && !confirm('Você ainda não respondeu nada nesta atividade. Marcar como concluída mesmo assim?')) return;
+      st.ok[atual] = true; save(); toast('Atividade concluída!'); lista();
+    });
+
+    function montar() {
+      return { v: 1, k: k, p: nome, ts: new Date().toISOString(), aceite: st.aceite, acts: ids.map(function (id) { return { id: id, ok: !!st.ok[id], a: st.ans[id] || {} }; }) };
+    }
+    function textoWa(r) {
+      var L = ['Olá, Bárbara! Seguem minhas atividades' + (nome ? ' (' + nome + ')' : '') + ':', ''];
+      r.acts.forEach(function (x) { var at = byId[x.id]; L.push('*' + at.nome + '*' + (x.ok ? '' : ' (parcial)')); L = L.concat(ansTxt(at.f, x.a)); L.push(''); });
+      L.push('Código: AT1:' + enc(r));
+      return L.join('\n');
+    }
+    var ultimo = null;
+    $('p-enviar').addEventListener('click', function () {
+      var r = montar();
+      var algum = r.acts.some(function (x) { return Object.keys(x.a).length; });
+      if (!algum) return toast('Responda ao menos uma atividade antes de enviar.');
+      var falta = r.acts.filter(function (x) { return !x.ok; }).length;
+      if (falta && !confirm(falta === 1 ? 'Uma atividade ainda não foi concluída. Enviar mesmo assim?' : falta + ' atividades ainda não foram concluídas. Enviar mesmo assim?')) return;
+      ultimo = r;
+      var txt = textoWa(r);
+      $('p-wa').href = 'https://wa.me/?text=' + encodeURIComponent(txt);
+      $('p-fim-h').textContent = 'Enviando…'; $('p-fim-ok').hidden = true; $('p-fim-wa').hidden = true;
+      show('p-fim');
+      var btn = $('p-enviar'); btn.disabled = true;
+      var fim = function (ok) {
+        btn.disabled = false;
+        $('p-fim-h').textContent = ok ? 'Tudo certo!' : 'Quase pronto';
+        $('p-fim-ok').hidden = !ok; $('p-fim-wa').hidden = ok;
+        if (ok) { st.enviado = r.ts; save(); }
+      };
+      var code = 'AT1:' + enc(r);
+      if (!CFG.endpoint || code.length > 45000) return fim(false);
+      var ctl = ('AbortController' in window) ? new AbortController() : null;
+      var to = setTimeout(function () { if (ctl) ctl.abort(); }, 20000);
+      var corpo = JSON.stringify({ code: code });
+      var opts = function (m) { return { method: 'POST', mode: m, headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: corpo, signal: ctl ? ctl.signal : undefined }; };
+      fetch(CFG.endpoint, opts('cors')).then(function (x) { return x.text(); }).then(function (t) {
+        var j = null; try { j = JSON.parse(t); } catch (e) {}
+        clearTimeout(to); fim(!!(j && j.ok));
+      }, function () {
+        fetch(CFG.endpoint, opts('no-cors')).then(function () { clearTimeout(to); fim(true); }, function () { clearTimeout(to); fim(false); });
+      });
+    });
+    $('p-copy').addEventListener('click', function () { if (ultimo) copy(textoWa(ultimo)); });
+    $('p-lista2').addEventListener('click', lista);
+    $('p-print').addEventListener('click', function () { printDoc(nome ? 'Atividades de ' + nome : 'Minhas atividades', 'Respondidas em ' + fmtData(new Date().toISOString()), respHtml(montar())); });
+    $('p-apagar').addEventListener('click', function () {
+      if (!confirm('Apagar suas respostas deste aparelho? Faça isso só depois de enviar para a psicóloga.')) return;
+      lsDel(KEY); st = { aceite: false, ans: {}, ok: {} }; toast('Respostas apagadas deste aparelho.');
+      $('p-aceite').checked = false; $('p-comecar').disabled = true; show('p-termo');
+    });
+
+    if (st.aceite) lista(); else show('p-termo');
+  }
+
+  /* ===================================================================
+     MODO PSICÓLOGA
+     =================================================================== */
+  function profissional() {
+    $('pro').hidden = false;
+    var sel = lsGet(LSK_SEL, []).filter(function (i) { return byId[i]; });
+    var fAb = '', fDem = '';
+
+    // abas
+    var tabs = document.querySelectorAll('.tabs button');
+    function tab(t) {
+      [].forEach.call(tabs, function (b) { b.setAttribute('aria-selected', b.dataset.t === t ? 'true' : 'false'); });
+      ['bib', 'env', 'res', 'eti'].forEach(function (x) { $('t-' + x).hidden = x !== t; });
+      if (t === 'env') envio();
+      if (t === 'res') respostas();
+    }
+    [].forEach.call(tabs, function (b) { b.addEventListener('click', function () { tab(b.dataset.t); }); });
+
+    // filtros
+    function chips(box, items, cur, cb) {
+      box.innerHTML = '';
+      items.forEach(function (it) {
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = it[1];
+        b.setAttribute('aria-pressed', cur() === it[0] ? 'true' : 'false');
+        b.addEventListener('click', function () { cb(cur() === it[0] ? '' : it[0]); });
+        box.appendChild(b);
+      });
+    }
+    function drawFilters() {
+      chips($('f-ab'), [['', 'Todas']].concat(Object.keys(ABS).map(function (k) { return [k, ABS[k].longo]; })), function () { return fAb; }, function (v) { fAb = v; drawFilters(); lib(); });
+      chips($('f-dem'), DEMS.map(function (d) { return [d, d]; }), function () { return fDem; }, function (v) { fDem = v; drawFilters(); lib(); });
+    }
+    function norm(s) { return String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+    function lib() {
+      var q = norm($('q').value.trim());
+      var lst = ATS.filter(function (a) {
+        if (fAb && a.ab !== fAb) return false;
+        if (fDem && a.dem.indexOf(fDem) < 0) return false;
+        if (q && norm(a.nome + ' ' + a.obj + ' ' + a.dem.join(' ') + ' ' + (ABS[a.ab] || {}).longo).indexOf(q) < 0) return false;
+        return true;
+      });
+      $('nres').textContent = lst.length + (lst.length === 1 ? ' atividade' : ' atividades');
+      $('lib').innerHTML = '';
+      lst.forEach(function (a) {
+        var on = sel.indexOf(a.id) > -1;
+        var c = document.createElement('article'); c.className = 'card' + (on ? ' sel' : '');
+        c.innerHTML = '<div class="meta">' + badge(a.ab) + '<span>' + a.min + ' min</span></div><h4>' + esc(a.nome) + '</h4><p>' + esc(a.obj) + '</p><div class="meta">' + a.dem.map(esc).join(' · ') + '</div>' +
+          '<div class="acts"><button class="' + (on ? 'cta' : 'ghost') + '" data-s>' + (on ? '✓ Selecionada' : 'Selecionar') + '</button><button class="ghost" data-v>Ver e testar</button><button class="ghost" data-p>Imprimir</button></div>';
+        c.querySelector('[data-s]').addEventListener('click', function () { toggle(a.id); });
+        c.querySelector('[data-v]').addEventListener('click', function () { previa(a); });
+        c.querySelector('[data-p]').addEventListener('click', function () { printDoc(a.nome, (ABS[a.ab] || {}).longo, '<p><i>' + esc(a.intro) + '</i></p>' + blankHtml(a.f), a.ref); });
+        $('lib').appendChild(c);
+      });
+      selbar();
+    }
+    function toggle(id) { var i = sel.indexOf(id); if (i > -1) sel.splice(i, 1); else sel.push(id); lsSet(LSK_SEL, sel); lib(); }
+    function selbar() {
+      $('selbar').hidden = !sel.length;
+      $('seltxt').textContent = sel.length + (sel.length === 1 ? ' atividade selecionada' : ' atividades selecionadas');
+      $('selcount').textContent = sel.length ? '(' + sel.length + ')' : '';
+    }
+    $('q').addEventListener('input', lib);
+    $('selclear').addEventListener('click', function () { sel = []; lsSet(LSK_SEL, sel); lib(); });
+    $('selgo').addEventListener('click', function () { tab('env'); });
+
+    // prévia
+    var dlg = $('dlg');
+    function previa(a) {
+      stopWidgets();
+      $('dlg-h').textContent = a.nome;
+      var b = $('dlg-b'); b.innerHTML = '';
+      var top = document.createElement('div'); top.className = 'stack';
+      top.innerHTML = '<div class="meta row">' + badge(a.ab) + '<span class="small muted">' + a.min + ' min · ' + a.dem.map(esc).join(' · ') + '</span></div><div><b>Objetivo:</b> ' + esc(a.obj) + '</div><div class="info">' + esc(a.intro) + '</div>';
+      b.appendChild(top);
+      var form = document.createElement('form'); form.className = 'f'; form.onsubmit = function () { return false; };
+      renderFields(a.f, form, {}, function () {});
+      b.appendChild(form);
+      var ref = document.createElement('div'); ref.className = 'ref'; ref.innerHTML = '<b>Referência:</b> ' + esc(a.ref); b.appendChild(ref);
+      var r = document.createElement('div'); r.className = 'row';
+      var bs = document.createElement('button'); bs.className = sel.indexOf(a.id) > -1 ? 'ghost' : 'cta'; bs.textContent = sel.indexOf(a.id) > -1 ? 'Remover da seleção' : 'Selecionar para enviar';
+      bs.addEventListener('click', function () { toggle(a.id); dlg.close(); });
+      r.appendChild(bs); b.appendChild(r);
+      if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', '');
+    }
+    $('dlg-x').addEventListener('click', function () { dlg.close ? dlg.close() : dlg.removeAttribute('open'); });
+    dlg.addEventListener('close', stopWidgets);
+    dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
+
+    // envio
+    function envio() {
+      $('env-empty').hidden = !!sel.length; $('env-form').hidden = !sel.length; $('env-out').hidden = true;
+      $('env-list').innerHTML = '';
+      sel.forEach(function (id, i) {
+        var a = byId[id];
+        var d = document.createElement('div'); d.className = 'aitem';
+        d.innerHTML = '<span class="tt"><b>' + esc(a.nome) + '</b><span class="small muted">' + esc((ABS[a.ab] || {}).longo) + ' · ' + a.min + ' min</span></span>';
+        var ctr = document.createElement('span'); ctr.className = 'row';
+        if (i > 0) { var up = document.createElement('button'); up.className = 'ghost'; up.textContent = '↑'; up.setAttribute('aria-label', 'Subir'); up.addEventListener('click', function () { sel.splice(i, 1); sel.splice(i - 1, 0, id); lsSet(LSK_SEL, sel); envio(); }); ctr.appendChild(up); }
+        var rm = document.createElement('button'); rm.className = 'ghost'; rm.textContent = '✕'; rm.setAttribute('aria-label', 'Remover'); rm.addEventListener('click', function () { sel.splice(i, 1); lsSet(LSK_SEL, sel); selbar(); envio(); lib(); });
+        ctr.appendChild(rm); d.appendChild(ctr);
+        $('env-list').appendChild(d);
+      });
+    }
+    var linkAtual = '', msgAtual = '';
+    $('env-gerar').addEventListener('click', function () {
+      var nome = $('env-nome').value.trim().split(/\s+/)[0] || '';
+      var p = new URLSearchParams();
+      p.set('a', sel.join(','));
+      if (nome) p.set('p', nome);
+      if ($('env-msg').value.trim()) p.set('m', $('env-msg').value.trim());
+      if ($('env-prazo').value.trim()) p.set('d', $('env-prazo').value.trim());
+      p.set('k', rid());
+      linkAtual = BASE + '?' + p.toString();
+      var nomes = sel.map(function (i) { return '• ' + byId[i].nome; }).join('\n');
+      msgAtual = 'Olá' + (nome ? ', ' + nome : '') + '! Preparei ' + (sel.length === 1 ? 'uma atividade' : 'algumas atividades') + ' para você fazer até a nossa próxima sessão:\n' + nomes + '\n\nAcesse pelo link (suas respostas são sigilosas e chegam só para mim):\n' + linkAtual + '\n\nBárbara Serra · Psicóloga · ' + PSI.crp;
+      $('env-link').textContent = linkAtual;
+      $('env-wa').href = 'https://wa.me/?text=' + encodeURIComponent(msgAtual);
+      $('env-open').href = linkAtual;
+      $('env-out').hidden = false;
+    });
+    $('env-copy').addEventListener('click', function () { copy(msgAtual); });
+    $('env-print').addEventListener('click', function () {
+      var body = sel.map(function (id) { var a = byId[id]; return '<h4>' + esc(a.nome) + '</h4><p><i>' + esc(a.intro) + '</i></p>' + blankHtml(a.f); }).join('<hr>');
+      var refs = sel.map(function (id) { return byId[id].ref; }).filter(function (v, i, s) { return s.indexOf(v) === i; }).join(' ');
+      var nome = $('env-nome').value.trim().split(/\s+/)[0];
+      printDoc('Atividades terapêuticas', nome ? 'Para: ' + nome : '', body, refs);
+    });
+
+    // respostas
+    function lerResp() { return lsGet(LSK_RESP, []); }
+    function guardar(r, origem) {
+      var lst = lerResp();
+      var chave = (r.k || '') + '|' + r.ts;
+      if (lst.some(function (x) { return ((x.r.k || '') + '|' + x.r.ts) === chave; })) return false;
+      lst.unshift({ id: rid() + Date.now().toString(36), em: new Date().toISOString(), origem: origem, r: r });
+      if (!lsSet(LSK_RESP, lst)) { toast('Sem espaço no aparelho: apague respostas antigas.'); return false; }
+      return true;
+    }
+    function respostas() {
+      var lst = lerResp();
+      $('rescount').textContent = lst.length ? '(' + lst.length + ')' : '';
+      var box = $('res-list'); box.innerHTML = '';
+      if (!lst.length) { box.innerHTML = '<div class="info">Nenhuma resposta guardada neste aparelho.</div>'; return; }
+      lst.forEach(function (it) {
+        var r = it.r, d = document.createElement('div'); d.className = 'resp';
+        var nomes = (r.acts || []).map(function (x) { return (byId[x.id] || {}).nome || x.id; }).join(', ');
+        d.innerHTML = '<div class="rh"><b>' + esc(r.p || 'Paciente sem nome') + '</b><span class="small muted">Enviado em ' + esc(fmtData(r.ts)) + '</span></div><div class="small muted">' + esc(nomes) + '</div>' +
+          '<div class="row"><button class="cta" data-v>Ver respostas</button><button class="ghost" data-p>Imprimir / PDF</button><button class="ghost danger" data-d>Apagar</button></div><div class="ans" hidden></div>';
+        var ans = d.querySelector('.ans');
+        d.querySelector('[data-v]').addEventListener('click', function () {
+          ans.hidden = !ans.hidden; if (!ans.hidden) ans.innerHTML = respHtml(r) + (r.aceite ? '<p class="small muted">Termo de consentimento aceito em ' + esc(fmtData(r.aceite)) + '.</p>' : '');
+          this.textContent = ans.hidden ? 'Ver respostas' : 'Ocultar';
+        });
+        d.querySelector('[data-p]').addEventListener('click', function () {
+          var refs = (r.acts || []).map(function (x) { return (byId[x.id] || {}).ref; }).filter(function (v, i, s) { return v && s.indexOf(v) === i; }).join(' ');
+          printDoc('Atividades · ' + (r.p || 'paciente'), 'Enviado em ' + fmtData(r.ts) + (r.aceite ? ' · termo aceito em ' + fmtData(r.aceite) : ''), respHtml(r), refs);
+        });
+        d.querySelector('[data-d]').addEventListener('click', function () {
+          if (!confirm('Apagar esta resposta deste aparelho? Confirme que já guardou no prontuário.')) return;
+          lsSet(LSK_RESP, lerResp().filter(function (x) { return x.id !== it.id; })); respostas();
+        });
+        box.appendChild(d);
+      });
+    }
+    function extrair(txt) {
+      var m = String(txt).match(/AT1:([A-Za-z0-9+/=\s]+)/);
+      if (!m) return null;
+      var o = dec(m[1].replace(/\s+/g, ''));
+      return o && Array.isArray(o.acts) ? o : null;
+    }
+    $('res-paste').addEventListener('click', function () {
+      var t = window.prompt('Cole aqui a mensagem inteira recebida pelo WhatsApp (com a linha "Código: AT1:…"):');
+      if (!t) return;
+      var o = extrair(t);
+      if (!o) return toast('Não encontrei um código de atividades válido na mensagem.');
+      toast(guardar(o, 'whatsapp') ? 'Resposta de ' + (o.p || 'paciente') + ' guardada.' : 'Essa resposta já estava guardada.');
+      respostas();
+    });
+    var buscando = false;
+    function gget(q) {
+      return fetch(CFG.endpoint + '?' + q, { cache: 'no-store' }).then(function (r) { return r.text(); }).then(function (t) { try { return JSON.parse(t); } catch (e) { return { ok: false, erro: 'formato' }; } });
+    }
+    function buscar(manual) {
+      if (!CFG.endpoint) { if (manual) toast('O envio direto não está configurado (config.js).'); return; }
+      if (buscando) return;
+      var senha = ''; try { senha = localStorage.getItem(LSK_SENHA) || ''; } catch (e) {}
+      if (!senha) {
+        if (!manual) return;
+        senha = (window.prompt('Digite a senha de recebimento (a mesma da planilha do Google):') || '').trim();
+        if (!senha) return;
+      }
+      buscando = true;
+      gget('action=atividades&token=' + encodeURIComponent(senha)).then(function (j) {
+        if (!j || !j.ok) {
+          if (j && j.erro === 'token') { lsDel(LSK_SENHA); if (manual) toast('Senha incorreta.'); }
+          else if (manual) toast(j && j.erro === 'versao' ? 'Atualize o Apps Script para a versão 5 (veja Ética e cuidados).' : 'Não foi possível buscar agora. Confira se o Apps Script está na versão 5.');
+          return;
+        }
+        try { localStorage.setItem(LSK_SENHA, senha); } catch (e) {}
+        var feitos = [], novos = 0, antigo = false;
+        (j.itens || []).forEach(function (it) {
+          if (String(it.code).indexOf('AT1:') !== 0) { antigo = true; return; } // Apps Script antigo devolveu cadastros: não mexe neles
+          var o = extrair(it.code);
+          if (o && guardar(o, 'planilha')) novos++;
+          feitos.push(it.id);
+        });
+        if (antigo && manual) { toast('Atualize o Apps Script para a versão 5 (veja Ética e cuidados).'); respostas(); return; }
+        if (feitos.length) gget('action=atividades_ok&ids=' + encodeURIComponent(feitos.join(',')) + '&token=' + encodeURIComponent(senha)).catch(function () {});
+        if (novos) toast(novos === 1 ? 'Nova resposta recebida.' : novos + ' novas respostas recebidas.');
+        else if (manual) toast('Nenhuma resposta nova por enquanto.');
+        respostas();
+      }).catch(function () { if (manual) toast('Sem conexão para buscar as respostas.'); }).then(function () { buscando = false; });
+    }
+    $('res-fetch').addEventListener('click', function () { buscar(true); });
+
+    drawFilters(); lib();
+    $('rescount').textContent = lerResp().length ? '(' + lerResp().length + ')' : '';
+    if (location.hash === '#respostas') tab('res');
+    setTimeout(function () { buscar(false); }, 1200);
+  }
+})();
+</script>
+</body>
+</html>
