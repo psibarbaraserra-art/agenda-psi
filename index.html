@@ -1945,7 +1945,9 @@ body.sheet-open .wrap { display: none; }
       : SY.busy ? 'Sincronizando…'
       : SY.err ? 'Sincronização com problema: ' + SY.err + '.'
       : 'Sincronização ativa e criptografada' + (SY.last ? ' · última em ' + hm(SY.last) : '') + '.';
-    $('sync-on').hidden = SY.on; $('sync-now').hidden = !SY.on; $('sync-off').hidden = !SY.on;
+    var fixTok = SY.on && /senha da planilha/.test(SY.err);
+    $('sync-on').textContent = fixTok ? 'Corrigir senha da planilha' : 'Sincronizar com outros aparelhos';
+    $('sync-on').hidden = SY.on && !fixTok; $('sync-now').hidden = !SY.on; $('sync-off').hidden = !SY.on;
   }
 
   // ativar
@@ -1953,10 +1955,10 @@ body.sheet-open .wrap { display: none; }
   function openY() {
     syRemoteCache = null;
     $('y-step2').hidden = true; $('y-err').hidden = true; $('y-ok').textContent = 'Continuar';
-    $('y-token').value = syToken(); $('y-tokenl').hidden = !!syToken();
+    $('y-token').value = syToken(); $('y-tokenl').hidden = false; $('y-token').disabled = false;
     $('y-senha').value = ''; $('y-senha2').value = '';
     $('yoverlay').hidden = false;
-    setTimeout(function () { (syToken() ? $('y-ok') : $('y-token')).focus(); }, 30);
+    setTimeout(function () { $('y-token').focus(); }, 30);
   }
   function closeY() { $('yoverlay').hidden = true; }
   function yErr(m) { $('y-err').textContent = m; $('y-err').hidden = false; }
@@ -1969,11 +1971,18 @@ body.sheet-open .wrap { display: none; }
     try {
       if (!syRemoteCache) {
         var rem = await syGetRemote(token);
-        if (!rem || !rem.ok) return yErr('Não foi possível usar a planilha: ' + syErrMsg(rem) + '.');
+        if (!rem || !rem.ok) {
+          if (rem && rem.erro === 'token') {
+            try { localStorage.removeItem(LSY_TOKEN); } catch (er) {}
+            $('y-token').value = ''; $('y-token').focus();
+            return yErr('Senha da planilha incorreta. Digite a senha que está na linha const SENHA do Apps Script.');
+          }
+          return yErr('Não foi possível usar a planilha: ' + syErrMsg(rem) + '.');
+        }
         try { localStorage.setItem(LSY_TOKEN, token); } catch (er) {}
         syRemoteCache = rem;
         var novo = !rem.data;
-        $('y-step2').hidden = false; $('y-senha2l').hidden = !novo;
+        $('y-step2').hidden = false; $('y-senha2l').hidden = !novo; $('y-tokenl').hidden = true;
         $('y-step2-t').textContent = novo
           ? 'Crie uma senha de sincronização. Ela criptografa os dados antes de saírem deste aparelho. Use a mesma senha nos outros aparelhos. Guarde bem: sem ela não é possível recuperar os dados sincronizados.'
           : 'Já existe uma sincronização. Digite a mesma senha de sincronização usada no outro aparelho.';
