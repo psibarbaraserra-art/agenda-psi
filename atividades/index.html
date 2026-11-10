@@ -285,7 +285,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       <h3>Configurar o recebimento direto</h3>
       <ol>
         <li>Abra a sua planilha do Google, em <b>Extensões &gt; Apps Script</b>.</li>
-        <li>Substitua o código pelo novo arquivo <b>receber-cadastros.gs</b> (versão 5), mantendo a sua senha.</li>
+        <li>Substitua o código pelo novo arquivo <b>receber-cadastros.gs</b> (versão 6), mantendo a sua senha.</li>
         <li><b>Implantar &gt; Gerenciar implantações &gt; lápis &gt; Nova versão &gt; Implantar</b>.</li>
         <li>Pronto: as respostas chegam em uma aba nova, "Atividades". O endereço continua o mesmo.</li>
       </ol>
@@ -928,7 +928,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       gget('action=atividades&token=' + encodeURIComponent(senha)).then(function (j) {
         if (!j || !j.ok) {
           if (j && j.erro === 'token') { lsDel(LSK_SENHA); if (manual) toast('Senha incorreta.'); }
-          else if (manual) toast(j && j.erro === 'versao' ? 'Atualize o Apps Script para a versão 5 (veja Ética e cuidados).' : 'Não foi possível buscar agora. Confira se o Apps Script está na versão 5.');
+          else if (manual) toast(j && j.erro === 'versao' ? 'Atualize o Apps Script para a versão 6 (veja Ética e cuidados).' : 'Não foi possível buscar agora. Confira se o Apps Script está na versão 6.');
           return;
         }
         try { localStorage.setItem(LSK_SENHA, senha); } catch (e) {}
@@ -939,7 +939,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
           if (o && guardar(o, 'planilha')) novos++;
           feitos.push(it.id);
         });
-        if (antigo && manual) { toast('Atualize o Apps Script para a versão 5 (veja Ética e cuidados).'); respostas(); return; }
+        if (antigo && manual) { toast('Atualize o Apps Script para a versão 6 (veja Ética e cuidados).'); respostas(); return; }
         if (feitos.length) gget('action=atividades_ok&ids=' + encodeURIComponent(feitos.join(',')) + '&token=' + encodeURIComponent(senha)).catch(function () {});
         if (novos) toast(novos === 1 ? 'Nova resposta recebida.' : novos + ' novas respostas recebidas.');
         else if (manual) toast('Nenhuma resposta nova por enquanto.');

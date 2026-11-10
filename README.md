@@ -13,7 +13,7 @@ Aplicativo de agenda e prontuário para psicologia (CRP 20/13.134), com paciente
 2. No app: rodapé → **Importar cópia de segurança** e escolha o arquivo.
 
 ## Cuidados
-- Os dados ficam **só neste aparelho** (não sincronizam entre celular e computador).
+- Os dados ficam no aparelho. Para usar no celular e no computador com os mesmos dados, ative a **sincronização** (veja abaixo).
 - Faça a cópia de segurança com frequência; limpar os dados do navegador apaga tudo.
 - Anexos (PDF/imagem) ficam no aparelho e **não** entram na cópia de segurança.
 
@@ -30,7 +30,7 @@ Biblioteca com 44 atividades interativas de **TCC**, **Psicologia Humanista** (A
 3. O paciente aceita o termo de consentimento, faz as atividades (fica salvo no celular dele) e toca em *Enviar*.
 4. Em **Respostas**, toque em *Buscar respostas* (ou cole a mensagem do WhatsApp) e use *Imprimir / PDF* para guardar no prontuário.
 
-Para receber direto na planilha, atualize o Apps Script com o novo `receber-cadastros.gs` (versão 5) e faça *Nova versão* da implantação. As respostas vão para a aba "Atividades". Essa versão não aceita mais cadastros de pacientes.
+Para receber direto na planilha, atualize o Apps Script com o novo `receber-cadastros.gs` (versão 6) e faça *Nova versão* da implantação. As respostas vão para a aba "Atividades". Essa versão não aceita mais cadastros de pacientes.
 
 Para incluir ou mudar atividades, edite `atividades/catalogo.js` (o formato está explicado no topo do arquivo).
 
@@ -39,3 +39,14 @@ A cada atualização publicada, o GitHub guarda sozinho um .zip com todos os arq
 Para fazer uma cópia na hora: aba **Actions → Cópia de segurança → Run workflow**.
 
 Atenção: essa cópia é do **aplicativo**. Os dados dos pacientes ficam no seu aparelho; continue usando **Baixar cópia de segurança** no rodapé da Agenda.
+
+## Sincronizar celular e computador
+1. Atualize o Apps Script da planilha com o `receber-cadastros.gs` **versão 6** (mantendo a sua senha) e faça *Implantar → Gerenciar implantações → lápis → Nova versão → Implantar*.
+2. No aparelho que já tem os dados, vá ao rodapé da Agenda e toque em **Sincronizar com outros aparelhos**. Digite a senha da planilha e crie uma **senha de sincronização** (mínimo 8 caracteres).
+3. No outro aparelho, faça o mesmo e digite a **mesma** senha de sincronização. Os dados aparecem sozinhos.
+
+Depois disso a Agenda sincroniza sozinha: ao abrir, ao voltar para o app, a cada 3 minutos e alguns segundos depois de cada mudança.
+
+- Os dados são **criptografados no aparelho** antes de irem para a planilha (aba "Sincronizacao"): o Google só vê um texto embaralhado.
+- **Guarde a senha de sincronização.** Sem ela não é possível recuperar a cópia sincronizada (a cópia de segurança em arquivo continua valendo).
+- Anexos (PDF e imagens) **não** são sincronizados.
