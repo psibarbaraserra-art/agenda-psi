@@ -11,6 +11,7 @@
 <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
 <script src="../config.js"></script>
 <script src="catalogo.js"></script>
+<script src="avaliacoes.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600&display=swap">
@@ -82,6 +83,23 @@ button { cursor: pointer; }
 .b-tcc { background: var(--tcc-bg); color: var(--tcc); }
 .b-hum { background: var(--hum-bg); color: var(--hum); }
 .b-dbt { background: var(--dbt-bg); color: var(--dbt); }
+.b-aval { background: var(--warn-bg); color: var(--warn); }
+.lk { border: 0; padding: 0; margin: 0; display: grid; gap: 6px; }
+.lk legend { font-weight: 500; margin-bottom: 4px; }
+.lk legend b { color: var(--wine); margin-right: 4px; }
+.lk .opts { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+.score { display: grid; gap: 6px; margin: 8px 0 10px; }
+.score .ln { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; justify-content: space-between; padding: 8px 12px; border-radius: 10px; background: var(--surface-2); }
+.score .ln b { font-size: 18px; }
+.score .fx { font-size: 13px; font-weight: 600; padding: 2px 10px; border-radius: 999px; }
+.n0 { background: var(--ok-bg); color: var(--ok); } .n1 { background: #eef3d9; color: #5d6b1f; } .n2 { background: var(--warn-bg); color: var(--warn); }
+.n3 { background: #f6dcd2; color: #9a3d1c; } .n4 { background: #f3d3d6; color: #a3162b; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .n1 { background: #2f3520; color: #c9d68f; } :root:not([data-theme="light"]) .n3 { background: #40261d; color: #f0a98a; } :root:not([data-theme="light"]) .n4 { background: #45202a; color: #f39aa8; } }
+.alerta { background: #f3d3d6; color: #6e0f1d; border-left: 4px solid #a3162b; border-radius: 10px; padding: 10px 12px; font-size: 14px; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .alerta { background: #45202a; color: #ffd9de; } }
+.fora { display: grid; gap: 8px; }
+.fora div { padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); font-size: 14px; }
+.fora .tg { font-size: 11.5px; font-weight: 700; padding: 1px 8px; border-radius: 999px; margin-right: 6px; }
 .chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 11px; font-size: 13px; }
 .chip[aria-pressed="true"] { background: var(--wine); color: var(--on-wine); border-color: var(--wine); }
 .filters { display: grid; gap: 10px; }
@@ -181,6 +199,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
 
   <nav class="tabs" role="tablist" aria-label="Seções">
     <button role="tab" data-t="bib" aria-selected="true">Biblioteca</button>
+    <button role="tab" data-t="ava" aria-selected="false">Avaliações</button>
     <button role="tab" data-t="env" aria-selected="false">Enviar <span id="selcount"></span></button>
     <button role="tab" data-t="res" aria-selected="false">Respostas <span id="rescount"></span></button>
     <button role="tab" data-t="eti" aria-selected="false">Ética e cuidados</button>
@@ -195,12 +214,19 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       <div class="small muted" id="nres"></div>
     </div>
     <div class="grid" id="lib"></div>
-    <div class="bar" id="selbar" hidden>
-      <span id="seltxt"></span>
-      <div class="row">
-        <button class="ghost" id="selclear">Limpar</button>
-        <button class="cta" id="selgo">Preparar envio</button>
-      </div>
+  </section>
+
+  <!-- Avaliações -->
+  <section id="t-ava" class="stack" hidden>
+    <div class="panel stack">
+      <h2>Avaliações</h2>
+      <p class="muted" style="margin:0">Escalas de rastreio de <b>uso livre</b>, com correção automática. O paciente responde pelo link e você recebe o escore, a faixa de gravidade e os alertas em <b>Respostas</b>. O paciente não vê o resultado: a devolutiva fica com você.</p>
+      <div class="warnbox">São instrumentos de <b>rastreio</b>: não fazem diagnóstico, não substituem a avaliação psicológica e não são testes psicológicos do SATEPSI. Use como informação complementar à entrevista. Confira os textos dos itens com o artigo de validação indicado em cada escala antes do primeiro uso.</div>
+    </div>
+    <div class="grid" id="lib-ava"></div>
+    <div class="panel stack">
+      <h3 style="margin-top:0">Avaliações que não estão no app</h3>
+      <div class="fora" id="fora"></div>
     </div>
   </section>
 
@@ -282,6 +308,13 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
         <li>Todas as técnicas têm fundamento científico, com a referência indicada em cada atividade (Código de Ética, art. 1º, alínea c).</li>
         <li>O material identifica a psicóloga responsável com nome e CRP.</li>
       </ul>
+      <h3>Avaliações (escalas de rastreio)</h3>
+      <ul>
+        <li>As escalas da aba Avaliações são de <b>uso livre</b> e servem para <b>rastreio e acompanhamento</b>. Não fazem diagnóstico e não substituem a avaliação psicológica.</li>
+        <li>Não são testes psicológicos do SATEPSI. Em avaliação psicológica formal, com laudo, use instrumentos com parecer favorável no SATEPSI (Res. CFP 31/2022) e a Res. CFP 06/2019 para os documentos.</li>
+        <li>O resultado aparece só para você. Faça a devolutiva ao paciente em sessão, de forma compreensível (Código de Ética, art. 1º, alínea g).</li>
+        <li>Itens sobre ideação suicida geram <b>alerta</b> na resposta. O paciente vê na hora os contatos do CVV 188 e do SAMU 192.</li>
+      </ul>
       <h3>Configurar o recebimento direto</h3>
       <ol>
         <li>Abra a sua planilha do Google, em <b>Extensões &gt; Apps Script</b>.</li>
@@ -292,6 +325,14 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       <p class="small muted">Este conteúdo é um apoio prático e não substitui a leitura das resoluções do CFP e do seu Conselho Regional.</p>
     </div>
   </section>
+
+  <div class="bar" id="selbar" hidden>
+    <span id="seltxt"></span>
+    <div class="row">
+      <button class="ghost" id="selclear">Limpar</button>
+      <button class="cta" id="selgo">Preparar envio</button>
+    </div>
+  </div>
 
   <p class="foot"><a href="../" class="muted">← Voltar para a Agenda</a></p>
 </div>
@@ -468,6 +509,24 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
         var ends = document.createElement('div'); ends.className = 'ends';
         ends.innerHTML = '<span>' + esc(min + ' · ' + (f.lo || 'Pouco')) + '</span><span>' + esc((f.hi || 'Muito') + ' · ' + max) + '</span>';
         w.appendChild(ends); paint(); return w;
+      case 'likert':
+        w = document.createElement('fieldset'); w.className = 'lk';
+        lab = document.createElement('legend'); lab.innerHTML = (f.n ? '<b>' + f.n + '.</b>' : '') + esc(f.l); w.appendChild(lab);
+        var lbox = document.createElement('div'); lbox.className = 'opts';
+        var alertEl = null;
+        if (f.alerta != null) { alertEl = document.createElement('div'); alertEl.className = 'alerta'; alertEl.textContent = f.msg || ''; }
+        var showAl = function () { if (alertEl) alertEl.hidden = !(typeof ans[f.id] === 'number' && ans[f.id] >= f.alerta); };
+        f.o.forEach(function (o) {
+          var l = document.createElement('label'); l.className = 'opt';
+          var c = document.createElement('input'); c.type = 'radio'; c.name = id; c.value = o.v;
+          c.checked = ans[f.id] === o.v;
+          c.addEventListener('change', function () { ans[f.id] = o.v; onChange(); showAl(); });
+          var sp = document.createElement('span'); sp.textContent = o.l;
+          l.appendChild(c); l.appendChild(sp); lbox.appendChild(l);
+        });
+        w.appendChild(lbox);
+        if (alertEl) { w.appendChild(alertEl); showAl(); }
+        return w;
       case 'radio': case 'check':
         w = document.createElement('fieldset'); w.className = 'fl'; w.style.border = '0'; w.style.padding = '0'; w.style.margin = '0';
         lab = document.createElement('legend'); lab.textContent = f.l; lab.style.marginBottom = '5px'; w.appendChild(lab);
@@ -564,6 +623,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
   function valTxt(f, v) {
     if (Array.isArray(v)) return v.join('; ');
     if (f.t === 'scale') return v + ' (de ' + (f.min || 0) + ' a ' + (f.max == null ? 10 : f.max) + ')';
+    if (f.t === 'likert') { var o = f.o.filter(function (x) { return x.v === v; })[0]; return (o ? o.l : '') + ' (' + v + ')'; }
     return String(v);
   }
   function ansHtml(fields, a) {
@@ -574,7 +634,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
         h += '<dt>' + esc(f.l) + '</dt><dd>';
         a[f.id].forEach(function (o, i) { if (!Object.keys(o).length) return; h += '<div class="ent"><b>' + esc((f.item || 'Item') + ' ' + (i + 1)) + '</b><dl>' + ansHtml(f.f, o) + '</dl></div>'; });
         h += '</dd>';
-      } else h += '<dt>' + esc(f.l) + '</dt><dd>' + esc(valTxt(f, a[f.id])) + '</dd>';
+      } else h += '<dt>' + (f.n ? f.n + '. ' : '') + esc(f.l) + '</dt><dd>' + esc(valTxt(f, a[f.id])) + '</dd>';
     });
     return h;
   }
@@ -585,16 +645,36 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       if (!f.id || isEmpty(a[f.id])) return;
       if (f.t === 'rep') {
         a[f.id].forEach(function (o, i) { if (!Object.keys(o).length) return; out.push(pre + '— ' + (f.item || 'Item') + ' ' + (i + 1)); out = out.concat(ansTxt(f.f, o, pre + '  ')); });
-      } else out.push(pre + '• ' + f.l + ': ' + valTxt(f, a[f.id]));
+      } else out.push(pre + '• ' + (f.n ? f.n + '. ' : '') + f.l + ': ' + valTxt(f, a[f.id]));
     });
     return out;
   }
-  function respHtml(r) {
+  function scoreHtml(at, a) {
+    if (!at.calc) return '';
+    var c; try { c = at.calc(a || {}); } catch (e) { return ''; }
+    var h = '<div class="score">';
+    if (c.falta) h += '<div class="warnbox">Faltaram ' + c.falta + (c.falta === 1 ? ' item' : ' itens') + ' sem resposta: o escore abaixo está incompleto e não deve ser interpretado pelas faixas.</div>';
+    (c.alertas || []).forEach(function (m) { h += '<div class="alerta"><b>Alerta:</b> ' + esc(m) + '</div>'; });
+    c.linhas.forEach(function (l) {
+      h += '<div class="ln"><span>' + esc(l.nome) + ': <b>' + l.v + '</b><span class="muted small"> / ' + l.max + '</span></span>' + (c.falta ? '<span class="fx n2">Incompleto</span>' : l.faixa ? '<span class="fx n' + (l.nivel || 0) + '">' + esc(l.faixa) + '</span>' : '') + '</div>';
+    });
+    if (c.nota) h += '<div class="small muted">' + esc(c.nota) + '</div>';
+    return h + '</div>';
+  }
+  function scoreResumo(r) {
+    var out = [];
+    (r.acts || []).forEach(function (x) {
+      var at = byId[x.id]; if (!at || !at.calc) return;
+      try { var c = at.calc(x.a || {}); out.push((at.sigla || at.nome) + ': ' + c.linhas.map(function (l) { return l.v + (c.falta ? ' (incompleto)' : l.faixa ? ' (' + l.faixa + ')' : ''); }).join(', ') + ((c.alertas || []).length ? ' ⚠' : '')); } catch (e) {}
+    });
+    return out;
+  }
+  function respHtml(r, comEscore) {
     return (r.acts || []).map(function (x) {
       var at = byId[x.id];
       if (!at) return '<h4>Atividade ' + esc(x.id) + '</h4><p class="muted">Atividade não encontrada nesta versão.</p>';
       var body = ansHtml(at.f, x.a || {});
-      return '<h4>' + esc(at.nome) + ' ' + badge(at.ab) + (x.ok ? '' : ' <span class="small muted">(parcial)</span>') + '</h4>' + (body ? '<dl>' + body + '</dl>' : '<p class="muted">Sem respostas.</p>');
+      return '<h4>' + esc(at.nome) + ' ' + badge(at.ab) + (x.ok ? '' : ' <span class="small muted">(parcial)</span>') + '</h4>' + (comEscore ? scoreHtml(at, x.a) : '') + (body ? '<dl>' + body + '</dl>' : '<p class="muted">Sem respostas.</p>');
     }).join('');
   }
 
@@ -608,6 +688,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       else if (f.t === 'area') h += '<p><b>' + esc(f.l) + '</b></p><div class="blank tall"></div>';
       else if (f.t === 'scale') { var mn = f.min || 0, mx = f.max == null ? 10 : f.max; h += '<p><b>' + esc(f.l) + '</b> (' + mn + ' = ' + esc(f.lo || 'pouco') + ' · ' + mx + ' = ' + esc(f.hi || 'muito') + '): ______</p>'; }
       else if (f.t === 'radio' || f.t === 'check') h += '<p><b>' + esc(f.l) + '</b><br>' + f.o.map(function (o) { return '☐ ' + esc(o); }).join('<br>') + '</p>';
+      else if (f.t === 'likert') h += '<p><b>' + (f.n ? f.n + '. ' : '') + esc(f.l) + '</b><br>' + f.o.map(function (o) { return '☐ ' + esc(o.l); }).join(' &nbsp; ') + '</p>';
       else if (f.t === 'rep') { for (var i = 1; i <= 2; i++) h += '<div class="ent"><b>' + esc((f.item || 'Item') + ' ' + i) + '</b>' + blankHtml(f.f) + '</div>'; }
       else if (f.t === 'breath') h += '<p><i>Respiração: inspire ' + (f.in || 4) + 's' + (f.hold ? ', segure ' + f.hold + 's' : '') + ', solte ' + (f.out || 6) + 's. Repita por 6 a 10 ciclos.</i></p>';
       else if (f.t === 'timer') h += '<p><i>Pratique por ' + Math.round((f.s || 180) / 60) + ' minutos.</i></p>';
@@ -676,6 +757,8 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
     $('p-concluir').addEventListener('click', function () {
       stopWidgets();
       var a = st.ans[atual] || {};
+      var faltam = byId[atual].f.filter(function (f) { return f.t === 'likert' && typeof a[f.id] !== 'number'; }).map(function (f) { return f.n; });
+      if (faltam.length && !confirm('Faltam ' + faltam.length + (faltam.length === 1 ? ' pergunta' : ' perguntas') + ' (nº ' + faltam.join(', ') + '). Para o resultado ficar correto, responda todas. Concluir mesmo assim?')) return;
       if (!Object.keys(a).length && !confirm('Você ainda não respondeu nada nesta atividade. Marcar como concluída mesmo assim?')) return;
       st.ok[atual] = true; save(); toast('Atividade concluída!'); lista();
     });
@@ -739,13 +822,14 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
   function profissional() {
     $('pro').hidden = false;
     var sel = lsGet(LSK_SEL, []).filter(function (i) { return byId[i]; });
-    var fAb = '', fDem = '';
+    var fAb = '', fDem = '', curTab = 'bib';
 
     // abas
     var tabs = document.querySelectorAll('.tabs button');
     function tab(t) {
       [].forEach.call(tabs, function (b) { b.setAttribute('aria-selected', b.dataset.t === t ? 'true' : 'false'); });
-      ['bib', 'env', 'res', 'eti'].forEach(function (x) { $('t-' + x).hidden = x !== t; });
+      ['bib', 'ava', 'env', 'res', 'eti'].forEach(function (x) { $('t-' + x).hidden = x !== t; });
+      curTab = t; selbar();
       if (t === 'env') envio();
       if (t === 'res') respostas();
     }
@@ -762,13 +846,14 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       });
     }
     function drawFilters() {
-      chips($('f-ab'), [['', 'Todas']].concat(Object.keys(ABS).map(function (k) { return [k, ABS[k].longo]; })), function () { return fAb; }, function (v) { fAb = v; drawFilters(); lib(); });
+      chips($('f-ab'), [['', 'Todas']].concat(Object.keys(ABS).filter(function (k) { return k !== 'aval'; }).map(function (k) { return [k, ABS[k].longo]; })), function () { return fAb; }, function (v) { fAb = v; drawFilters(); lib(); });
       chips($('f-dem'), DEMS.map(function (d) { return [d, d]; }), function () { return fDem; }, function (v) { fDem = v; drawFilters(); lib(); });
     }
     function norm(s) { return String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
     function lib() {
       var q = norm($('q').value.trim());
       var lst = ATS.filter(function (a) {
+        if (a.ab === 'aval') return false;
         if (fAb && a.ab !== fAb) return false;
         if (fDem && a.dem.indexOf(fDem) < 0) return false;
         if (q && norm(a.nome + ' ' + a.obj + ' ' + a.dem.join(' ') + ' ' + (ABS[a.ab] || {}).longo).indexOf(q) < 0) return false;
@@ -776,7 +861,12 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       });
       $('nres').textContent = lst.length + (lst.length === 1 ? ' atividade' : ' atividades');
       $('lib').innerHTML = '';
-      lst.forEach(function (a) {
+      lst.forEach(function (a) { $('lib').appendChild(card(a)); });
+      $('lib-ava').innerHTML = '';
+      ATS.filter(function (a) { return a.ab === 'aval'; }).forEach(function (a) { $('lib-ava').appendChild(card(a)); });
+      selbar();
+    }
+    function card(a) {
         var on = sel.indexOf(a.id) > -1;
         var c = document.createElement('article'); c.className = 'card' + (on ? ' sel' : '');
         c.innerHTML = '<div class="meta">' + badge(a.ab) + '<span>' + a.min + ' min</span></div><h4>' + esc(a.nome) + '</h4><p>' + esc(a.obj) + '</p><div class="meta">' + a.dem.map(esc).join(' · ') + '</div>' +
@@ -784,14 +874,13 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
         c.querySelector('[data-s]').addEventListener('click', function () { toggle(a.id); });
         c.querySelector('[data-v]').addEventListener('click', function () { previa(a); });
         c.querySelector('[data-p]').addEventListener('click', function () { printDoc(a.nome, (ABS[a.ab] || {}).longo, '<p><i>' + esc(a.intro) + '</i></p>' + blankHtml(a.f), a.ref); });
-        $('lib').appendChild(c);
-      });
-      selbar();
+        if (a.licenca) { var lc = document.createElement('div'); lc.className = 'meta'; lc.textContent = '✓ ' + a.licenca; c.insertBefore(lc, c.querySelector('.acts')); }
+        return c;
     }
     function toggle(id) { var i = sel.indexOf(id); if (i > -1) sel.splice(i, 1); else sel.push(id); lsSet(LSK_SEL, sel); lib(); }
     function selbar() {
-      $('selbar').hidden = !sel.length;
-      $('seltxt').textContent = sel.length + (sel.length === 1 ? ' atividade selecionada' : ' atividades selecionadas');
+      $('selbar').hidden = !sel.length || (curTab !== 'bib' && curTab !== 'ava');
+      $('seltxt').textContent = sel.length + (sel.length === 1 ? ' item selecionado' : ' itens selecionados');
       $('selcount').textContent = sel.length ? '(' + sel.length + ')' : '';
     }
     $('q').addEventListener('input', lib);
@@ -808,8 +897,11 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       top.innerHTML = '<div class="meta row">' + badge(a.ab) + '<span class="small muted">' + a.min + ' min · ' + a.dem.map(esc).join(' · ') + '</span></div><div><b>Objetivo:</b> ' + esc(a.obj) + '</div><div class="info">' + esc(a.intro) + '</div>';
       b.appendChild(top);
       var form = document.createElement('form'); form.className = 'f'; form.onsubmit = function () { return false; };
-      renderFields(a.f, form, {}, function () {});
+      var teste = {}, prev = document.createElement('div');
+      renderFields(a.f, form, teste, function () { if (a.calc) prev.innerHTML = '<h3>Correção (teste)</h3>' + scoreHtml(a, teste); });
       b.appendChild(form);
+      if (a.calc) { prev.innerHTML = '<h3>Correção (teste)</h3>' + scoreHtml(a, teste); b.appendChild(prev); }
+      if (a.licenca) { var lc = document.createElement('div'); lc.className = 'small muted'; lc.innerHTML = '<b>Licença:</b> ' + esc(a.licenca); b.appendChild(lc); }
       var ref = document.createElement('div'); ref.className = 'ref'; ref.innerHTML = '<b>Referência:</b> ' + esc(a.ref); b.appendChild(ref);
       var r = document.createElement('div'); r.className = 'row';
       var bs = document.createElement('button'); bs.className = sel.indexOf(a.id) > -1 ? 'ghost' : 'cta'; bs.textContent = sel.indexOf(a.id) > -1 ? 'Remover da seleção' : 'Selecionar para enviar';
@@ -880,15 +972,16 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
         var r = it.r, d = document.createElement('div'); d.className = 'resp';
         var nomes = (r.acts || []).map(function (x) { return (byId[x.id] || {}).nome || x.id; }).join(', ');
         d.innerHTML = '<div class="rh"><b>' + esc(r.p || 'Paciente sem nome') + '</b><span class="small muted">Enviado em ' + esc(fmtData(r.ts)) + '</span></div><div class="small muted">' + esc(nomes) + '</div>' +
+          scoreResumo(r).map(function (t) { return '<div class="small" style="font-weight:600' + (t.indexOf('⚠') > -1 ? ';color:#a3162b' : '') + '">' + esc(t) + '</div>'; }).join('') +
           '<div class="row"><button class="cta" data-v>Ver respostas</button><button class="ghost" data-p>Imprimir / PDF</button><button class="ghost danger" data-d>Apagar</button></div><div class="ans" hidden></div>';
         var ans = d.querySelector('.ans');
         d.querySelector('[data-v]').addEventListener('click', function () {
-          ans.hidden = !ans.hidden; if (!ans.hidden) ans.innerHTML = respHtml(r) + (r.aceite ? '<p class="small muted">Termo de consentimento aceito em ' + esc(fmtData(r.aceite)) + '.</p>' : '');
+          ans.hidden = !ans.hidden; if (!ans.hidden) ans.innerHTML = respHtml(r, true) + (r.aceite ? '<p class="small muted">Termo de consentimento aceito em ' + esc(fmtData(r.aceite)) + '.</p>' : '');
           this.textContent = ans.hidden ? 'Ver respostas' : 'Ocultar';
         });
         d.querySelector('[data-p]').addEventListener('click', function () {
           var refs = (r.acts || []).map(function (x) { return (byId[x.id] || {}).ref; }).filter(function (v, i, s) { return v && s.indexOf(v) === i; }).join(' ');
-          printDoc('Atividades · ' + (r.p || 'paciente'), 'Enviado em ' + fmtData(r.ts) + (r.aceite ? ' · termo aceito em ' + fmtData(r.aceite) : ''), respHtml(r), refs);
+          printDoc('Atividades · ' + (r.p || 'paciente'), 'Enviado em ' + fmtData(r.ts) + (r.aceite ? ' · termo aceito em ' + fmtData(r.aceite) : ''), respHtml(r, true), refs);
         });
         d.querySelector('[data-d]').addEventListener('click', function () {
           if (!confirm('Apagar esta resposta deste aparelho? Confirme que já guardou no prontuário.')) return;
@@ -949,6 +1042,11 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
     $('res-fetch').addEventListener('click', function () { buscar(true); });
 
     drawFilters(); lib();
+    $('fora').innerHTML = (window.AVAL_FORA || []).map(function (x) {
+      var t = { pago: ['n4', 'Paga / licença'], verificar: ['n2', 'Verificar'], livre: ['n0', 'Gratuita · em breve'] }[x.tipo] || ['n2', ''];
+      return '<div><span class="tg ' + t[0] + '">' + t[1] + '</span><b>' + esc(x.nome) + '</b><br><span class="muted">' + esc(x.motivo) + '</span></div>';
+    }).join('');
+    if (location.hash === '#avaliacoes') tab('ava');
     $('rescount').textContent = lerResp().length ? '(' + lerResp().length + ')' : '';
     if (location.hash === '#respostas') tab('res');
     setTimeout(function () { buscar(false); }, 1200);
