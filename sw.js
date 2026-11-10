@@ -1,6 +1,6 @@
 // Guarda o aplicativo no aparelho para abrir mesmo sem internet.
 // Ao publicar uma versão nova, troque o número de VERSAO para o aparelho atualizar.
-const VERSAO = 'agenda-psi-v20';
+const VERSAO = 'agenda-psi-v21';
 const ARQUIVOS = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png', 'icons/logo.png', 'config.js', 'atividades/', 'atividades/catalogo.js', 'atividades/avaliacoes.js', 'atividades/questionarios.js', 'atividades/documentos.js'];
 
 self.addEventListener('install', (e) => {

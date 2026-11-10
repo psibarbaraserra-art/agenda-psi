@@ -255,6 +255,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
     <div class="stack" id="lib-quest"></div>
     <div class="panel stack">
       <h3 style="margin-top:0">Escalas que não estão no app</h3>
+      <p class="small muted" style="margin:0">Pagas, com licença ou ainda por incluir. Antes de comprar um teste psicológico, confira no <a href="https://satepsi.cfp.org.br" target="_blank" rel="noopener" style="color:var(--wine)">SATEPSI</a> se ele tem parecer favorável para uso no Brasil.</p>
       <div class="fora" id="fora"></div>
     </div>
   </section>
@@ -848,7 +849,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
     $('p-concluir').addEventListener('click', function () {
       stopWidgets();
       var a = st.ans[atual] || {};
-      var faltam = byId[atual].f.filter(function (f) { return f.t === 'likert' && typeof a[f.id] !== 'number'; }).map(function (f) { return f.n; });
+      var faltam = byId[atual].f.filter(function (f) { return f.t === 'likert' && !f.opc && typeof a[f.id] !== 'number'; }).map(function (f) { return f.n; });
       if (faltam.length && !confirm('Faltam ' + faltam.length + (faltam.length === 1 ? ' pergunta' : ' perguntas') + ' (nº ' + faltam.join(', ') + '). Para o resultado ficar correto, responda todas. Concluir mesmo assim?')) return;
       var tp = tipoDe(byId[atual]);
       if (!Object.keys(a).length && !confirm('Você ainda não respondeu nada ' + (tp.f ? 'nesta ' : 'neste ') + tp.s + '. Marcar como ' + (tp.f ? 'concluída' : 'concluído') + ' mesmo assim?')) return;
@@ -1149,7 +1150,8 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
     drawFilters(); lib();
     $('fora').innerHTML = (window.AVAL_FORA || []).map(function (x) {
       var t = { pago: ['n4', 'Paga / licença'], verificar: ['n2', 'Verificar'], livre: ['n0', 'Gratuita · em breve'] }[x.tipo] || ['n2', ''];
-      return '<div><span class="tg ' + t[0] + '">' + t[1] + '</span><b>' + esc(x.nome) + '</b><br><span class="muted">' + esc(x.motivo) + '</span></div>';
+      return '<div><span class="tg ' + t[0] + '">' + t[1] + '</span><b>' + esc(x.nome) + '</b><br><span class="muted">' + esc(x.motivo) + '</span>' +
+        (x.onde ? '<br><span class="small">Onde adquirir ou solicitar: <a href="' + esc(x.onde[1]) + '" target="_blank" rel="noopener" style="color:var(--wine)">' + esc(x.onde[0]) + '</a></span>' : '') + '</div>';
     }).join('');
     if (location.hash === '#avaliacoes' || location.hash === '#rastreios') tab('ava');
 
