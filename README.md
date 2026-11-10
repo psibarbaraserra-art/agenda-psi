@@ -50,3 +50,8 @@ Depois disso a Agenda sincroniza sozinha: ao abrir, ao voltar para o app, a cada
 - Os dados são **criptografados no aparelho** antes de irem para a planilha (aba "Sincronizacao"): o Google só vê um texto embaralhado.
 - **Guarde a senha de sincronização.** Sem ela não é possível recuperar a cópia sincronizada (a cópia de segurança em arquivo continua valendo).
 - Anexos (PDF e imagens) **não** são sincronizados.
+
+## Avaliações (escalas de rastreio)
+Em **Atividades → Avaliações** (ou Pacientes → *Avaliações (escalas)*): PHQ-9, GAD-7, DASS-21, WHO-5, SRQ-20, AUDIT e Escala de Autoestima de Rosenberg, todas de uso livre. Envie pelo mesmo link das atividades; na aba **Respostas** aparecem o escore, a faixa e os alertas (ex.: ideação suicida). O paciente não vê o resultado.
+
+São instrumentos de rastreio: não substituem a avaliação psicológica e não são testes do SATEPSI. Antes do primeiro uso, confira os textos dos itens com os artigos de validação citados em cada escala. Para incluir uma escala, edite `atividades/avaliacoes.js`.
