@@ -12,6 +12,8 @@
 <script src="../config.js"></script>
 <script src="catalogo.js"></script>
 <script src="avaliacoes.js"></script>
+<script src="questionarios.js"></script>
+<script src="documentos.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600&display=swap">
@@ -84,6 +86,17 @@ button { cursor: pointer; }
 .b-hum { background: var(--hum-bg); color: var(--hum); }
 .b-dbt { background: var(--dbt-bg); color: var(--dbt); }
 .b-aval { background: var(--warn-bg); color: var(--warn); }
+.b-quest { background: var(--surface-2); color: var(--ink); }
+.docl { display: grid; gap: 8px; }
+.docl .it { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); }
+.docl .it .row button { padding: 6px 12px; font-size: 13px; }
+#doc-form textarea { min-height: 130px; }
+#doc-form h3 { margin: 10px 0 0; }
+.mat h4 { margin: 14px 0 4px; font: 600 19px/1.2 var(--font-display); color: var(--wine); }
+.mat h5 { margin: 10px 0 2px; font-size: 14px; }
+.mat p { margin: 0 0 8px; }
+.mat a { color: var(--wine); }
+.doc { font: 12pt/1.55 Georgia, "Times New Roman", serif; color: #111; }
 .lk { border: 0; padding: 0; margin: 0; display: grid; gap: 6px; }
 .lk legend { font-weight: 500; margin-bottom: 4px; }
 .lk legend b { color: var(--wine); margin-right: 4px; }
@@ -168,6 +181,16 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
 .crisis { font-size: 13px; text-align: center; color: var(--muted); }
 .crisis b { color: var(--ink); }
 #printarea { display: none; }
+#printarea .doc .dh2 { display: flex; align-items: center; gap: 14px; border-bottom: 1px solid #999; padding-bottom: 8px; margin-bottom: 18px; }
+#printarea .doc .dh2 img { height: 56px; }
+#printarea .doc .dh2 div { font-size: 10pt; color: #333; }
+#printarea .doc h1 { text-align: center; font: 700 15pt/1.2 Georgia, serif; letter-spacing: .06em; margin: 10px 0 18px; }
+#printarea .doc h2 { font: 700 12pt/1.3 Georgia, serif; margin: 16px 0 6px; }
+#printarea .doc .tx { white-space: pre-wrap; text-align: justify; margin: 0 0 8px; }
+#printarea .doc .id p { margin: 0 0 3px; }
+#printarea .doc .loc { text-align: right; margin-top: 22px; }
+#printarea .doc .ass { text-align: center; margin-top: 46px; line-height: 1.35; }
+#printarea .doc ul { margin: 4px 0 8px; padding-left: 18px; columns: 2; }
 @media (max-width: 560px) {
   .panel { padding: 14px; }
   .bar { border-radius: 18px; }
@@ -200,6 +223,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
   <nav class="tabs" role="tablist" aria-label="Seções">
     <button role="tab" data-t="bib" aria-selected="true">Biblioteca</button>
     <button role="tab" data-t="ava" aria-selected="false">Avaliações</button>
+    <button role="tab" data-t="doc" aria-selected="false">Documentos</button>
     <button role="tab" data-t="env" aria-selected="false">Enviar <span id="selcount"></span></button>
     <button role="tab" data-t="res" aria-selected="false">Respostas <span id="rescount"></span></button>
     <button role="tab" data-t="eti" aria-selected="false">Ética e cuidados</button>
@@ -225,8 +249,44 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
     </div>
     <div class="grid" id="lib-ava"></div>
     <div class="panel stack">
+      <h3 style="margin-top:0">Questionários e anamneses para enviar</h3>
+      <p class="muted" style="margin:0">Perguntas abertas, sem correção, para o paciente ou os responsáveis responderem antes da sessão. Não pedem nome, CPF, data de nascimento, endereço nem telefone: esses dados você já tem no cadastro.</p>
+    </div>
+    <div class="grid" id="lib-quest"></div>
+    <div class="panel stack">
       <h3 style="margin-top:0">Avaliações que não estão no app</h3>
       <div class="fora" id="fora"></div>
+    </div>
+  </section>
+
+  <!-- Documentos -->
+  <section id="t-doc" class="stack" hidden>
+    <div class="panel stack" id="doc-home">
+      <h2>Modelos de documentos</h2>
+      <p class="muted" style="margin:0">Documentos no formato da Resolução CFP nº 06/2019. Escolha um modelo, preencha, salve e imprima ou salve em PDF com o seu cabeçalho e assinatura.</p>
+      <div class="grid" id="doc-modelos"></div>
+      <h3>Documentos salvos</h3>
+      <div class="docl" id="doc-salvos"></div>
+      <div class="small muted">Os documentos ficam guardados só neste aparelho (não sincronizam). Depois de assinar, guarde a cópia no prontuário.</div>
+    </div>
+    <div class="panel stack" id="doc-ed" hidden>
+      <div class="row" style="justify-content:space-between">
+        <button class="ghost" id="doc-voltar">← Voltar</button>
+        <span class="small muted" id="doc-salvo"></span>
+      </div>
+      <h2 id="doc-h" style="margin:0"></h2>
+      <div class="info" id="doc-desc"></div>
+      <form class="f" id="doc-form" onsubmit="return false"></form>
+      <div class="warnbox small">Antes de entregar: revise todo o texto, rubrique todas as páginas e assine a última. Inclua só as informações necessárias para a finalidade do documento.</div>
+      <div class="row">
+        <button class="cta" id="doc-print">Imprimir / salvar em PDF</button>
+        <button class="ghost" id="doc-dup">Duplicar</button>
+        <button class="ghost danger" id="doc-del">Apagar</button>
+      </div>
+    </div>
+    <div class="panel stack">
+      <h2>Materiais de apoio</h2>
+      <div class="grid" id="mats"></div>
     </div>
   </section>
 
@@ -314,6 +374,14 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
         <li>Não são testes psicológicos do SATEPSI. Em avaliação psicológica formal, com laudo, use instrumentos com parecer favorável no SATEPSI (Res. CFP 31/2022) e a Res. CFP 06/2019 para os documentos.</li>
         <li>O resultado aparece só para você. Faça a devolutiva ao paciente em sessão, de forma compreensível (Código de Ética, art. 1º, alínea g).</li>
         <li>Itens sobre ideação suicida geram <b>alerta</b> na resposta. O paciente vê na hora os contatos do CVV 188 e do SAMU 192.</li>
+      </ul>
+      <h3>Documentos escritos</h3>
+      <ul>
+        <li>Os modelos seguem a Resolução CFP nº 06/2019: declaração, atestado, relatório e laudo, cada um com a sua finalidade e estrutura.</li>
+        <li>Declaração não traz sintomas, diagnóstico ou estado psicológico. O CID só entra no atestado ou no laudo com autorização da pessoa atendida.</li>
+        <li>Laudo é resultado de avaliação psicológica e precisa de referências; testes psicológicos usados devem ter parecer favorável no SATEPSI.</li>
+        <li>Rubrique todas as páginas e assine a última. Guarde uma cópia no prontuário por no mínimo 5 anos.</li>
+        <li>Os documentos salvos ficam só neste aparelho e não entram na sincronização.</li>
       </ul>
       <h3>Configurar o recebimento direto</h3>
       <ol>
@@ -828,7 +896,8 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
     var tabs = document.querySelectorAll('.tabs button');
     function tab(t) {
       [].forEach.call(tabs, function (b) { b.setAttribute('aria-selected', b.dataset.t === t ? 'true' : 'false'); });
-      ['bib', 'ava', 'env', 'res', 'eti'].forEach(function (x) { $('t-' + x).hidden = x !== t; });
+      ['bib', 'ava', 'doc', 'env', 'res', 'eti'].forEach(function (x) { $('t-' + x).hidden = x !== t; });
+      if (t === 'doc') docsHome();
       curTab = t; selbar();
       if (t === 'env') envio();
       if (t === 'res') respostas();
@@ -846,14 +915,14 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       });
     }
     function drawFilters() {
-      chips($('f-ab'), [['', 'Todas']].concat(Object.keys(ABS).filter(function (k) { return k !== 'aval'; }).map(function (k) { return [k, ABS[k].longo]; })), function () { return fAb; }, function (v) { fAb = v; drawFilters(); lib(); });
+      chips($('f-ab'), [['', 'Todas']].concat(Object.keys(ABS).filter(function (k) { return k !== 'aval' && k !== 'quest'; }).map(function (k) { return [k, ABS[k].longo]; })), function () { return fAb; }, function (v) { fAb = v; drawFilters(); lib(); });
       chips($('f-dem'), DEMS.map(function (d) { return [d, d]; }), function () { return fDem; }, function (v) { fDem = v; drawFilters(); lib(); });
     }
     function norm(s) { return String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
     function lib() {
       var q = norm($('q').value.trim());
       var lst = ATS.filter(function (a) {
-        if (a.ab === 'aval') return false;
+        if (a.ab === 'aval' || a.ab === 'quest') return false;
         if (fAb && a.ab !== fAb) return false;
         if (fDem && a.dem.indexOf(fDem) < 0) return false;
         if (q && norm(a.nome + ' ' + a.obj + ' ' + a.dem.join(' ') + ' ' + (ABS[a.ab] || {}).longo).indexOf(q) < 0) return false;
@@ -864,6 +933,8 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       lst.forEach(function (a) { $('lib').appendChild(card(a)); });
       $('lib-ava').innerHTML = '';
       ATS.filter(function (a) { return a.ab === 'aval'; }).forEach(function (a) { $('lib-ava').appendChild(card(a)); });
+      $('lib-quest').innerHTML = '';
+      ATS.filter(function (a) { return a.ab === 'quest'; }).forEach(function (a) { $('lib-quest').appendChild(card(a)); });
       selbar();
     }
     function card(a) {
@@ -1047,6 +1118,150 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       return '<div><span class="tg ' + t[0] + '">' + t[1] + '</span><b>' + esc(x.nome) + '</b><br><span class="muted">' + esc(x.motivo) + '</span></div>';
     }).join('');
     if (location.hash === '#avaliacoes') tab('ava');
+
+    /* ---------- documentos ---------- */
+    var LSK_DOCS = 'atv-documentos-v1', docAtual = null, docT = null;
+    var MOD = {}; (window.DOC_MODELOS || []).forEach(function (m) { MOD[m.id] = m; });
+    function docsLer() { return lsGet(LSK_DOCS, []); }
+    function docsGravar(l) { if (!lsSet(LSK_DOCS, l)) toast('Sem espaço no aparelho para salvar o documento.'); }
+    function pacientesAgenda() { return lsGet('agenda-barbara-serra-pacientes-v1', []).filter(function (p) { return p && p.nome; }); }
+    function brData(iso) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ''); return m ? m[3] + '/' + m[2] + '/' + m[1] : (iso || ''); }
+    function idade(iso) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ''); if (!m) return ''; var d = new Date(), n = d.getFullYear() - +m[1]; if (d.getMonth() + 1 < +m[2] || (d.getMonth() + 1 === +m[2] && d.getDate() < +m[3])) n--; return n + ' anos'; }
+    function docsHome() {
+      $('doc-home').hidden = false; $('doc-ed').hidden = true;
+      $('doc-modelos').innerHTML = '';
+      (window.DOC_MODELOS || []).forEach(function (m) {
+        var c = document.createElement('article'); c.className = 'card';
+        c.innerHTML = '<h4>' + esc(m.nome) + '</h4><p>' + esc(m.desc) + '</p><div class="acts"><button class="cta">Novo</button></div>';
+        c.querySelector('button').addEventListener('click', function () {
+          var v = {}; m.campos.forEach(function (f) { if (f.id && f.v != null) v[f.id] = f.v; });
+          var d = { id: rid() + Date.now().toString(36), modelo: m.id, v: v, em: new Date().toISOString() };
+          var l = docsLer(); l.unshift(d); docsGravar(l); abrirDoc(d);
+        });
+        $('doc-modelos').appendChild(c);
+      });
+      var l = docsLer(), box = $('doc-salvos'); box.innerHTML = '';
+      if (!l.length) box.innerHTML = '<div class="info">Nenhum documento salvo ainda.</div>';
+      l.forEach(function (d) {
+        var m = MOD[d.modelo]; if (!m) return;
+        var it = document.createElement('div'); it.className = 'it';
+        it.innerHTML = '<span><b>' + esc(m.nome) + '</b><br><span class="small muted">' + esc((d.v.nome || 'sem nome') + ' · ' + fmtData(d.em)) + '</span></span><span class="row"><button class="ghost" data-a>Abrir</button><button class="ghost" data-p>Imprimir</button></span>';
+        it.querySelector('[data-a]').addEventListener('click', function () { abrirDoc(d); });
+        it.querySelector('[data-p]').addEventListener('click', function () { imprimirDoc(d); });
+        box.appendChild(it);
+      });
+      $('mats').innerHTML = '';
+      (window.MATERIAIS || []).forEach(function (mt) {
+        var c = document.createElement('article'); c.className = 'card';
+        c.innerHTML = '<div class="meta">' + esc(mt.publico) + '</div><h4>' + esc(mt.nome) + '</h4><p>' + esc(mt.desc) + '</p><div class="acts"><button class="ghost" data-v>Ver</button><button class="ghost" data-p>Imprimir / PDF</button><button class="ghost" data-c>Copiar texto</button></div>';
+        c.querySelector('[data-v]').addEventListener('click', function () {
+          stopWidgets(); $('dlg-h').textContent = mt.nome; $('dlg-b').innerHTML = '<div class="mat">' + matHtml(mt) + '</div>';
+          if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', '');
+        });
+        c.querySelector('[data-p]').addEventListener('click', function () { printDoc(mt.nome, mt.publico, '<div class="mat">' + matHtml(mt) + '</div>'); });
+        c.querySelector('[data-c]').addEventListener('click', function () { copy(matTxt(mt)); });
+        $('mats').appendChild(c);
+      });
+    }
+    function matHtml(mt) {
+      if (mt.itens) return '<p>Algumas ferramentas digitais que podem ajudar no dia a dia:</p>' + mt.itens.map(function (x) { return '<h5>' + esc(x[0]) + '</h5><p>' + esc(x[1]) + ' <a href="' + esc(x[2]) + '" target="_blank" rel="noopener">Baixar</a></p>'; }).join('') + '<p><i>' + esc(mt.fim) + '</i></p>';
+      return mt.blocos.map(function (b) { return b[0] === 'h' ? '<h4>' + esc(b[1]) + '</h4>' : b[0] === 's' ? '<h5>' + esc(b[1]) + '</h5>' : '<p>' + esc(b[1]).replace(/(https?:\/\/\S+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>') + '</p>'; }).join('') + '<p class="small muted">' + esc(mt.fonte) + '</p>';
+    }
+    function matTxt(mt) {
+      if (mt.itens) return '*' + mt.nome + '*\n\n' + mt.itens.map(function (x) { return '• *' + x[0] + '*: ' + x[1] + '\n' + x[2]; }).join('\n\n') + '\n\n' + mt.fim + '\n\nBárbara Serra · Psicóloga · CRP 20/13.134';
+      return mt.blocos.map(function (b) { return b[0] === 'p' ? b[1] : '\n*' + b[1] + '*'; }).join('\n') + '\n\n' + mt.fonte;
+    }
+    function salvarDoc() {
+      if (!docAtual) return;
+      docAtual.em = new Date().toISOString();
+      var l = docsLer().filter(function (x) { return x.id !== docAtual.id; }); l.unshift(docAtual); docsGravar(l);
+      $('doc-salvo').textContent = 'Salvo neste aparelho'; clearTimeout(docT); docT = setTimeout(function () { $('doc-salvo').textContent = ''; }, 1500);
+    }
+    function abrirDoc(d) {
+      docAtual = d; var m = MOD[d.modelo];
+      $('doc-home').hidden = true; $('doc-ed').hidden = false;
+      $('doc-h').textContent = m.nome; $('doc-desc').textContent = m.desc;
+      var form = $('doc-form'); form.innerHTML = '';
+      var pats = pacientesAgenda();
+      if (pats.length && m.campos.some(function (f) { return f.id === 'nome'; })) {
+        var dl = document.createElement('datalist'); dl.id = 'doc-pats';
+        dl.innerHTML = pats.map(function (p) { return '<option value="' + esc(p.nome) + '">'; }).join('');
+        form.appendChild(dl);
+      }
+      m.campos.forEach(function (f) {
+        if (f.s) { var h3 = document.createElement('h3'); h3.textContent = f.s; form.appendChild(h3); return; }
+        if (f.t === 'check' || f.t === 'radio') {
+          var fs = document.createElement('fieldset'); fs.className = 'fl'; fs.style.border = '0'; fs.style.padding = '0'; fs.style.margin = '0';
+          fs.innerHTML = '<legend style="margin-bottom:5px">' + esc(f.l || '') + '</legend>';
+          var box = document.createElement('div'); box.className = 'opts';
+          f.o.forEach(function (o) {
+            var l = document.createElement('label'); l.className = 'opt';
+            var c = document.createElement('input'); c.type = f.t === 'radio' ? 'radio' : 'checkbox'; c.name = 'd-' + f.id; c.value = o;
+            c.checked = f.t === 'radio' ? d.v[f.id] === o : (d.v[f.id] || []).indexOf(o) > -1;
+            c.addEventListener('change', function () {
+              d.v[f.id] = f.t === 'radio' ? o : [].filter.call(box.querySelectorAll('input'), function (x) { return x.checked; }).map(function (x) { return x.value; });
+              salvarDoc();
+            });
+            var sp = document.createElement('span'); sp.textContent = o; l.appendChild(c); l.appendChild(sp); box.appendChild(l);
+          });
+          fs.appendChild(box); form.appendChild(fs); return;
+        }
+        var w = document.createElement('label');
+        if (f.l) w.appendChild(document.createTextNode(f.l));
+        var inp = document.createElement(f.t === 'area' ? 'textarea' : 'input');
+        if (f.t !== 'area') inp.type = 'text';
+        if (f.ph) inp.placeholder = f.ph;
+        inp.value = d.v[f.id] || '';
+        if (f.id === 'nome' && pats.length) inp.setAttribute('list', 'doc-pats');
+        inp.addEventListener('input', function () {
+          d.v[f.id] = inp.value;
+          if (f.id === 'nome') {
+            var p = pats.filter(function (x) { return x.nome === inp.value; })[0];
+            if (p) {
+              var nasc = form.querySelector('[data-id=nasc]'), cpf = form.querySelector('[data-id=cpf]');
+              if (nasc && !nasc.value && p.nasc) { nasc.value = brData(p.nasc) + (idade(p.nasc) ? ' (' + idade(p.nasc) + ')' : ''); d.v.nasc = nasc.value; }
+              if (cpf && !cpf.value && p.cpf) { cpf.value = p.cpf; d.v.cpf = p.cpf; }
+            }
+          }
+          clearTimeout(inp.t); inp.t = setTimeout(salvarDoc, 400);
+        });
+        inp.setAttribute('data-id', f.id);
+        w.appendChild(inp); form.appendChild(w);
+      });
+      window.scrollTo(0, 0);
+    }
+    function docHtml(d) {
+      var m = MOD[d.modelo], v = d.v, nome = v.nome || '________________________';
+      var sub = function (t) { return esc(String(t || '').replace(/\{nome\}/g, nome)); };
+      var h = '<div class="doc"><div class="dh2"><img src="../icons/logo.png" alt=""><div><b>Bárbara Serra Oliveira</b><br>Psicóloga · CRP 20/13.134</div></div><h1>' + esc(m.titulo) + '</h1>';
+      var ident = false;
+      m.campos.forEach(function (f) {
+        if (f.s) { if (ident) { h += '</div>'; ident = false; } h += '<h2>' + esc(f.s) + '</h2>'; if (/Identifica/.test(f.s)) { h += '<div class="id">'; ident = true; } return; }
+        if (f.id === 'local') return;
+        var val = v[f.id];
+        var rot = esc(String(f.l || '').replace(/\s*\(opcional\)/, ''));
+        if (f.t === 'text') { if (val || (ident && !/opcional/.test(f.l))) h += '<p><b>' + rot + ':</b> ' + sub(val || '') + '</p>'; return; }
+        if (ident) { h += '</div>'; ident = false; }
+        if (f.t === 'area') { if (val) h += (f.l ? '<p><b>' + esc(f.l) + '</b></p>' : '') + '<p class="tx">' + sub(val) + '</p>'; return; }
+        if (f.t === 'check') { h += '<p><b>' + esc(f.l) + '</b></p><ul>' + f.o.map(function (o) { return '<li>' + ((val || []).indexOf(o) > -1 ? '☒ ' : '☐ ') + esc(o) + '</li>'; }).join('') + '</ul>'; return; }
+        if (f.t === 'radio') { h += '<p><b>' + esc(f.l) + ':</b> ' + esc(val || '—') + '</p>'; return; }
+      });
+      if (ident) h += '</div>';
+      h += '<p class="loc">' + sub(v.local || '') + '</p><div class="ass">_______________________________________<br>Bárbara Serra Oliveira<br>Psicóloga · CRP 20/13.134</div></div>';
+      return h;
+    }
+    function imprimirDoc(d) { $('printarea').innerHTML = docHtml(d); setTimeout(function () { window.print(); }, 60); }
+    $('doc-voltar').addEventListener('click', function () { salvarDoc(); docAtual = null; docsHome(); });
+    $('doc-print').addEventListener('click', function () { salvarDoc(); imprimirDoc(docAtual); });
+    $('doc-dup').addEventListener('click', function () {
+      var c = JSON.parse(JSON.stringify(docAtual)); c.id = rid() + Date.now().toString(36); c.em = new Date().toISOString();
+      var l = docsLer(); l.unshift(c); docsGravar(l); abrirDoc(c); toast('Cópia criada');
+    });
+    $('doc-del').addEventListener('click', function () {
+      if (!confirm('Apagar este documento deste aparelho?')) return;
+      docsGravar(docsLer().filter(function (x) { return x.id !== docAtual.id; })); docAtual = null; docsHome();
+    });
+    if (location.hash === '#documentos') tab('doc');
     $('rescount').textContent = lerResp().length ? '(' + lerResp().length + ')' : '';
     if (location.hash === '#respostas') tab('res');
     setTimeout(function () { buscar(false); }, 1200);
