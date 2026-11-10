@@ -55,3 +55,10 @@ Depois disso a Agenda sincroniza sozinha: ao abrir, ao voltar para o app, a cada
 Em **Atividades → Avaliações** (ou Pacientes → *Avaliações (escalas)*): PHQ-9, GAD-7, DASS-21, WHO-5, SRQ-20, AUDIT e Escala de Autoestima de Rosenberg, todas de uso livre. Envie pelo mesmo link das atividades; na aba **Respostas** aparecem o escore, a faixa e os alertas (ex.: ideação suicida). O paciente não vê o resultado.
 
 São instrumentos de rastreio: não substituem a avaliação psicológica e não são testes do SATEPSI. Antes do primeiro uso, confira os textos dos itens com os artigos de validação citados em cada escala. Para incluir uma escala, edite `atividades/avaliacoes.js`.
+
+## TDAH, questionários e documentos
+- **Avaliações → Escalas:** também ASRS-18 (adulto), SNAP-IV (pais ou professores; desatenção, hiperatividade e oposição) e Tabela exploratória TDAH adulto.
+- **Avaliações → Questionários e anamneses:** anamnese adulto, anamnese infantil (responsáveis), entrevista para responsáveis/escola e perguntas sobre atenção (adulto). Não pedem nome, CPF, nascimento, endereço nem telefone.
+- **Documentos:** modelos de declaração, atestado, relatório, relatório de TDAH (infantil), laudo e o roteiro de entrevista de rastreamento de TDAH, com cabeçalho e assinatura para imprimir ou salvar em PDF. Ao digitar o nome, os dados do cadastro da Agenda são sugeridos. Também tem os materiais de apoio (ferramentas digitais e legislação sobre TDAH).
+- Escalas de Conners não foram incluídas (direitos autorais da MHS).
+Para editar: `atividades/avaliacoes.js`, `atividades/questionarios.js` e `atividades/documentos.js`.

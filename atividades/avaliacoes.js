@@ -9,6 +9,7 @@
  * brasileiras citadas em cada uma; confira com o artigo original antes do uso clínico.
  */
 (function () {
+  var LISTA_TDAH;
   window.ABORDAGENS = window.ABORDAGENS || {};
   window.ABORDAGENS.aval = { nome: 'Avaliação', longo: 'Avaliações (escalas de rastreio)' };
 
@@ -230,6 +231,129 @@
     }
   ];
 
+
+  // ---------- TDAH ----------
+  var FREQ5 = [{ v: 0, l: 'Nunca' }, { v: 1, l: 'Raramente' }, { v: 2, l: 'Algumas vezes' }, { v: 3, l: 'Frequentemente' }, { v: 4, l: 'Muito frequentemente' }];
+  var asrsA = [
+    'Com que frequência você comete erros por falta de atenção quando tem de trabalhar num projeto chato ou difícil?',
+    'Com que frequência você tem dificuldade para manter a atenção quando está fazendo um trabalho chato ou repetitivo?',
+    'Com que frequência você tem dificuldade para se concentrar no que as pessoas dizem, mesmo quando elas estão falando diretamente com você?',
+    'Com que frequência você deixa um projeto pela metade depois de já ter feito as partes mais difíceis?',
+    'Com que frequência você tem dificuldade para fazer um trabalho que exige organização?',
+    'Quando você precisa fazer algo que exige muita concentração, com que frequência você evita ou adia o início?',
+    'Com que frequência você coloca as coisas fora do lugar ou tem dificuldade de encontrar as coisas em casa ou no trabalho?',
+    'Com que frequência você se distrai com atividades ou barulho a sua volta?',
+    'Com que frequência você tem dificuldade para lembrar de compromissos ou obrigações?'
+  ];
+  var asrsB = [
+    'Com que frequência você fica se mexendo na cadeira ou balançando as mãos ou os pés quando precisa ficar sentada(o) por muito tempo?',
+    'Com que frequência você se levanta da cadeira em reuniões ou em outras situações onde deveria ficar sentada(o)?',
+    'Com que frequência você se sente inquieta(o) ou agitada(o)?',
+    'Com que frequência você tem dificuldade para sossegar e relaxar quando tem tempo livre para você?',
+    'Com que frequência você se sente ativa(o) demais e necessitando fazer coisas, como se estivesse "com um motor ligado"?',
+    'Com que frequência você se pega falando demais em situações sociais?',
+    'Quando você está conversando, com que frequência você se pega terminando as frases das pessoas antes delas?',
+    'Com que frequência você tem dificuldade para esperar nas situações onde cada um tem a sua vez?',
+    'Com que frequência você interrompe os outros quando eles estão ocupados?'
+  ];
+  function contar(a, de, ate, min) { var n = 0, s = 0, falta = 0; for (var i = de; i <= ate; i++) { var v = a['i' + i]; if (typeof v !== 'number') { falta++; continue; } s += v; if (v >= min) n++; } return { n: n, s: s, falta: falta }; }
+  var snapItens = [
+    'Não consegue prestar muita atenção a detalhes ou comete erros por descuido nos trabalhos da escola ou tarefas.',
+    'Tem dificuldade de manter a atenção em tarefas ou atividades de lazer.',
+    'Parece não estar ouvindo quando se fala diretamente com ela(e).',
+    'Não segue instruções até o fim e não termina deveres da escola, tarefas ou obrigações.',
+    'Tem dificuldade para organizar tarefas e atividades.',
+    'Evita, não gosta ou não se envolve em tarefas que exigem esforço mental prolongado.',
+    'Perde coisas necessárias para atividades (por exemplo: brinquedos, deveres da escola, lápis ou livros).',
+    'Distrai-se com estímulos externos.',
+    'É esquecida(o) em atividades do dia a dia.',
+    'Mexe com as mãos ou os pés ou se remexe na cadeira.',
+    'Sai do lugar na sala de aula ou em outras situações em que se espera que fique sentada(o).',
+    'Corre de um lado para outro ou sobe demais nas coisas em situações em que isto é inapropriado.',
+    'Tem dificuldade em brincar ou envolver-se em atividades de lazer de forma calma.',
+    'Não para ou frequentemente está "a mil por hora".',
+    'Fala em excesso.',
+    'Responde as perguntas de forma precipitada antes de elas terem sido terminadas.',
+    'Tem dificuldade de esperar sua vez.',
+    'Interrompe os outros ou se intromete (por exemplo: mete-se nas conversas, jogos).',
+    'Discute com adultos.',
+    'Desafia ativamente ou se recusa a atender pedidos ou regras de adultos.',
+    'Faz coisas de propósito que incomodam outras pessoas.',
+    'Culpa os outros pelos seus erros ou mau comportamento.',
+    'É irritável ou facilmente incomodada(o) pelos outros.',
+    'É zangada(o) e ressentida(o).',
+    'É maldosa(o) ou vingativa(o).',
+    'Descontrola-se.'
+  ];
+  var CRIT = 'O instrumento avalia só o critério A (sintomas). Para o diagnóstico também são necessários: início antes dos 12 anos (B), prejuízo em 2 ou mais contextos (C), prejuízo evidente (D) e sintomas não explicados exclusivamente por outro transtorno (E).';
+  LISTA_TDAH = [
+    {
+      id: 'asrs18', sigla: 'ASRS-18', nome: 'ASRS-18 · TDAH em adultos (autorrelato)', min: 6, dem: ['Autoconhecimento', 'Impulsividade'],
+      obj: 'Rastreio de sintomas de desatenção e de hiperatividade-impulsividade em adultos, nos últimos 6 meses.',
+      licenca: 'Uso livre (Organização Mundial da Saúde).',
+      ref: 'Kessler, R. C. et al. (2005). The World Health Organization Adult ADHD Self-Report Scale (ASRS). Psychol Med, 35(2), 245-256. Versão brasileira: Mattos, P., Segenreich, D., Saboya, E., Louzã, M., Dias, G., & Romano, M. (2006). Adaptação transcultural para o português da escala Adult Self-Report Scale para avaliação do TDAH em adultos. Rev. Psiq. Clín., 33(4), 188-194.',
+      intro: 'Responda cada pergunta marcando a opção que melhor descreve como você se sentiu e se comportou nos últimos 6 meses.',
+      f: [{ t: 'h', x: 'Parte A' }].concat(asrsA.map(function (txt, i) { return { t: 'likert', id: 'i' + (i + 1), n: 'A' + (i + 1), l: txt, o: FREQ5 }; }))
+        .concat([{ t: 'h', x: 'Parte B' }]).concat(asrsB.map(function (txt, i) { return { t: 'likert', id: 'i' + (i + 10), n: 'B' + (i + 1), l: txt, o: FREQ5 }; })),
+      calc: function (a) {
+        var A = contar(a, 1, 9, 3), B = contar(a, 10, 18, 3);
+        var fx = function (x) { return x.n >= 4 ? { nome: x.n + ' de 9 itens em "frequentemente" ou mais: acima do esperado', nivel: 3 } : { nome: x.n + ' de 9 itens em "frequentemente" ou mais', nivel: 0 }; };
+        var fa = fx(A), fb = fx(B);
+        var tipo = A.n >= 4 && B.n >= 4 ? 'Sintomas acima do esperado nas duas partes (perfil combinado)' : A.n >= 4 ? 'Sintomas acima do esperado na desatenção' : B.n >= 4 ? 'Sintomas acima do esperado na hiperatividade-impulsividade' : 'Abaixo do critério nas duas partes';
+        return { falta: A.falta + B.falta, linhas: [
+          { nome: 'Parte A · Desatenção (soma)', v: A.s, max: 36, faixa: fa.nome, nivel: fa.nivel },
+          { nome: 'Parte B · Hiperatividade-impulsividade (soma)', v: B.s, max: 36, faixa: fb.nome, nivel: fb.nivel },
+          { nome: 'Resumo', v: A.n + B.n, max: 18, faixa: tipo, nivel: (A.n >= 4 || B.n >= 4) ? 3 : 0 }
+        ], alertas: [],
+          nota: 'Conta-se em cada parte quantos itens foram marcados como "frequentemente" ou "muito frequentemente". Pelo menos 4 em uma parte indica chance de TDAH (critério do material de referência, ABDA/Mattos). Para comparação, o DSM-5 exige 5 sintomas em adultos. ' + CRIT };
+      }
+    },
+    {
+      id: 'snap4', sigla: 'SNAP-IV', nome: 'SNAP-IV · TDAH em crianças e adolescentes (pais ou professores)', min: 8, dem: ['Impulsividade', 'Autoconhecimento'],
+      obj: 'Rastreio de sintomas de TDAH e de transtorno desafiador de oposição, respondido por pais, responsáveis ou professores.',
+      licenca: 'Uso livre (tradução validada pelo GEDA/UFRJ e pelo Serviço de Psiquiatria da Infância e Adolescência da UFRGS).',
+      ref: 'Swanson, J. M., Nolan, W., & Pelham, W. E. (1992). The SNAP-IV rating scale. University of California, Irvine. Versão brasileira: Mattos, P., Serra-Pinheiro, M. A., Rohde, L. A., & Pinto, D. (2006). Apresentação de uma versão em português para uso no Brasil do instrumento MTA-SNAP-IV. Rev Psiquiatr RS, 28(3), 290-297.',
+      intro: 'Este questionário deve ser respondido pela mãe, pelo pai, pela pessoa responsável ou pela professora/professor. Para cada item, marque a opção que melhor descreve o comportamento da criança ou adolescente nos últimos 6 meses. Você pode reenviar o mesmo link para a escola responder também.',
+      f: [{ t: 'radio', id: 'quem', l: 'Quem está respondendo?', o: ['Mãe', 'Pai', 'Outra pessoa responsável', 'Professora / professor', 'Outra pessoa'] }]
+        .concat(snapItens.map(function (txt, i) { return { t: 'likert', id: 'i' + (i + 1), n: i + 1, l: txt, o: [{ v: 0, l: 'Nem um pouco' }, { v: 1, l: 'Só um pouco' }, { v: 2, l: 'Bastante' }, { v: 3, l: 'Demais' }] }; })),
+      calc: function (a) {
+        var D = contar(a, 1, 9, 2), H = contar(a, 10, 18, 2), O = contar(a, 19, 26, 2);
+        var l = function (nome, x, max, corte, txt) { return { nome: nome, v: x.n, max: max, faixa: x.n >= corte ? txt : 'Abaixo do ponto de corte', nivel: x.n >= corte ? 3 : 0 }; };
+        return { falta: D.falta + H.falta + O.falta, linhas: [
+          l('Desatenção (itens 1-9 em "bastante" ou "demais")', D, 9, 6, 'Mais sintomas de desatenção que o esperado'),
+          l('Hiperatividade-impulsividade (itens 10-18)', H, 9, 6, 'Mais sintomas de hiperatividade-impulsividade que o esperado'),
+          l('Oposição e desafio (itens 19-26)', O, 8, 4, 'Mais sintomas de oposição e desafio (TOD) que o esperado')
+        ], alertas: [],
+          nota: 'Ponto de corte: 6 ou mais itens em "bastante" ou "demais" na desatenção e/ou na hiperatividade-impulsividade; 4 ou mais nos itens de oposição. Somas brutas: desatenção ' + D.s + '/27, hiperatividade ' + H.s + '/27, oposição ' + O.s + '/24.' + (a.quem ? ' Respondido por: ' + a.quem + '.' : '') + ' ' + CRIT + ' O diagnóstico exige avaliação clínica, com informações de mais de um contexto (casa e escola).' };
+      }
+    },
+    {
+      id: 'tdah-explor', sigla: 'Tabela exploratória TDAH', nome: 'Tabela exploratória TDAH adulto', min: 4, dem: ['Autoconhecimento', 'Impulsividade'],
+      obj: 'Explorar as áreas da vida em que sintomas de desatenção, inquietação e impulsividade podem estar trazendo prejuízo, para planejar o acompanhamento.',
+      licenca: 'Material de apoio da psicóloga, sem valor diagnóstico.',
+      ref: 'Material de apoio clínico (sem validação psicométrica). Use apenas como roteiro exploratório.',
+      intro: 'Marque com que frequência cada situação acontece com você.',
+      f: itens([
+        'Com que frequência você tem dificuldade em se concentrar em tarefas ou atividades, como ler um livro ou assistir a um filme?',
+        'Com que frequência você tem dificuldade em manter o foco em uma conversa, mesmo quando a outra pessoa está falando diretamente com você?',
+        'Com que frequência você não consegue seguir instruções até o final e comete erros por descuido?',
+        'Com que frequência você tem dificuldade em organizar tarefas e atividades?',
+        'Com que frequência você evita ou adia tarefas que exigem um esforço mental constante, como preencher formulários ou relatórios?',
+        'Com que frequência você perde coisas necessárias para tarefas ou atividades, como chaves, carteira ou celular?',
+        'Com que frequência você se distrai facilmente com estímulos externos, como sons ou movimentos?',
+        'Com que frequência você se sente inquieta(o) ou agitada(o), como se não pudesse ficar sentada(o) por muito tempo?',
+        'Com que frequência você age impulsivamente, sem pensar nas consequências, em situações sociais ou financeiras?',
+        'Com que frequência você tem dificuldade em esperar sua vez em filas ou em situações em grupo?'
+      ], [{ v: 0, l: 'Nunca ou raramente' }, { v: 1, l: 'Às vezes' }, { v: 2, l: 'Frequentemente' }, { v: 3, l: 'Muito frequentemente' }]),
+      calc: function (a) {
+        var r = soma(a, ids(10)), alto = [];
+        ids(10).forEach(function (id, i) { if (a[id] >= 2) alto.push(i + 1); });
+        return { falta: r.falta, linhas: [{ nome: 'Pontuação total', v: r.s, max: 30 }], alertas: [],
+          nota: 'Quanto maior a pontuação, maior a possibilidade de prejuízo. Não tem valor diagnóstico. ' + (alto.length ? 'Itens marcados como "frequentemente" ou mais (áreas a trabalhar): ' + alto.join(', ') + '.' : 'Nenhum item marcado como "frequentemente" ou mais.') };
+      }
+    }
+  ];
+  LISTA = LISTA.concat(LISTA_TDAH);
   LISTA.forEach(function (x) { x.ab = 'aval'; });
   window.ATIVIDADES = (window.ATIVIDADES || []).concat(LISTA);
 
@@ -243,7 +367,7 @@
     { nome: 'SCL-90-R', motivo: 'Pago. Vendido pela Pearson.', tipo: 'pago' },
     { nome: 'PSS-10 (Escala de Estresse Percebido)', motivo: 'Uso livre para fins não comerciais, segundo o autor. Confirme as condições antes de incluir.', tipo: 'verificar' },
     { nome: 'PCL-5 (estresse pós-traumático)', motivo: 'Uso livre (Centro Nacional de TEPT dos EUA). Ainda não incluído: preciso conferir o texto da versão brasileira.', tipo: 'livre' },
-    { nome: 'ASRS-18 (TDAH em adultos)', motivo: 'Uso livre (OMS). Ainda não incluído: preciso conferir o texto da versão brasileira.', tipo: 'livre' },
+    { nome: 'Escalas de Conners (versões para pais e para professores)', motivo: 'Direitos autorais da Multi-Health Systems (MHS). As traduções que circulam (Barbosa, 1995) podem exigir licença para reprodução e uso digital. Não incluí: se você tiver licença ou confirmação de uso livre, eu incluo (o conteúdo que você enviou já está pronto).', tipo: 'verificar' },
     { nome: 'EPDS (Escala de Depressão Pós-Parto de Edimburgo)', motivo: 'Uso livre, citando a fonte. Ainda não incluído: preciso conferir o texto da versão brasileira.', tipo: 'livre' }
   ];
 })();
