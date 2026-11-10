@@ -9,7 +9,7 @@
  * brasileiras citadas em cada uma; confira com o artigo original antes do uso clínico.
  */
 (function () {
-  var LISTA_TDAH;
+  var LISTA_TDAH, LISTA_TEA;
   window.ABORDAGENS = window.ABORDAGENS || {};
   window.ABORDAGENS.aval = { nome: 'Rastreio', longo: 'Rastreios (escalas)' };
 
@@ -30,7 +30,7 @@
 
   var LISTA = [
     {
-      id: 'phq9', sigla: 'PHQ-9', nome: 'PHQ-9 · Sintomas depressivos', min: 5, dem: ['Depressão'],
+      id: 'phq9', grupo: 'Humor, ansiedade e bem-estar', sigla: 'PHQ-9', nome: 'PHQ-9 · Sintomas depressivos', min: 5, dem: ['Depressão'],
       obj: 'Rastreio e acompanhamento da intensidade de sintomas depressivos nas últimas 2 semanas.',
       licenca: 'Uso livre (domínio público, sem necessidade de autorização).',
       ref: 'Kroenke, K., Spitzer, R. L., & Williams, J. B. (2001). The PHQ-9. J Gen Intern Med, 16(9), 606-613. Versão brasileira: Santos, I. S. et al. (2013). Sensibilidade e especificidade do PHQ-9 entre adultos da população geral. Cad. Saúde Pública, 29(8), 1533-1543.',
@@ -55,7 +55,7 @@
       }
     },
     {
-      id: 'gad7', sigla: 'GAD-7', nome: 'GAD-7 · Ansiedade generalizada', min: 4, dem: ['Ansiedade', 'Estresse'],
+      id: 'gad7', grupo: 'Humor, ansiedade e bem-estar', sigla: 'GAD-7', nome: 'GAD-7 · Ansiedade generalizada', min: 4, dem: ['Ansiedade', 'Estresse'],
       obj: 'Rastreio e acompanhamento da intensidade de sintomas de ansiedade nas últimas 2 semanas.',
       licenca: 'Uso livre (domínio público, sem necessidade de autorização).',
       ref: 'Spitzer, R. L., Kroenke, K., Williams, J. B., & Löwe, B. (2006). A brief measure for assessing generalized anxiety disorder: the GAD-7. Arch Intern Med, 166(10), 1092-1097. Versão brasileira: Moreno, A. L. et al. (2016). Factor structure, reliability, and item parameters of the Brazilian-Portuguese version of the GAD-7 questionnaire. Temas em Psicologia, 24(1), 367-376.',
@@ -76,7 +76,7 @@
       }
     },
     {
-      id: 'dass21', sigla: 'DASS-21', nome: 'DASS-21 · Depressão, ansiedade e estresse', min: 8, dem: ['Depressão', 'Ansiedade', 'Estresse'],
+      id: 'dass21', grupo: 'Humor, ansiedade e bem-estar', sigla: 'DASS-21', nome: 'DASS-21 · Depressão, ansiedade e estresse', min: 8, dem: ['Depressão', 'Ansiedade', 'Estresse'],
       obj: 'Avalia, em três subescalas, sintomas de depressão, ansiedade e estresse na última semana.',
       licenca: 'Uso livre (domínio público; os autores permitem copiar sem autorização).',
       ref: 'Lovibond, S. H., & Lovibond, P. F. (1995). Manual for the Depression Anxiety Stress Scales. Psychology Foundation. Versão brasileira (EDAE-21): Vignola, R. C. B., & Tucci, A. M. (2014). Adaptation and validation of the depression, anxiety and stress scale (DASS) to Brazilian Portuguese. J Affect Disord, 155, 104-109.',
@@ -120,7 +120,7 @@
       }
     },
     {
-      id: 'who5', sigla: 'WHO-5', nome: 'WHO-5 · Índice de bem-estar', min: 3, dem: ['Depressão', 'Estresse', 'Autoconhecimento'],
+      id: 'who5', grupo: 'Humor, ansiedade e bem-estar', sigla: 'WHO-5', nome: 'WHO-5 · Índice de bem-estar', min: 3, dem: ['Depressão', 'Estresse', 'Autoconhecimento'],
       obj: 'Mede o bem-estar emocional nas últimas 2 semanas; útil também para acompanhar a evolução.',
       licenca: 'Uso livre, citando a fonte (Organização Mundial da Saúde / Psychiatric Research Unit).',
       ref: 'Topp, C. W., Østergaard, S. D., Søndergaard, S., & Bech, P. (2015). The WHO-5 Well-Being Index: a systematic review of the literature. Psychother Psychosom, 84(3), 167-176. Versão brasileira: de Souza, C. M., & Hidalgo, M. P. L. (2012). World Health Organization 5-item well-being index: validation of the Brazilian Portuguese version. Eur Arch Psychiatry Clin Neurosci, 262(3), 239-244.',
@@ -140,7 +140,7 @@
       }
     },
     {
-      id: 'srq20', sigla: 'SRQ-20', nome: 'SRQ-20 · Sofrimento mental (transtornos mentais comuns)', min: 5, dem: ['Ansiedade', 'Depressão', 'Estresse'],
+      id: 'srq20', grupo: 'Humor, ansiedade e bem-estar', sigla: 'SRQ-20', nome: 'SRQ-20 · Sofrimento mental (transtornos mentais comuns)', min: 5, dem: ['Ansiedade', 'Depressão', 'Estresse'],
       obj: 'Rastreio de transtornos mentais comuns (sintomas ansiosos, depressivos e somáticos) nos últimos 30 dias.',
       licenca: 'Uso livre (instrumento da Organização Mundial da Saúde).',
       ref: 'Harding, T. W. et al. (1980). Mental disorders in primary health care. Psychol Med, 10, 231-241. Versão brasileira: Mari, J. J., & Williams, P. (1986). A validity study of a psychiatric screening questionnaire (SRQ-20) in primary care in the city of São Paulo. Br J Psychiatry, 148, 23-26; Gonçalves, D. M., Stein, A. T., & Kapczinski, F. (2008). Avaliação de desempenho do SRQ-20. Cad. Saúde Pública, 24(2), 380-390.',
@@ -176,7 +176,7 @@
       }
     },
     {
-      id: 'audit', sigla: 'AUDIT', nome: 'AUDIT · Uso de álcool', min: 4, dem: ['Impulsividade', 'Estresse'],
+      id: 'audit', grupo: 'Uso de álcool', sigla: 'AUDIT', nome: 'AUDIT · Uso de álcool', min: 4, dem: ['Impulsividade', 'Estresse'],
       obj: 'Identifica padrões de uso de álcool de risco, nocivo ou com possível dependência, nos últimos 12 meses.',
       licenca: 'Uso livre (Organização Mundial da Saúde).',
       ref: 'Babor, T. F., Higgins-Biddle, J. C., Saunders, J. B., & Monteiro, M. G. (2001). AUDIT: The Alcohol Use Disorders Identification Test (2. ed.). OMS. Versão brasileira: Lima, C. T. et al. (2005). Concurrent and construct validity of the AUDIT in an urban Brazilian sample. Alcohol Alcohol, 40(6), 584-589.',
@@ -205,7 +205,7 @@
       }
     },
     {
-      id: 'rosenberg', sigla: 'EAR', nome: 'Escala de Autoestima de Rosenberg', min: 3, dem: ['Autoestima', 'Autoconhecimento'],
+      id: 'rosenberg', grupo: 'Autoestima', sigla: 'EAR', nome: 'Escala de Autoestima de Rosenberg', min: 3, dem: ['Autoestima', 'Autoconhecimento'],
       obj: 'Avalia a autoestima global (o quanto a pessoa se valoriza e se aceita).',
       licenca: 'Uso livre para fins clínicos e de pesquisa, citando a fonte.',
       ref: 'Rosenberg, M. (1965). Society and the adolescent self-image. Princeton University Press. Versão brasileira: Hutz, C. S., & Zanon, C. (2011). Revisão da adaptação, validação e normatização da escala de autoestima de Rosenberg. Avaliação Psicológica, 10(1), 41-49.',
@@ -288,7 +288,7 @@
   var CRIT = 'O instrumento avalia só o critério A (sintomas). Para o diagnóstico também são necessários: início antes dos 12 anos (B), prejuízo em 2 ou mais contextos (C), prejuízo evidente (D) e sintomas não explicados exclusivamente por outro transtorno (E).';
   LISTA_TDAH = [
     {
-      id: 'asrs18', sigla: 'ASRS-18', nome: 'ASRS-18 · TDAH em adultos (autorrelato)', min: 6, dem: ['Autoconhecimento', 'Impulsividade'],
+      id: 'asrs18', grupo: 'TDAH', sigla: 'ASRS-18', nome: 'ASRS-18 · TDAH em adultos (autorrelato)', min: 6, dem: ['Autoconhecimento', 'Impulsividade'],
       obj: 'Rastreio de sintomas de desatenção e de hiperatividade-impulsividade em adultos, nos últimos 6 meses.',
       licenca: 'Uso livre (Organização Mundial da Saúde).',
       ref: 'Kessler, R. C. et al. (2005). The World Health Organization Adult ADHD Self-Report Scale (ASRS). Psychol Med, 35(2), 245-256. Versão brasileira: Mattos, P., Segenreich, D., Saboya, E., Louzã, M., Dias, G., & Romano, M. (2006). Adaptação transcultural para o português da escala Adult Self-Report Scale para avaliação do TDAH em adultos. Rev. Psiq. Clín., 33(4), 188-194.',
@@ -309,7 +309,7 @@
       }
     },
     {
-      id: 'snap4', sigla: 'SNAP-IV', nome: 'SNAP-IV · TDAH em crianças e adolescentes (pais ou professores)', min: 8, dem: ['Impulsividade', 'Autoconhecimento'],
+      id: 'snap4', grupo: 'TDAH', sigla: 'SNAP-IV', nome: 'SNAP-IV · TDAH em crianças e adolescentes (pais ou professores)', min: 8, dem: ['Impulsividade', 'Autoconhecimento'],
       obj: 'Rastreio de sintomas de TDAH e de transtorno desafiador de oposição, respondido por pais, responsáveis ou professores.',
       licenca: 'Uso livre (tradução validada pelo GEDA/UFRJ e pelo Serviço de Psiquiatria da Infância e Adolescência da UFRGS).',
       ref: 'Swanson, J. M., Nolan, W., & Pelham, W. E. (1992). The SNAP-IV rating scale. University of California, Irvine. Versão brasileira: Mattos, P., Serra-Pinheiro, M. A., Rohde, L. A., & Pinto, D. (2006). Apresentação de uma versão em português para uso no Brasil do instrumento MTA-SNAP-IV. Rev Psiquiatr RS, 28(3), 290-297.',
@@ -328,7 +328,7 @@
       }
     },
     {
-      id: 'tdah-explor', sigla: 'Tabela exploratória TDAH', nome: 'Tabela exploratória TDAH adulto', min: 4, dem: ['Autoconhecimento', 'Impulsividade'],
+      id: 'tdah-explor', grupo: 'TDAH', sigla: 'Tabela exploratória TDAH', nome: 'Tabela exploratória TDAH adulto', min: 4, dem: ['Autoconhecimento', 'Impulsividade'],
       obj: 'Explorar as áreas da vida em que sintomas de desatenção, inquietação e impulsividade podem estar trazendo prejuízo, para planejar o acompanhamento.',
       licenca: 'Material de apoio da psicóloga, sem valor diagnóstico.',
       ref: 'Material de apoio clínico (sem validação psicométrica). Use apenas como roteiro exploratório.',
@@ -353,7 +353,74 @@
       }
     }
   ];
-  LISTA = LISTA.concat(LISTA_TDAH);
+
+  // ---------- TEA ----------
+  var AQ = ['Prefiro fazer coisas com outras pessoas do que sozinha(o).', 'Prefiro fazer as coisas sempre da mesma maneira.', 'Quando tento imaginar uma coisa, tenho muita facilidade em criar uma imagem na minha mente.', 'Com frequência fico tão absorvida(o) com uma coisa que esqueço todo o resto.', 'Frequentemente noto pequenos ruídos que outras pessoas não ouvem.', 'Costumo prestar atenção aos números das placas dos automóveis ou a outras sequências de informação do mesmo tipo.', 'As outras pessoas com frequência me dizem que falei algo indelicado, apesar de eu achar que fui delicada(o).', 'Quando leio uma história, consigo imaginar facilmente a aparência dos personagens.', 'Sou fascinada(o) por datas.', 'Quando estou em grupo, tenho facilidade em seguir várias conversas ao mesmo tempo.',
+    'Tenho facilidade em compreender situações sociais.', 'Tenho tendência a notar detalhes que os outros não reparam.', 'Prefiro ir a uma biblioteca do que a uma festa.', 'Tenho facilidade em inventar histórias.', 'Tenho maior tendência a me aproximar de pessoas do que de coisas.', 'Tenho tendência a ter interesses fortes e fico incomodada(o) se não posso me dedicar a eles.', 'Gosto de bater papo.', 'Quando estou falando, as outras pessoas têm dificuldade em tomar a palavra.', 'Os números me fascinam.', 'Quando leio uma história, sinto dificuldade em entender as intenções dos personagens.',
+    'Não aprecio ler livros de ficção.', 'Tenho dificuldade em fazer novos amigos.', 'Vejo constantemente padrões nas coisas que me rodeiam.', 'Prefiro ir ao teatro do que ir a um museu.', 'Não fico incomodada(o) se minha rotina diária for alterada.', 'Com frequência sinto que não sei manter uma conversa.', 'Tenho facilidade em "ler nas entrelinhas" quando falam comigo.', 'Geralmente me concentro mais no todo do que nos detalhes.', 'Não sou muito boa(bom) em lembrar números de telefone.', 'Geralmente não reparo nas pequenas mudanças de uma situação ou na aparência de uma pessoa.',
+    'Consigo dizer quando a pessoa com quem estou conversando fica entediada.', 'Consigo facilmente fazer mais do que uma coisa ao mesmo tempo.', 'Quando falo no telefone, não tenho certeza de quando é a minha vez de falar.', 'Gosto de fazer as coisas de forma espontânea.', 'Com frequência sou a última (o último) a entender uma piada.', 'Tenho facilidade em entender o que uma pessoa está pensando ou sentindo apenas olhando para o seu rosto.', 'Se sou interrompida(o), consigo voltar rapidamente ao que estava fazendo.', 'Sou boa(bom) de papo.', 'Os outros frequentemente me dizem que eu insisto muito nas mesmas coisas.', 'Quando era criança, gostava de brincar de faz de conta com as outras crianças.',
+    'Gosto de colecionar informação sobre categorias de coisas (por exemplo, tipos de carros, de aves, de trens, de plantas).', 'Tenho dificuldade de me imaginar na pele de outra pessoa.', 'Gosto de planejar com cuidado todas as atividades de que participo.', 'Aprecio eventos sociais.', 'Tenho dificuldade em entender as intenções das outras pessoas.', 'Situações novas me deixam ansiosa(o).', 'Gosto de conhecer pessoas novas.', 'Tenho uma postura conciliadora em situações de interação social.', 'Tenho dificuldade em lembrar o dia de aniversário dos outros.', 'Tenho muita facilidade em brincar de faz de conta com as crianças.'];
+  var AQ_CONC = [2, 4, 5, 6, 7, 9, 12, 13, 16, 18, 19, 20, 21, 22, 23, 26, 33, 35, 39, 41, 42, 43, 45, 46];
+  var ATA = [
+    ['Dificuldade na interação social', ['Não sorri', 'Ausência de aproximações espontâneas', 'Não busca companhia', 'Busca constantemente seu cantinho (esconderijo)', 'Evita pessoas', 'É incapaz de manter um intercâmbio social', 'Isolamento intenso']],
+    ['Manipulação do ambiente', ['Não responde às solicitações', 'Mudança repentina de humor', 'Mantém-se indiferente, sem expressão', 'Risos compulsivos', 'Birra e raiva passageira', 'Excitação motora ou verbal (ir de um lugar a outro, falar sem parar)']],
+    ['Utilização das pessoas ao seu redor', ['Utiliza-se do adulto como um objeto, levando-o até aquilo que deseja', 'O adulto lhe serve como apoio para conseguir o que deseja (por exemplo, como apoio para pegar a bolacha)', 'O adulto é o meio para suprir uma necessidade que não é capaz de realizar só (por exemplo, amarrar os sapatos)', 'Se o adulto não responde às suas demandas, atua interferindo na conduta desse adulto']],
+    ['Resistência à mudança', ['Insistente em manter a rotina', 'Grande dificuldade em aceitar fatos que alteram sua rotina (mudanças de lugar, de vestuário, na alimentação)', 'Apresenta resistência a mudanças, persistindo na mesma resposta ou atividade']],
+    ['Busca de uma ordem rígida', ['Ordenação dos objetos de acordo com critérios próprios e preestabelecidos', 'Prende-se a uma ordenação espacial (cada coisa sempre em seu lugar)', 'Prende-se a uma sequência temporal (cada coisa em seu tempo)', 'Prende-se a uma correspondência pessoa-lugar (cada pessoa sempre no lugar determinado)']],
+    ['Falta de contato visual, olhar indefinido', ['Desvia os olhares diretos, não olhando nos olhos', 'Volta a cabeça ou o olhar quando é chamado (olhar para fora)', 'Expressão do olhar vazio e sem vida', 'Quando segue os estímulos com os olhos, só o faz de maneira intermitente', 'Fixa os objetos com uma olhada periférica, não central', 'Dá a sensação de que não olha']],
+    ['Mímica inexpressiva', ['Se fala, não utiliza a expressão facial, gestual ou vocal com a frequência esperada', 'Não mostra uma reação antecipatória', 'Não expressa através da mímica ou do olhar aquilo que quer ou o que sente', 'Imobilidade facial']],
+    ['Distúrbios de sono', ['Não quer ir dormir', 'Levanta-se muito cedo', 'Sono irregular (em intervalos)', 'Troca o dia pela noite', 'Dorme muito poucas horas']],
+    ['Alteração na alimentação', ['Seletividade alimentar rígida (come sempre o mesmo tipo de alimento)', 'Come outras coisas além de alimentos (papel, insetos)', 'Quando pequeno, não mastigava', 'Apresenta uma atividade ruminante', 'Vômitos', 'Come grosseiramente, esparrama ou atira a comida', 'Rituais (esfarela os alimentos antes de comer)', 'Ausência de paladar (falta de sensibilidade gustativa)']],
+    ['Dificuldade no controle dos esfíncteres', ['Medo de sentar-se no vaso sanitário', 'Utiliza os esfíncteres para manipular o adulto', 'Utiliza os esfíncteres como estimulação corporal, para obtenção de prazer', 'Tem controle diurno, porém o noturno é tardio ou ausente']],
+    ['Exploração dos objetos (apalpar, chupar)', ['Morde e engole objetos não alimentares', 'Chupa e coloca as coisas na boca', 'Cheira tudo', 'Apalpa tudo; examina as superfícies com os dedos de maneira minuciosa']],
+    ['Uso inapropriado dos objetos', ['Ignora os objetos ou mostra interesse momentâneo', 'Pega, golpeia ou simplesmente atira os objetos no chão', 'Conduta atípica com os objetos (segura indiferentemente nas mãos ou gira)', 'Carrega insistentemente consigo determinado objeto', 'Interessa-se somente por uma parte do objeto ou do brinquedo', 'Coleciona objetos estranhos', 'Utiliza os objetos de forma particular e inadequada']],
+    ['Falta de atenção', ['Quando realiza uma atividade, fixa a atenção por curto espaço de tempo ou é incapaz de fixá-la', 'Age como se fosse surdo', 'Tempo de latência de resposta aumentado', 'Entende as instruções com dificuldade (quando não lhe interessa, não as entende)', 'Resposta retardada', 'Muitas vezes dá a sensação de ausência']],
+    ['Ausência de interesse pela aprendizagem', ['Não quer aprender', 'Cansa-se muito depressa, ainda que em atividade de que goste', 'Esquece rapidamente', 'Insiste em ser ajudado, ainda que saiba fazer', 'Insiste constantemente em mudar de atividade']],
+    ['Falta de iniciativa', ['É incapaz de ter iniciativa própria', 'Busca a comodidade', 'Passividade, falta de interesse', 'Lentidão', 'Prefere que outro faça o trabalho para ele']],
+    ['Alteração de linguagem e comunicação', ['Mutismo', 'Estereotipias vocais', 'Entonação incorreta', 'Ecolalia imediata e/ou retardada', 'Repetição de palavras ou frases que podem ou não ter valor comunicativo', 'Emite sons estereotipados quando está agitado e em outras ocasiões, sem razão aparente', 'Não se comunica por gestos', 'As interações com adultos nunca são um diálogo']],
+    ['Não manifesta habilidades e conhecimentos', ['Ainda que saiba fazer uma coisa, não a realiza se não quiser', 'Não demonstra o que sabe até que tenha uma necessidade primária ou um interesse muito específico', 'Aprende coisas, porém só as demonstra em determinados lugares e com determinadas pessoas', 'Às vezes surpreende por suas habilidades inesperadas']],
+    ['Reações inapropriadas diante da frustração', ['Reações de desagrado se é esquecida alguma coisa', 'Reações de desagrado se é interrompida uma atividade de que goste', 'Desgosto quando os desejos e as expectativas não se cumprem', 'Reações de birra']],
+    ['Não assume responsabilidades', ['Não assume nenhuma responsabilidade, por menor que seja', 'Para chegar a fazer alguma coisa, é preciso repetir muitas vezes ou elevar o tom de voz']],
+    ['Hiperatividade / hipoatividade', ['Está constantemente em movimento', 'Mesmo estimulado, não se move', 'Barulhento; dá a sensação de que é obrigado a fazer ruído', 'Vai de um lugar a outro sem parar', 'Fica pulando (saltando) no mesmo lugar', 'Nunca se move do lugar onde está sentado']],
+    ['Movimentos estereotipados e repetitivos', ['Balança-se', 'Olha e brinca com as mãos e os dedos', 'Tapa os olhos e as orelhas', 'Dá pontapés', 'Faz caretas e movimentos estranhos com a face', 'Roda objetos ou gira sobre si mesmo', 'Caminha na ponta dos pés ou saltando, arrasta os pés, anda fazendo movimentos estranhos', 'Torce o corpo, mantém postura desequilibrada, pernas dobradas, cabeça recolhida, extensões violentas do corpo']],
+    ['Ignora o perigo', ['Não se dá conta do perigo', 'Sobe em todos os lugares', 'Parece insensível à dor']],
+    ['Aparecimento antes dos 36 meses', ['Os comportamentos apareceram antes dos 3 anos de idade']]
+  ];
+  var ROM = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI', 'XXII', 'XXIII'];
+  var LISTA_TEA = [
+    {
+      id: 'aq50', sigla: 'QA (AQ-50)', grupo: 'TEA', nome: 'Quociente do Espectro do Autismo (QA) · adultos', min: 12, dem: ['Autoconhecimento', 'Relacionamentos'],
+      obj: 'Rastreio de traços do espectro autista em adultos e adolescentes a partir de 16 anos (autorrelato).',
+      licenca: 'Uso livre para fins clínicos e de pesquisa, citando a fonte (Autism Research Centre, Universidade de Cambridge).',
+      ref: 'Baron-Cohen, S., Wheelwright, S., Skinner, R., Martin, J., & Clubley, E. (2001). The Autism-Spectrum Quotient (AQ). J Autism Dev Disord, 31, 5-17. Versão brasileira: Osório, A., Sanchez, B., & Egito, J. (2017). Universidade Presbiteriana Mackenzie. © MRC-SBC/SJW.',
+      intro: 'Leia cada afirmação com atenção e marque o quanto você concorda ou discorda dela. Não há respostas certas ou erradas.',
+      f: AQ.map(function (txt, i) { return { t: 'likert', id: 'i' + (i + 1), n: i + 1, l: txt, o: [{ v: 1, l: 'Concordo totalmente' }, { v: 2, l: 'Concordo ligeiramente' }, { v: 3, l: 'Discordo ligeiramente' }, { v: 4, l: 'Discordo totalmente' }] }; }),
+      calc: function (a) {
+        var s = 0, falta = 0;
+        for (var i = 1; i <= 50; i++) { var v = a['i' + i]; if (typeof v !== 'number') { falta++; continue; } if (AQ_CONC.indexOf(i) > -1 ? v <= 2 : v >= 3) s++; }
+        var fx = s >= 32 ? { nome: 'Acima do ponto de corte (≥ 32): traços autísticos elevados', nivel: 3 } : s >= 26 ? { nome: 'Entre 26 e 31: zona de atenção em contexto clínico', nivel: 2 } : { nome: 'Abaixo dos pontos de corte', nivel: 0 };
+        return { falta: falta, linhas: [{ nome: 'Escore total', v: s, max: 50, faixa: fx.nome, nivel: fx.nivel }], alertas: [],
+          nota: 'Cada resposta no sentido do traço vale 1 ponto (concordar nos itens 2, 4, 5, 6, 7, 9, 12, 13, 16, 18, 19, 20, 21, 22, 23, 26, 33, 35, 39, 41, 42, 43, 45 e 46; discordar nos demais). Ponto de corte ≥ 32 (Baron-Cohen et al., 2001); em amostras clínicas, ≥ 26 já sugere encaminhamento para avaliação (Woodbury-Smith et al., 2005). Não faz diagnóstico.' };
+      }
+    },
+    {
+      id: 'ata', sigla: 'ATA', grupo: 'TEA', nome: 'Escala de Avaliação de Traços Autísticos (ATA)', min: 15, dem: ['Relacionamentos', 'Autoconhecimento'],
+      obj: 'Rastreio de traços autísticos em crianças a partir de 2 anos, em 23 áreas do comportamento. Pode ser respondida pelos responsáveis ou preenchida pela psicóloga a partir da observação e da entrevista.',
+      licenca: 'Escala publicada na íntegra em periódico científico; cite a fonte.',
+      ref: 'Ballabriga, M. C. J., Escudé, R. M. C., & Llaberia, E. D. (1994). Escala d\'avaluació dels trets autistes (A.T.A.). Versão brasileira: Assumpção Jr., F. B., Kuczynski, E., Gabriel, M. R., & Rocca, C. C. (1999). Escala de avaliação de traços autísticos (ATA): validade e confiabilidade de uma escala para a detecção de condutas autísticas. Arq Neuropsiquiatr, 57(1), 23-29.',
+      intro: 'Para cada área, marque todos os comportamentos que a criança apresenta. Se nenhum se aplicar, deixe a área sem marcar e siga para a próxima.',
+      f: [{ t: 'radio', id: 'quem', l: 'Quem está respondendo?', o: ['Mãe', 'Pai', 'Outra pessoa responsável', 'Professora / professor', 'Psicóloga (observação)', 'Outra pessoa'] }]
+        .concat(ATA.map(function (x, i) { return { t: 'check', id: 's' + (i + 1), l: ROM[i] + '. ' + x[0], o: x[1] }; })),
+      calc: function (a) {
+        var total = 0, areas = [];
+        ATA.forEach(function (x, i) { var n = (a['s' + (i + 1)] || []).length, pt = Math.min(2, n); total += pt; if (pt) areas.push(ROM[i] + ' (' + pt + ')'); });
+        var fx = total >= 15 ? { nome: 'Acima do ponto de corte (≥ 15): sugere traços autísticos', nivel: 3 } : { nome: 'Abaixo do ponto de corte', nivel: 0 };
+        return { falta: 0, linhas: [{ nome: 'Pontuação total', v: total, max: 45, faixa: fx.nome, nivel: fx.nivel }], alertas: [],
+          nota: 'Cada área vale 0 (nenhum comportamento), 1 (um comportamento) ou 2 (dois ou mais). 15 pontos ou mais sugerem a presença de traços autísticos, mais intensos quanto maior a pontuação. Áreas pontuadas: ' + (areas.join(', ') || 'nenhuma') + '.' + (a.quem ? ' Respondido por: ' + a.quem + '.' : '') + ' Não faz diagnóstico.' };
+      }
+    }
+  ];
+  LISTA = LISTA.concat(LISTA_TDAH).concat(LISTA_TEA);
   LISTA.forEach(function (x) { x.ab = 'aval'; });
   window.ATIVIDADES = (window.ATIVIDADES || []).concat(LISTA);
 
@@ -367,6 +434,13 @@
     { nome: 'SCL-90-R', motivo: 'Pago. Vendido pela Pearson.', tipo: 'pago' },
     { nome: 'PSS-10 (Escala de Estresse Percebido)', motivo: 'Uso livre para fins não comerciais, segundo o autor. Confirme as condições antes de incluir.', tipo: 'verificar' },
     { nome: 'PCL-5 (estresse pós-traumático)', motivo: 'Uso livre (Centro Nacional de TEPT dos EUA). Ainda não incluído: preciso conferir o texto da versão brasileira.', tipo: 'livre' },
+    { nome: 'CARS e CARS-2 (Childhood Autism Rating Scale)', motivo: 'Paga. Direitos da Western Psychological Services (WPS); exige manual e folhas originais.', tipo: 'pago' },
+    { nome: 'GARS-2 (Gilliam Autism Rating Scale) e a sua correção', motivo: 'Paga. Direitos da Pro-Ed; a correção depende das tabelas normativas do manual.', tipo: 'pago' },
+    { nome: 'ADI-R (Entrevista Diagnóstica para Autismo – Revisada)', motivo: 'Paga e com treinamento obrigatório. Direitos da WPS; uso restrito a profissionais treinados.', tipo: 'pago' },
+    { nome: 'Guia / Inventário Portage', motivo: 'Material comercial com direitos autorais (Portage Project / editoras); use a sua cópia impressa.', tipo: 'pago' },
+    { nome: 'M-CHAT-R/F (autismo, 16 a 30 meses)', motivo: 'Gratuito para uso clínico em papel, sem alterações. Versões digitais exigem autorização dos autores (mchatscreen.com). O arquivo enviado é a versão de Portugal; para o Brasil, baixe a versão brasileira oficial em mchatscreen.com.', tipo: 'verificar' },
+    { nome: 'ABC / ICA (Inventário de Comportamentos Autísticos)', motivo: 'O Autism Behavior Checklist tem direitos autorais (Krug et al.; hoje faz parte do ASIEP-3, da Pro-Ed). Não incluí: se tiver autorização ou confirmação de uso livre, eu incluo, já com a correção por área (o conteúdo que você enviou está pronto).', tipo: 'verificar' },
+    { nome: 'Avaliação intraverbal (protocolo ABA)', motivo: 'Parece adaptado de protocolos de avaliação de linguagem (como o VB-MAPP, que é pago). Não incluí sem confirmar a autoria; use a sua cópia impressa.', tipo: 'verificar' },
     { nome: 'Escalas de Conners (versões para pais e para professores)', motivo: 'Direitos autorais da Multi-Health Systems (MHS). As traduções que circulam (Barbosa, 1995) podem exigir licença para reprodução e uso digital. Não incluí: se você tiver licença ou confirmação de uso livre, eu incluo (o conteúdo que você enviou já está pronto).', tipo: 'verificar' },
     { nome: 'EPDS (Escala de Depressão Pós-Parto de Edimburgo)', motivo: 'Uso livre, citando a fonte. Ainda não incluído: preciso conferir o texto da versão brasileira.', tipo: 'livre' }
   ];
