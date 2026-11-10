@@ -386,7 +386,7 @@ body.sheet-open .wrap { display: none; }
           <div class="hint">Biblioteca de atividades interativas de TCC, Humanista e DBT para enviar aos pacientes e receber as respostas.</div>
           <div class="stackbtn">
             <a class="cta" href="atividades/" style="text-align:center;text-decoration:none">Abrir atividades</a>
-            <a class="ghost" href="atividades/#respostas" style="text-align:center;text-decoration:none">Ver respostas recebidas</a>
+            <a class="ghost" href="atividades/#respostas" style="text-align:center;text-decoration:none;color:inherit">Ver respostas recebidas</a>
           </div>
         </section>
       </aside>
@@ -451,6 +451,14 @@ body.sheet-open .wrap { display: none; }
       <button class="ghost" id="importbak">Importar cópia de segurança</button>
     </div>
     <input type="file" id="bakfile" accept=".json,application/json" hidden>
+    <div id="syncbox" hidden style="margin-top:14px">
+      <div id="sync-st"></div>
+      <div class="btnrow" style="justify-content:center;margin-top:8px">
+        <button class="ghost" id="sync-on">Sincronizar com outros aparelhos</button>
+        <button class="ghost" id="sync-now" hidden>Sincronizar agora</button>
+        <button class="ghost" id="sync-off" hidden>Desativar neste aparelho</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -619,6 +627,26 @@ body.sheet-open .wrap { display: none; }
         <button type="button" class="ghost" id="p-sched" hidden>Agendar sessão</button>
         <button type="button" class="ghost" id="p-cancel">Cancelar</button>
         <button type="submit" class="cta">Salvar</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<div class="overlay" id="yoverlay" hidden>
+  <form class="sheet f" id="yform" role="dialog" aria-modal="true" aria-labelledby="yttl" autocomplete="off">
+    <h2 id="yttl">Sincronizar aparelhos</h2>
+    <div class="hint">Use a Agenda no computador e no celular com os mesmos dados. Tudo é criptografado neste aparelho antes de ir para a sua planilha do Google: nem o Google consegue ler. Anexos (PDF e imagens) não são sincronizados.</div>
+    <label for="y-token" id="y-tokenl">Senha da planilha (a mesma que está no Apps Script)<input id="y-token" type="password" autocomplete="off"></label>
+    <div id="y-step2" hidden>
+      <div class="hint" id="y-step2-t" style="margin-bottom:8px"></div>
+      <label for="y-senha">Senha de sincronização<input id="y-senha" type="password" autocomplete="new-password" minlength="8"></label>
+      <label for="y-senha2" id="y-senha2l" style="margin-top:10px">Repita a senha de sincronização<input id="y-senha2" type="password" autocomplete="new-password"></label>
+    </div>
+    <div class="warn" id="y-err" hidden></div>
+    <div class="actions">
+      <div class="r">
+        <button type="button" class="ghost" id="y-cancel">Cancelar</button>
+        <button type="submit" class="cta" id="y-ok">Continuar</button>
       </div>
     </div>
   </form>
@@ -815,7 +843,7 @@ body.sheet-open .wrap { display: none; }
 
   /* ---------- armazenamento ---------- */
   function lsLoad() { try { return JSON.parse(localStorage.getItem(LS) || '[]'); } catch (e) { return []; } }
-  function lsSave() { try { localStorage.setItem(LS, JSON.stringify(appts)); } catch (e) {} }
+  function lsSave() { try { localStorage.setItem(LS, JSON.stringify(appts)); } catch (e) {} syncTouched(); }
 
   function strip(a) {
     var o = { tipo: a.tipo === 'pessoal' ? 'pessoal' : 'sessao', dia: a.dia, hora: a.hora, status: a.status, obs: a.obs || '' };
@@ -829,7 +857,7 @@ body.sheet-open .wrap { display: none; }
 
   /* coleções genéricas: evoluções e tarefas */
   function clsLoad(c) { try { return JSON.parse(localStorage.getItem(c.ls) || '[]'); } catch (e) { return []; } }
-  function clsSave(c) { try { localStorage.setItem(c.ls, JSON.stringify(c.items)); } catch (e) {} }
+  function clsSave(c) { try { localStorage.setItem(c.ls, JSON.stringify(c.items)); } catch (e) {} syncTouched(); }
   function csave(c, o) {
     if (store.mode === 'db') {
       var data = Object.assign({}, o); delete data.id;
@@ -854,6 +882,7 @@ body.sheet-open .wrap { display: none; }
     try { var sv = JSON.parse(localStorage.getItem(LSS) || 'null'); if (Array.isArray(sv) && sv.length) { var mg = migraServ(sv); SERVICES = mg || sv; if (mg) localStorage.setItem(LSS, JSON.stringify(mg)); } } catch (e) {}
     fillServ();
     loaded = true; render();
+    if (!syncInit.done) { syncInit.done = true; syncInit(); }
   }
   function save(a) {
     if (store.mode === 'db') {
@@ -879,7 +908,7 @@ body.sheet-open .wrap { display: none; }
   }
 
   function plsLoad() { try { return JSON.parse(localStorage.getItem(LSP) || '[]'); } catch (e) { return []; } }
-  function plsSave() { try { localStorage.setItem(LSP, JSON.stringify(pats)); } catch (e) {} }
+  function plsSave() { try { localStorage.setItem(LSP, JSON.stringify(pats)); } catch (e) {} syncTouched(); }
   function pstrip(p) {
     return { nome: p.nome, nasc: p.nasc || '', tel: p.tel || '', email: p.email || '', mod: p.mod || 'Presencial',
       tipo: p.tipo === 'casal' ? 'casal' : 'individual', n1: p.n1 || '', n2: p.n2 || '', nasc2: p.nasc2 || '', tel2: p.tel2 || '', cpf2: p.cpf2 || '', email2: p.email2 || '', rel: p.rel || '', desde: p.desde || '', filhos: p.filhos || '',
@@ -1179,7 +1208,7 @@ body.sheet-open .wrap { display: none; }
     $('storage').textContent = store.mode === 'db'
       ? 'Agenda salva na sua conta e visível só para você.'
       : (STANDALONE
-        ? 'Seus dados ficam guardados só neste aparelho. ' + (lb ? 'Última cópia de segurança: ' + fmtBr(lb) + '.' : 'Ainda não há cópia de segurança. Baixe uma agora.')
+        ? (SY && SY.on ? 'Seus dados ficam neste aparelho e numa cópia criptografada na sua planilha do Google. ' : 'Seus dados ficam guardados só neste aparelho. ') + (lb ? 'Última cópia de segurança: ' + fmtBr(lb) + '.' : 'Ainda não há cópia de segurança. Baixe uma agora.')
         : 'Agenda salva neste navegador. Abra o link logada para guardá-la na sua conta.');
   }
 
@@ -1493,6 +1522,7 @@ body.sheet-open .wrap { display: none; }
     if (e.key !== 'Escape') return;
     if (!$('poverlay').hidden) closeP();
     if (!$('soverlay').hidden) closeS();
+    if (!$('yoverlay').hidden) closeY();
   });
 
   /* ---------- tipo de item (sessão ou compromisso pessoal) ---------- */
@@ -1762,6 +1792,240 @@ body.sheet-open .wrap { display: none; }
     } catch (err) { if (!err || err.code !== 'declined') toast('Não foi possível salvar o arquivo.'); }
   });
 
+  /* ---------- sincronização entre aparelhos (criptografada, pela planilha do Google) ----------
+     Cada registro guarda a hora da última mudança. Ao sincronizar, junta o que está neste
+     aparelho com o que está na planilha, ficando com a versão mais nova de cada registro.
+     Exclusões viram "lápides" para não voltarem de outro aparelho.
+     Tudo é criptografado aqui (AES-GCM, chave derivada da senha de sincronização com PBKDF2):
+     a planilha guarda só um texto embaralhado. */
+  var SY = { key: null, on: false, busy: false, last: '', err: '', timer: null, lastEdit: 0, applying: false };
+  var LSY_CFG = 'agenda-barbara-serra-sync-v1';      // { on, salt, k (chave), ver, last }
+  var LSY_META = 'agenda-barbara-serra-sync-meta-v1'; // { col: { id: { t, h } }, del: { col: { id: t } } }
+  var LSY_TOKEN = 'agenda-barbara-serra-senha-v1';     // senha da planilha (a mesma do recebimento)
+  var SYNC_COLS = ['agenda', 'pacientes', 'evolucoes', 'tarefas'];
+  function syGet(k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
+  function sySet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  function syncAvail() { return STANDALONE && store.mode === 'local' && !!(window.AGENDA_CFG || {}).endpoint && !!(window.crypto && crypto.subtle); }
+  function syncTouched() {
+    if (!SY || SY.applying) return;
+    SY.lastEdit = Date.now();
+    if (SY.on) { clearTimeout(SY.timer); SY.timer = setTimeout(function () { syncNow(false); }, 4000); }
+  }
+  function syHash(s) { var h = 2166136261; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36) + s.length.toString(36); }
+  function syCols() { return { agenda: appts, pacientes: pats, evolucoes: C.evols.items, tarefas: C.tasks.items }; }
+
+  // estado deste aparelho: { recs: { col: { id: { t, d } } }, del: {...}, serv: { t, d } }
+  function syLocalState() {
+    var meta = syGet(LSY_META, { col: {}, del: {}, serv: null });
+    var now = SY.lastEdit || Date.now(), cols = syCols(), st = { recs: {}, del: {}, serv: null };
+    SYNC_COLS.forEach(function (c) {
+      var m = meta.col[c] || {}, seen = {};
+      st.recs[c] = {}; st.del[c] = Object.assign({}, (meta.del || {})[c] || {});
+      (cols[c] || []).forEach(function (o) {
+        if (!o || !o.id) return;
+        seen[o.id] = 1;
+        var h = syHash(JSON.stringify(o)), old = m[o.id];
+        st.recs[c][o.id] = { t: old ? (old.h === h ? old.t : now) : (meta.inicio ? now : 1), d: o };
+      });
+      Object.keys(m).forEach(function (id) { if (!seen[id] && !st.del[c][id]) st.del[c][id] = now; });
+    });
+    var sh = syHash(JSON.stringify(SERVICES)), ms = meta.serv;
+    st.serv = { t: ms ? (ms.h === sh ? ms.t : now) : 1, d: SERVICES };
+    return st;
+  }
+  function syMerge(a, b) {
+    var out = { recs: {}, del: {}, serv: null };
+    SYNC_COLS.forEach(function (c) {
+      var ra = (a.recs || {})[c] || {}, rb = (b.recs || {})[c] || {}, da = (a.del || {})[c] || {}, db = (b.del || {})[c] || {};
+      var r = {}, d = {};
+      Object.keys(da).concat(Object.keys(db)).forEach(function (id) { d[id] = Math.max(da[id] || 0, db[id] || 0); });
+      Object.keys(ra).concat(Object.keys(rb)).forEach(function (id) {
+        var x = ra[id], y = rb[id], w = !x ? y : !y ? x : (y.t >= x.t ? y : x);
+        if (d[id] && d[id] >= w.t) return; // excluído depois da última mudança
+        r[id] = w; delete d[id];
+      });
+      out.recs[c] = r; out.del[c] = d;
+    });
+    var sa = a.serv, sb = b.serv;
+    out.serv = !sa ? sb : !sb ? sa : (sb.t >= sa.t ? sb : sa);
+    return out;
+  }
+  function syApply(st) {
+    SY.applying = true;
+    try {
+      var list = function (c) { var r = st.recs[c] || {}; return Object.keys(r).map(function (id) { return r[id].d; }); };
+      appts = list('agenda'); pats = list('pacientes'); C.evols.items = list('evolucoes'); C.tasks.items = list('tarefas');
+      lsSave(); plsSave(); clsSave(C.evols); clsSave(C.tasks);
+      if (st.serv && Array.isArray(st.serv.d) && st.serv.d.length) { SERVICES = st.serv.d; try { localStorage.setItem(LSS, JSON.stringify(SERVICES)); } catch (e) {} fillServ(); }
+      var meta = { inicio: 1, col: {}, del: st.del, serv: st.serv ? { t: st.serv.t, h: syHash(JSON.stringify(SERVICES)) } : null };
+      SYNC_COLS.forEach(function (c) {
+        meta.col[c] = {};
+        Object.keys(st.recs[c] || {}).forEach(function (id) { meta.col[c][id] = { t: st.recs[c][id].t, h: syHash(JSON.stringify(st.recs[c][id].d)) }; });
+      });
+      sySet(LSY_META, meta);
+    } finally { SY.applying = false; }
+    SY.lastEdit = 0;
+    render();
+  }
+
+  // criptografia
+  function b64(buf) { var s = '', u = new Uint8Array(buf); for (var i = 0; i < u.length; i += 8192) s += String.fromCharCode.apply(null, u.subarray(i, i + 8192)); return btoa(s); }
+  function unb64(s) { var b = atob(s), u = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; }
+  async function syDerive(senha, saltB64) {
+    var base = await crypto.subtle.importKey('raw', new TextEncoder().encode(senha), 'PBKDF2', false, ['deriveKey']);
+    return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: unb64(saltB64), iterations: 310000, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+  }
+  async function syPack(obj) {
+    var data = new TextEncoder().encode(JSON.stringify(obj)), z = 0;
+    if (window.CompressionStream) { try { data = new Uint8Array(await new Response(new Blob([data]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer()); z = 1; } catch (e) {} }
+    var iv = crypto.getRandomValues(new Uint8Array(12));
+    var ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, SY.key, data);
+    return JSON.stringify({ v: 1, z: z, salt: syGet(LSY_CFG, {}).salt, iv: b64(iv), ct: b64(ct) });
+  }
+  async function syUnpack(txt, key) {
+    var o = JSON.parse(txt);
+    var pt = new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(o.iv) }, key || SY.key, unb64(o.ct)));
+    if (o.z) pt = new Uint8Array(await new Response(new Blob([pt]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());
+    return JSON.parse(new TextDecoder().decode(pt));
+  }
+
+  // conversa com a planilha
+  function syToken() { try { return localStorage.getItem(LSY_TOKEN) || ''; } catch (e) { return ''; } }
+  function syGetRemote(token) {
+    return fetch(window.AGENDA_CFG.endpoint + '?action=sync_get&token=' + encodeURIComponent(token), { cache: 'no-store' })
+      .then(function (r) { return r.text(); }).then(function (t) { try { return JSON.parse(t); } catch (e) { return { ok: false, erro: 'formato' }; } });
+  }
+  function syPutRemote(token, base, data) {
+    return fetch(window.AGENDA_CFG.endpoint, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ sync: 'put', token: token, base: base, data: data }) })
+      .then(function (r) { return r.text(); }).then(function (t) { try { return JSON.parse(t); } catch (e) { return { ok: false, erro: 'formato' }; } });
+  }
+  function syErrMsg(j) {
+    if (!j) return 'sem resposta da planilha';
+    if (j.erro === 'token') return 'senha da planilha incorreta';
+    if (j.erro === 'formato' || j.erro === 'acao' || j.erro === 'dados') return 'atualize o Apps Script da planilha para a versão 6';
+    return 'erro na planilha';
+  }
+  function anySheetOpen() { return [].some.call(document.querySelectorAll('.overlay'), function (o) { return !o.hidden; }); }
+
+  async function syncNow(manual) {
+    if (!SY.on || !SY.key || SY.busy) return;
+    if (!manual && anySheetOpen()) { clearTimeout(SY.timer); SY.timer = setTimeout(function () { syncNow(false); }, 5000); return; }
+    SY.busy = true; SY.err = ''; renderSync();
+    try {
+      var token = syToken();
+      if (!token) throw new Error('falta a senha da planilha');
+      for (var tent = 0; tent < 3; tent++) {
+        var rem = await syGetRemote(token);
+        if (!rem || !rem.ok) throw new Error(syErrMsg(rem));
+        var remoto = rem.data ? await syUnpack(rem.data).catch(function () { throw new Error('a senha de sincronização não confere com a dos outros aparelhos'); }) : { recs: {}, del: {}, serv: null };
+        var mesclado = syMerge(syLocalState(), remoto);
+        if (anySheetOpen() && !manual) break; // aplica depois, para não atrapalhar quem está digitando
+        syApply(mesclado);
+        if (JSON.stringify(mesclado) === JSON.stringify(remoto)) { sySet(LSY_CFG, Object.assign(syGet(LSY_CFG, {}), { ver: rem.ver })); break; }
+        var put = await syPutRemote(token, rem.ver || 0, await syPack(mesclado));
+        if (put && put.ok) { sySet(LSY_CFG, Object.assign(syGet(LSY_CFG, {}), { ver: put.ver })); break; }
+        if (!put || put.erro !== 'conflito') throw new Error(syErrMsg(put));
+      }
+      SY.last = new Date().toISOString();
+      sySet(LSY_CFG, Object.assign(syGet(LSY_CFG, {}), { last: SY.last }));
+      if (manual) toast('Sincronizado');
+    } catch (err) {
+      SY.err = (err && err.message) || 'sem conexão';
+      if (/Failed to fetch|NetworkError|Load failed/i.test(SY.err)) SY.err = 'sem conexão';
+      if (manual) toast('Não foi possível sincronizar: ' + SY.err);
+    } finally { SY.busy = false; renderSync(); }
+  }
+
+  function renderSync() {
+    var box = $('syncbox'); if (!box) return;
+    if (!syncAvail()) { box.hidden = true; return; }
+    box.hidden = false;
+    var hm = function (iso) { try { return new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
+    $('sync-st').textContent = !SY.on ? 'Sincronização entre aparelhos: desativada. Os dados ficam só neste aparelho.'
+      : SY.busy ? 'Sincronizando…'
+      : SY.err ? 'Sincronização com problema: ' + SY.err + '.'
+      : 'Sincronização ativa e criptografada' + (SY.last ? ' · última em ' + hm(SY.last) : '') + '.';
+    $('sync-on').hidden = SY.on; $('sync-now').hidden = !SY.on; $('sync-off').hidden = !SY.on;
+  }
+
+  // ativar
+  var syRemoteCache = null;
+  function openY() {
+    syRemoteCache = null;
+    $('y-step2').hidden = true; $('y-err').hidden = true; $('y-ok').textContent = 'Continuar';
+    $('y-token').value = syToken(); $('y-tokenl').hidden = !!syToken();
+    $('y-senha').value = ''; $('y-senha2').value = '';
+    $('yoverlay').hidden = false;
+    setTimeout(function () { (syToken() ? $('y-ok') : $('y-token')).focus(); }, 30);
+  }
+  function closeY() { $('yoverlay').hidden = true; }
+  function yErr(m) { $('y-err').textContent = m; $('y-err').hidden = false; }
+  $('yform').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    $('y-err').hidden = true;
+    var token = $('y-token').value.trim();
+    if (!token) return yErr('Digite a senha da planilha (a mesma que está no Apps Script).');
+    var btn = $('y-ok'); btn.disabled = true;
+    try {
+      if (!syRemoteCache) {
+        var rem = await syGetRemote(token);
+        if (!rem || !rem.ok) return yErr('Não foi possível usar a planilha: ' + syErrMsg(rem) + '.');
+        try { localStorage.setItem(LSY_TOKEN, token); } catch (er) {}
+        syRemoteCache = rem;
+        var novo = !rem.data;
+        $('y-step2').hidden = false; $('y-senha2l').hidden = !novo;
+        $('y-step2-t').textContent = novo
+          ? 'Crie uma senha de sincronização. Ela criptografa os dados antes de saírem deste aparelho. Use a mesma senha nos outros aparelhos. Guarde bem: sem ela não é possível recuperar os dados sincronizados.'
+          : 'Já existe uma sincronização. Digite a mesma senha de sincronização usada no outro aparelho.';
+        btn.textContent = 'Ativar sincronização';
+        setTimeout(function () { $('y-senha').focus(); }, 30);
+        return;
+      }
+      var senha = $('y-senha').value;
+      if (senha.length < 8) return yErr('A senha de sincronização precisa ter pelo menos 8 caracteres.');
+      var salt, key;
+      if (!syRemoteCache.data) {
+        if (senha !== $('y-senha2').value) return yErr('As duas senhas não são iguais.');
+        salt = b64(crypto.getRandomValues(new Uint8Array(16)));
+        key = await syDerive(senha, salt);
+      } else {
+        salt = JSON.parse(syRemoteCache.data).salt;
+        key = await syDerive(senha, salt);
+        try { await syUnpack(syRemoteCache.data, key); } catch (er) { return yErr('Senha de sincronização incorreta. Use a mesma do outro aparelho.'); }
+      }
+      var raw = b64(await crypto.subtle.exportKey('raw', key));
+      sySet(LSY_CFG, { on: true, salt: salt, k: raw, ver: 0, last: '' });
+      SY.key = key; SY.on = true;
+      closeY();
+      toast('Sincronização ativada');
+      syncNow(true);
+    } finally { btn.disabled = false; }
+  });
+  $('y-cancel').addEventListener('click', closeY);
+  $('yoverlay').addEventListener('click', function (e) { if (e.target === $('yoverlay')) closeY(); });
+  $('sync-on').addEventListener('click', openY);
+  $('sync-now').addEventListener('click', function () { syncNow(true); });
+  $('sync-off').addEventListener('click', function () {
+    if (!confirm('Desativar a sincronização neste aparelho? Os dados continuam aqui e nos outros aparelhos.')) return;
+    sySet(LSY_CFG, { on: false }); SY.on = false; SY.key = null; SY.err = ''; renderSync();
+  });
+  async function syncInit() {
+    if (!syncAvail()) { renderSync(); return; }
+    var cfg = syGet(LSY_CFG, {});
+    if (cfg.on && cfg.k) {
+      try {
+        SY.key = await crypto.subtle.importKey('raw', unb64(cfg.k), { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
+        SY.on = true; SY.last = cfg.last || '';
+      } catch (e) { SY.on = false; }
+    }
+    renderSync();
+    if (SY.on) setTimeout(function () { syncNow(false); }, 1500);
+    // valem também quando a sincronização é ativada depois (syncNow não faz nada se estiver desligada)
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) syncNow(false); });
+    window.addEventListener('online', function () { syncNow(false); });
+    setInterval(function () { if (!document.hidden) syncNow(false); }, 3 * 60 * 1000);
+  }
+
   /* ---------- importar cópia de segurança (une com os dados atuais) ---------- */
   function mergeById(cur, inc) {
     var m = {};
@@ -1856,7 +2120,7 @@ body.sheet-open .wrap { display: none; }
     clearTimeout(showErr.h); showErr.h = setTimeout(function () { b.hidden = true; }, 12000);
   }
   window.addEventListener('error', function (e) { showErr('Erro na página: ' + (e && e.message)); });
-  var sheets = ['overlay', 'poverlay', 'soverlay'].map(function (id) { return $(id); });
+  var sheets = ['overlay', 'poverlay', 'soverlay', 'yoverlay'].map(function (id) { return $(id); });
   var savedY = 0;
   var mo = new MutationObserver(function () {
     var openEl = sheets.filter(function (o) { return !o.hidden; })[0];
@@ -1997,7 +2261,7 @@ body.sheet-open .wrap { display: none; }
     if (store.mode === 'db') return store.base.collection('config').doc('servicos').set({ lista: list });
     SERVICES = list;
     try { localStorage.setItem(LSS, JSON.stringify(list)); } catch (e) {}
-    fillServ(); render();
+    syncTouched(); fillServ(); render();
     return Promise.resolve();
   }
   function openS(s) {

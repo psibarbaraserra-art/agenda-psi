@@ -1,6 +1,8 @@
 /**
- * Caixa de entrada das atividades da Agenda Psi (Barbara Serra) - versao 5.
+ * Caixa de entrada das atividades e sincronizacao da Agenda Psi (Barbara Serra) - versao 6.
  * Versao 5: recebe so as respostas das atividades terapeuticas (aba "Atividades").
+ * Versao 6: guarda a sincronizacao entre aparelhos (aba "Sincronizacao"). Os dados chegam
+ *           ja criptografados pelo aplicativo: a planilha nao consegue le-los.
  * Cadastros com nome, CPF e nascimento nao sao mais recebidos: a psicologa cadastra na Agenda.
  *
  * 1) Troque SENHA (so na linha abaixo) por uma senha so sua, com letras e numeros.
@@ -34,6 +36,32 @@ function abaAtividades_() {
   if (!sh) { sh = ss.insertSheet('Atividades'); sh.appendRow(['id', 'recebido em', 'resposta', 'importado']); }
   return sh;
 }
+function abaSync_() {
+  const ss = planilha_();
+  let sh = ss.getSheetByName('Sincronizacao');
+  if (!sh) { sh = ss.insertSheet('Sincronizacao'); sh.getRange(1, 1).setValue('Dados criptografados pelo aplicativo. Nao edite.'); }
+  return sh;
+}
+function senhaOk_(t) { return SENHA !== PADRAO && String(t || '').trim() === SENHA.trim(); }
+function syncLer_() {
+  const sh = abaSync_();
+  const n = sh.getLastRow();
+  const ver = Number(PropertiesService.getScriptProperties().getProperty('SYNC_VER') || 0);
+  if (n < 2) return { ver: ver, data: '' };
+  const vals = sh.getRange(2, 1, n - 1, 1).getValues();
+  return { ver: ver, data: vals.map(function (r) { return String(r[0]); }).join('') };
+}
+function syncGravar_(data) {
+  const sh = abaSync_();
+  const PEDACO = 40000, linhas = [];
+  for (let i = 0; i < data.length; i += PEDACO) linhas.push([data.slice(i, i + PEDACO)]);
+  if (sh.getLastRow() > 1) sh.getRange(2, 1, sh.getLastRow() - 1, 1).clearContent();
+  if (linhas.length) sh.getRange(2, 1, linhas.length, 1).setNumberFormat('@').setValues(linhas);
+  const props = PropertiesService.getScriptProperties();
+  const ver = Number(props.getProperty('SYNC_VER') || 0) + 1;
+  props.setProperty('SYNC_VER', String(ver));
+  return ver;
+}
 function resp_(o) {
   return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);
 }
@@ -45,6 +73,17 @@ function autorizar() {
 function doPost(e) {
   try {
     const o = JSON.parse(e.postData.contents);
+    if (o && o.sync === 'put') {
+      if (!senhaOk_(o.token)) return resp_({ ok: false, erro: 'token' });
+      if (typeof o.data !== 'string' || o.data.indexOf('{') !== 0 || o.data.length > 20000000) return resp_({ ok: false, erro: 'dados' });
+      const trava = LockService.getScriptLock();
+      trava.waitLock(30000);
+      try {
+        const atual = Number(PropertiesService.getScriptProperties().getProperty('SYNC_VER') || 0);
+        if (Number(o.base || 0) !== atual) return resp_({ ok: false, erro: 'conflito', ver: atual });
+        return resp_({ ok: true, ver: syncGravar_(o.data) });
+      } finally { trava.releaseLock(); }
+    }
     if (!o || typeof o.code !== 'string') return resp_({ ok: false, erro: 'dados' });
     const atividade = o.code.indexOf('AT1:') === 0 && o.code.length <= 45000;
     if (!atividade) return resp_({ ok: false, erro: 'dados' });
@@ -63,9 +102,10 @@ function doGet(e) {
     const p = (e && e.parameter) || {};
     if (p.ping) {
       const sh = aba_();
-      return resp_({ ok: true, versao: 5, senhaConfigurada: SENHA !== PADRAO, planilha: planilha_().getUrl(), linhas: Math.max(0, sh.getLastRow() - 1) });
+      return resp_({ ok: true, versao: 6, senhaConfigurada: SENHA !== PADRAO, planilha: planilha_().getUrl(), linhas: Math.max(0, sh.getLastRow() - 1) });
     }
-    if (SENHA === PADRAO || String(p.token || '').trim() !== SENHA.trim()) return resp_({ ok: false, erro: 'token' });
+    if (!senhaOk_(p.token)) return resp_({ ok: false, erro: 'token' });
+    if (p.action === 'sync_get') { const r = syncLer_(); return resp_({ ok: true, ver: r.ver, data: r.data }); }
     const ativ = p.action === 'atividades' || p.action === 'atividades_ok';
     const sh = ativ ? abaAtividades_() : aba_();
     const dados = sh.getDataRange().getValues();
