@@ -62,3 +62,5 @@ São instrumentos de rastreio: não substituem a avaliação psicológica e não
 - **Documentos:** modelos de declaração, atestado, relatório, relatório de TDAH (infantil), laudo e o roteiro de entrevista de rastreamento de TDAH, com cabeçalho e assinatura para imprimir ou salvar em PDF. Ao digitar o nome, os dados do cadastro da Agenda são sugeridos. Também tem os materiais de apoio (ferramentas digitais e legislação sobre TDAH).
 - Escalas de Conners não foram incluídas (direitos autorais da MHS).
 Para editar: `atividades/avaliacoes.js`, `atividades/questionarios.js` e `atividades/documentos.js`.
+- **Documentos (início do atendimento):** anamnese completa (adulto), termo de consentimento, contrato terapêutico e plano terapêutico. **Criança e adolescente:** anamnese infantil completa, autorização dos responsáveis e termo de ciência e orientações sobre sigilo. Os termos saem com assinatura do paciente ou do responsável, e todos podem ser impressos em branco.
+- Para o paciente, as escalas aparecem como **rastreio**, os questionários como **questionário** e as atividades como **atividade**.
