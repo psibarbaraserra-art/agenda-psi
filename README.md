@@ -64,3 +64,10 @@ São instrumentos de rastreio: não substituem a avaliação psicológica e não
 Para editar: `atividades/avaliacoes.js`, `atividades/questionarios.js` e `atividades/documentos.js`.
 - **Documentos (início do atendimento):** anamnese completa (adulto), termo de consentimento, contrato terapêutico e plano terapêutico. **Criança e adolescente:** anamnese infantil completa, autorização dos responsáveis e termo de ciência e orientações sobre sigilo. Os termos saem com assinatura do paciente ou do responsável, e todos podem ser impressos em branco.
 - Para o paciente, as escalas aparecem como **rastreio**, os questionários como **questionário** e as atividades como **atividade**.
+
+## TEA (autismo)
+- **Rastreios → TEA:** QA/AQ-50 (adultos, versão brasileira 2017) e ATA (Escala de Avaliação de Traços Autísticos), com correção automática.
+- **Questionários → TEA:** anamnese TEA (responsáveis), entrevista TEA adulto e 20 perguntas norteadoras.
+- **Documentos → TEA:** relatório de avaliação de TEA, anamnese TEA e entrevista TEA adulto com identificação, e roteiro de observação de sinais em bebês.
+- Não incluídos (pagos, com treinamento ou com direitos autorais): CARS/CARS-2, GARS-2, ADI-R, Portage, M-CHAT-R/F digital, ABC/ICA e avaliação intraverbal. Eles aparecem listados na aba Rastreios.
+- Os rastreios e questionários agora aparecem agrupados por tema.

@@ -17,7 +17,7 @@
 
   var LISTA = [
     {
-      id: 'anam-adulto-completa', nome: 'Anamnese completa (adulto)', min: 30, dem: ['Autoconhecimento', 'Ansiedade', 'Depressão', 'Relacionamentos'],
+      id: 'anam-adulto-completa', grupo: 'Geral', nome: 'Anamnese completa (adulto)', min: 30, dem: ['Autoconhecimento', 'Ansiedade', 'Depressão', 'Relacionamentos'],
       obj: 'História de vida completa para o início da psicoterapia: queixa, saúde, família, relacionamentos, trabalho, hábitos, recursos e expectativas.',
       ref: 'Roteiro de anamnese psicológica para adultos.',
       intro: 'Este questionário ajuda a psicóloga a conhecer você e a sua história antes ou no início do acompanhamento. Responda com calma e com suas palavras; você pode salvar e continuar depois e deixar em branco o que preferir conversar pessoalmente.',
@@ -63,7 +63,7 @@
       ]
     },
     {
-      id: 'anam-adulto', nome: 'Anamnese adulto (investigação de TDAH)', min: 20, dem: ['Autoconhecimento', 'Impulsividade'],
+      id: 'anam-adulto', grupo: 'TDAH', nome: 'Anamnese adulto (investigação de TDAH)', min: 20, dem: ['Autoconhecimento', 'Impulsividade'],
       obj: 'Levantar a história de vida, de desenvolvimento, escolar, familiar e médica, e as dificuldades atuais de atenção e organização.',
       ref: REF,
       intro: 'Este questionário ajuda a psicóloga a conhecer melhor sua história antes da avaliação. Responda com calma e com suas palavras. Pode deixar em branco o que não souber ou não quiser responder; vamos conversar sobre tudo na sessão.',
@@ -107,7 +107,7 @@
       ]
     },
     {
-      id: 'perg-tdah-adulto', nome: 'Perguntas sobre atenção e impulsividade (adulto)', min: 15, dem: ['Autoconhecimento', 'Impulsividade'],
+      id: 'perg-tdah-adulto', grupo: 'TDAH', nome: 'Perguntas sobre atenção e impulsividade (adulto)', min: 15, dem: ['Autoconhecimento', 'Impulsividade'],
       obj: 'Perguntas abertas para o adulto descrever, com exemplos, as situações de desatenção, inquietação e impulsividade.',
       ref: 'Material de apoio da psicóloga (roteiro de perguntas, sem correção).',
       intro: 'Responda cada pergunta contando, se possível, um exemplo do seu dia a dia. Não existe resposta certa ou errada.',
@@ -130,7 +130,7 @@
       ].map(function (q, i) { return ar('q' + (i + 1), (i + 1) + '. ' + q); })
     },
     {
-      id: 'anam-infantil', nome: 'Anamnese infantil (para pais ou responsáveis)', min: 40, dem: ['Autoconhecimento', 'Relacionamentos'],
+      id: 'anam-infantil', grupo: 'Geral', nome: 'Anamnese infantil (para pais ou responsáveis)', min: 40, dem: ['Autoconhecimento', 'Relacionamentos'],
       obj: 'História da criança: motivo da consulta, gestação, desenvolvimento, sono, linguagem, sociabilidade, escola, saúde e rotina familiar.',
       ref: REF,
       intro: 'Este questionário é para a mãe, o pai ou a pessoa responsável pela criança. Ele ajuda a psicóloga a conhecer a história da criança. Responda com calma; você pode salvar e continuar depois, e deixar em branco o que não souber. Os dados de identificação (nomes, endereço e telefone) já estão com a psicóloga e não precisam ser escritos aqui.',
@@ -198,7 +198,7 @@
       ]
     },
     {
-      id: 'entrev-resp', nome: 'Entrevista sobre atenção e comportamento (pais, responsáveis ou escola)', min: 15, dem: ['Impulsividade', 'Relacionamentos'],
+      id: 'entrev-resp', grupo: 'TDAH', nome: 'Entrevista sobre atenção e comportamento (pais, responsáveis ou escola)', min: 15, dem: ['Impulsividade', 'Relacionamentos'],
       obj: 'Questionário para os responsáveis ou a escola descreverem atenção, comportamento e aprendizagem da criança.',
       ref: 'Modelo de entrevista avaliativa do material de apoio da psicóloga.',
       intro: 'Este questionário pode ser respondido pela família ou pela escola. Descreva, com exemplos, como a criança ou adolescente se comporta.',
@@ -220,6 +220,129 @@
       ]
     }
   ];
+
+  var SIM3 = ['Sim', 'Às vezes', 'Não'];
+  LISTA = LISTA.concat([
+    {
+      id: 'anam-tea', grupo: 'TEA', nome: 'Anamnese TEA (para pais ou responsáveis)', min: 35, dem: ['Relacionamentos', 'Autoconhecimento'],
+      obj: 'História da gestação, do nascimento e do desenvolvimento (motor, linguagem, visão, sociabilidade, estereotipias) e rotina da criança, para investigação de TEA.',
+      ref: 'Roteiro de anamnese para TEA do material de apoio da psicóloga.',
+      intro: 'Este questionário é para a mãe, o pai ou a pessoa responsável. Responda com calma; você pode salvar e continuar depois e deixar em branco o que não souber. Os nomes e contatos já estão com a psicóloga e não precisam ser escritos aqui.',
+      f: [
+        h('Sobre a criança e a família'),
+        tx('idade', 'Idade da criança'), tx('genero', 'Gênero'),
+        ck('quem', 'Quem está respondendo?', ['Mãe', 'Pai', 'Outra pessoa responsável']), tx('quemout', 'Se outra pessoa, qual o parentesco?'),
+        ar('compos', 'Composição familiar (quem mora com a criança)'),
+        h('Motivo do atendimento'),
+        ar('queixa', 'Qual é a principal preocupação ou motivo do atendimento?'),
+        ar('idadetea', 'Se já houve diagnóstico ou suspeita de TEA, com que idade isso foi percebido? Por quem?'),
+        ar('motor', 'Apresenta dificuldades motoras ou de orientação espacial? Quais?'),
+        h('Gestação'),
+        rd('planej', 'A gestação foi planejada?', SN),
+        ar('perdas', 'Houve gestações interrompidas ou perdas anteriores? (se quiser contar)'),
+        ar('reacao', 'Como a mãe reagiu à notícia da gravidez? Como se sentiu?'),
+        rd('prenatal', 'Fez acompanhamento pré-natal?', SN),
+        ar('queda', 'Sofreu alguma queda durante a gravidez? Em que mês?'),
+        ar('doencas', 'Teve doenças durante a gestação? Quais?'),
+        ar('medic', 'Usou medicamentos na gestação (vitaminas, comprimidos, calmantes)? Quais?'),
+        tx('vacinas', 'Tomou vacinas durante a gestação? Quais?'),
+        rd('ameaca', 'Teve ameaça de aborto?', SN), rd('transf', 'Fez transfusão de sangue na gestação?', SN),
+        h('Nascimento'),
+        tx('semanas', 'Com quantas semanas nasceu?'),
+        rd('onde', 'Onde nasceu?', ['Hospital', 'Casa', 'Outro lugar']), rd('assist', 'Quem fez o parto?', ['Médico(a)', 'Parteira', 'Outra pessoa']),
+        rd('parto', 'Tipo de parto', ['Normal', 'Cesárea']), tx('porque', 'Se foi cesárea, por quê?'), tx('duracao', 'Duração do parto'),
+        rd('posicao', 'Posição do bebê', ['Cabeça', 'Face', 'Mãos', 'Pés', 'Nádegas', 'Outra']),
+        ar('problema', 'Houve algum problema com o bebê logo ao nascer? Qual?'),
+        rd('oxig', 'Precisou de oxigênio?', SN), rd('cian', 'Nasceu cianótico (arroxeado)?', SN), rd('chorou', 'Chorou logo?', SN),
+        tx('peso', 'Peso ao nascer'), tx('tamanho', 'Tamanho ao nascer'),
+        h('Alimentação e desenvolvimento motor'),
+        ar('alim', 'Como é (e como foi) a alimentação?'),
+        rd('restr', 'Apresenta algum tipo de restrição ou seletividade alimentar?', SN), ar('restrq', 'Se sim, qual?'),
+        tx('cabeca', 'Quando sustentou a cabeça?'), tx('sentou', 'Quando sentou sozinha(o)? Precisou de incentivo?'), tx('engat', 'Quando engatinhou?'),
+        tx('andou', 'Quando andou?'), tx('andaadeq', 'Anda adequadamente?'),
+        h('Linguagem'),
+        rd('naoverbal', 'A criança é não verbal (não fala)?', ['Sim', 'Fala pouco', 'Não, fala']),
+        tx('balbucio', 'Com que idade balbuciou?'), tx('palavras', 'Quando falou as primeiras palavras?'), tx('frases', 'E as primeiras frases?'),
+        ar('problling', 'Apresenta algum problema de linguagem? Qual?'), rd('gague', 'Apresenta gagueira?', SN),
+        ar('compr', 'Compreende bem o que falam com ela(e)?'), ar('estim', 'Foi estimulada(o) a falar? Como?'),
+        rd('errado', 'Quando a criança falava errado, qual era a reação dos pais?', ['Corrigiam', 'Achavam bonito', 'Achavam engraçado', 'Outra']),
+        h('Estereotipias'),
+        rd('estereo', 'Faz movimentos corporais repetitivos?', SN), ar('estereoq', 'Quais?'),
+        h('Visão'),
+        rd('v1', 'Inclina a cabeça para olhar?', SN), rd('v2', 'Aproxima muito os objetos dos olhos?', SN), rd('v3', 'Afasta os objetos para olhar?', SN),
+        rd('v4', 'Movimenta excessivamente os olhos?', SN), rd('v5', 'Queixa-se de dores de cabeça frequentes, principalmente na testa ou nas têmporas?', SN),
+        h('Sociabilidade'),
+        rd('retr', 'É mais retraída(o) ou extrovertida(o)?', ['Retraída(o)', 'Extrovertida(o)', 'Depende da situação']),
+        rd('amiz', 'Faz amizades facilmente?', SN), rd('briga', 'Briga facilmente?', SN),
+        ar('brinc', 'Que tipos de brincadeira prefere?'),
+        rd('sozinha', 'Fala sozinha(o)?', SN), rd('fazconta', 'Brinca de faz de conta?', SN), rd('imitaani', 'Imita animaizinhos?', SN), rd('imitapes', 'Imita as pessoas?', SN),
+        ar('reage', 'Quando tem algum problema ou frustração, como reage?'),
+        h('Rotina'),
+        rd('rotest', 'Existe uma rotina estruturada?', SN),
+        ar('rotina', 'Descreva a rotina da semana, com horários: acorda, refeições, escola, terapias, brincadeiras (sozinha, com amigos, com mãe/pai), banho, hora de dormir. Indique o que muda no fim de semana.', 'Ex.: 6h acorda · 7h café · 7h30 escola · 12h almoço · 14h fonoaudiologia (seg e qua) …')
+      ]
+    },
+    {
+      id: 'entrev-tea-adulto', grupo: 'TEA', nome: 'Entrevista TEA adulto', min: 25, dem: ['Autoconhecimento', 'Relacionamentos'],
+      obj: 'Levantar histórico médico e de desenvolvimento, interesses, interação social, sensibilidade sensorial, comunicação, comportamentos repetitivos e expectativas do adulto em investigação de TEA.',
+      ref: 'Roteiro de entrevista para TEA em adultos do material de apoio da psicóloga.',
+      intro: 'Estas perguntas ajudam a psicóloga a compreender a sua história e o seu jeito de funcionar. Responda com suas palavras e, se possível, com exemplos. Pode deixar em branco o que preferir conversar na sessão.',
+      f: [
+        h('Sobre você'),
+        tx('idade', 'Idade'), tx('genero', 'Sexo / gênero'), tx('escol', 'Escolaridade'),
+        h('1. Histórico médico'),
+        rd('cond', 'Tem alguma condição médica diagnosticada?', SN), ar('condq', 'Se sim, qual?'),
+        rd('trat', 'Já fez tratamento psicológico ou psiquiátrico?', SN), ar('tratq', 'Se sim, qual, quando e por quanto tempo?'),
+        ar('infancia', 'Como foi o seu desenvolvimento na infância (fala, andar, escola, amizades)? Houve algo diferente do esperado?'),
+        h('2. Sintomas e comportamentos'),
+        ar('interesses', 'Quais são os seus interesses e atividades preferidas? Como você se dedica a eles?'),
+        ar('social', 'Que dificuldades você percebe na interação social?'),
+        ar('sensorial', 'Você tem sensibilidade a sons, luzes, cheiros, texturas, toques ou sabores? Conte exemplos.'),
+        ar('comunic', 'Como é a sua comunicação? (entender ironias e entrelinhas, manter conversas, expressar o que sente)'),
+        ar('repet', 'Você tem comportamentos repetitivos, rituais ou rotinas que precisa manter? Como se sente quando algo muda?'),
+        h('3. Relacionamentos'),
+        ar('familia', 'Como são os seus relacionamentos familiares?'),
+        ar('profsoc', 'Como são os seus relacionamentos no trabalho, nos estudos e com amigos?'),
+        h('4. Desenvolvimento'),
+        ar('atraso', 'Algum atraso ou dificuldade de desenvolvimento já foi identificado? Qual?'),
+        h('5. Experiências emocionais'),
+        ar('emoc', 'Há algo relevante sobre a sua vida emocional que precisa ser dito?'),
+        h('6. Expectativas e preocupações'),
+        ar('expdiag', 'Quais são as suas expectativas em relação à avaliação e ao possível diagnóstico?'),
+        ar('futuro', 'Quais são as suas preocupações em relação ao futuro?'),
+        h('7. Considerações finais'),
+        ar('final', 'Alguma informação adicional que gostaria de contar?')
+      ]
+    },
+    {
+      id: 'perg-tea', grupo: 'TEA', nome: 'Sinais de TEA: 20 perguntas norteadoras', min: 10, dem: ['Relacionamentos', 'Autoconhecimento'],
+      obj: 'Perguntas para a família, a escola ou a própria pessoa descreverem sinais de comunicação social, comportamentos repetitivos e sensibilidade sensorial.',
+      ref: 'Perguntas norteadoras do material de apoio da psicóloga (sem correção; não fazem diagnóstico).',
+      intro: 'Responda pensando na pessoa avaliada (pode ser você mesma(o), seu filho ou seu aluno). Marque a opção que mais se aproxima e, no final, conte exemplos. A presença de alguns sinais não significa que a pessoa tenha TEA: só uma avaliação completa pode dizer isso.',
+      f: [rd('quem', 'Quem está respondendo?', ['A própria pessoa', 'Mãe', 'Pai', 'Outra pessoa responsável', 'Professora / professor', 'Outra pessoa'])].concat([
+        'Tem dificuldades para se comunicar ou entender o que os outros estão dizendo?',
+        'Tem dificuldades para iniciar e manter conversas?',
+        'Parece não compreender gestos, expressões faciais e tom de voz?',
+        'Tem dificuldades em fazer amigos ou manter relações sociais?',
+        'Apresenta comportamentos repetitivos ou estereotipados?',
+        'Apresenta movimentos corporais repetitivos, como balançar o corpo ou girar objetos?',
+        'Apresenta interesses restritos ou focados em temas específicos?',
+        'Tem dificuldades em entender e seguir regras sociais ou convencionais?',
+        'Tem dificuldade em se adaptar a mudanças na rotina?',
+        'Apresenta sensibilidade sensorial, como aversão a certos sons, texturas ou cheiros?',
+        'Tem dificuldades em imaginar ou entender os sentimentos e as perspectivas dos outros?',
+        'Tem dificuldades em responder a perguntas abertas ou fazer escolhas?',
+        'Tem dificuldades em compreender ironias, piadas ou figuras de linguagem?',
+        'Tem dificuldades em entender o sentido figurado das palavras?',
+        'Tem dificuldades em identificar e expressar emoções?',
+        'Apresenta problemas motores ou de coordenação?',
+        'Apresenta comportamentos autoagressivos ou agressivos em relação a outras pessoas?',
+        'Tem dificuldades em mudar de atividade ou em se concentrar em uma tarefa por um período de tempo?',
+        'Tem dificuldade em compreender e seguir instruções complexas?',
+        'Apresenta um padrão de comportamento ou de habilidades diferente do esperado para a sua idade?'
+      ].map(function (q, i) { return rd('q' + (i + 1), (i + 1) + '. ' + q, SIM3); })).concat([ar('exemplos', 'Conte exemplos das situações que você marcou como "sim" ou "às vezes"')])
+    }
+  ]);
   LISTA.forEach(function (x) { x.ab = 'quest'; });
   window.ATIVIDADES = (window.ATIVIDADES || []).concat(LISTA);
 })();

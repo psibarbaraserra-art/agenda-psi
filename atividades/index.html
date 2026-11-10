@@ -247,12 +247,12 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       <p class="muted" style="margin:0">Escalas de rastreio de <b>uso livre</b>, com correção automática. O paciente responde pelo link e você recebe o escore, a faixa de gravidade e os alertas em <b>Respostas</b>. O paciente não vê o resultado: a devolutiva fica com você.</p>
       <div class="warnbox">São instrumentos de <b>rastreio</b>: não fazem diagnóstico, não substituem a avaliação psicológica e não são testes psicológicos do SATEPSI. Use como informação complementar à entrevista. Confira os textos dos itens com o artigo de validação indicado em cada escala antes do primeiro uso.</div>
     </div>
-    <div class="grid" id="lib-ava"></div>
+    <div class="stack" id="lib-ava"></div>
     <div class="panel stack">
       <h3 style="margin-top:0">Questionários e anamneses para enviar</h3>
       <p class="muted" style="margin:0">Perguntas abertas, sem correção, para o paciente ou os responsáveis responderem antes da sessão. Não pedem nome, CPF, data de nascimento, endereço nem telefone: esses dados você já tem no cadastro.</p>
     </div>
-    <div class="grid" id="lib-quest"></div>
+    <div class="stack" id="lib-quest"></div>
     <div class="panel stack">
       <h3 style="margin-top:0">Escalas que não estão no app</h3>
       <div class="fora" id="fora"></div>
@@ -955,11 +955,20 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       $('nres').textContent = lst.length + (lst.length === 1 ? ' atividade' : ' atividades');
       $('lib').innerHTML = '';
       lst.forEach(function (a) { $('lib').appendChild(card(a)); });
-      $('lib-ava').innerHTML = '';
-      ATS.filter(function (a) { return a.ab === 'aval'; }).forEach(function (a) { $('lib-ava').appendChild(card(a)); });
-      $('lib-quest').innerHTML = '';
-      ATS.filter(function (a) { return a.ab === 'quest'; }).forEach(function (a) { $('lib-quest').appendChild(card(a)); });
+      porGrupo($('lib-ava'), ATS.filter(function (a) { return a.ab === 'aval'; }));
+      porGrupo($('lib-quest'), ATS.filter(function (a) { return a.ab === 'quest'; }));
       selbar();
+    }
+    function porGrupo(box, lst) {
+      box.innerHTML = '';
+      var ordem = [], g = {};
+      lst.forEach(function (a) { var k = a.grupo || 'Outros'; if (!g[k]) { g[k] = []; ordem.push(k); } g[k].push(a); });
+      ordem.forEach(function (k) {
+        var h = document.createElement('h3'); h.textContent = k; h.style.margin = '6px 0 0';
+        var gr = document.createElement('div'); gr.className = 'grid';
+        g[k].forEach(function (a) { gr.appendChild(card(a)); });
+        box.appendChild(h); box.appendChild(gr);
+      });
     }
     function card(a) {
         var on = sel.indexOf(a.id) > -1;
