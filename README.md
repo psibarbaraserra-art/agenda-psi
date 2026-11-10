@@ -71,3 +71,7 @@ Para editar: `atividades/avaliacoes.js`, `atividades/questionarios.js` e `ativid
 - **Documentos → TEA:** relatório de avaliação de TEA, anamnese TEA e entrevista TEA adulto com identificação, e roteiro de observação de sinais em bebês.
 - Não incluídos (pagos, com treinamento ou com direitos autorais): CARS/CARS-2, GARS-2, ADI-R, Portage, M-CHAT-R/F digital, ABC/ICA e avaliação intraverbal. Eles aparecem listados na aba Rastreios.
 - Os rastreios e questionários agora aparecem agrupados por tema.
+
+## Bipolaridade, burnout e borderline
+- **Rastreios:** MDQ (bipolaridade), CBI – Inventário de Burnout de Copenhague e MSI-BPD (borderline), com correção automática e alerta de autolesão no MSI-BPD.
+- Na lista "Escalas que não estão no app", cada instrumento pago ou com licença tem o link de onde adquirir ou solicitar (MBI, SCID-5-PD, PAI, Beck, IDATE, CARS, ADI-R etc.).

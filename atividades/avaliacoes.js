@@ -420,28 +420,138 @@
       }
     }
   ];
-  LISTA = LISTA.concat(LISTA_TDAH).concat(LISTA_TEA);
+
+  // ---------- Bipolaridade, burnout e borderline ----------
+  var MDQ = [
+    'você se sentiu tão bem ou tão "para cima" que outras pessoas acharam que você não estava no seu normal, ou você estava tão agitada(o) que se meteu em problemas?',
+    'você ficou tão irritada(o) que gritou com as pessoas ou começou brigas ou discussões?',
+    'você se sentiu muito mais autoconfiante do que de costume?',
+    'você dormiu muito menos do que de costume e percebeu que não sentiu falta do sono?',
+    'você falou muito mais ou mais rápido do que de costume?',
+    'os pensamentos corriam pela sua cabeça ou você não conseguia desacelerar a mente?',
+    'você se distraía tão facilmente com as coisas ao redor que tinha dificuldade de se concentrar ou de seguir em frente?',
+    'você teve muito mais energia do que de costume?',
+    'você ficou muito mais ativa(o) ou fez muito mais coisas do que de costume?',
+    'você ficou muito mais sociável ou extrovertida(o) do que de costume (por exemplo, telefonou para amigos no meio da noite)?',
+    'você teve muito mais interesse por sexo do que de costume?',
+    'você fez coisas que não eram comuns para você ou que outras pessoas poderiam ter achado exageradas, imprudentes ou arriscadas?',
+    'gastar dinheiro trouxe problemas para você ou para a sua família?'
+  ];
+  var CBI_F = [{ v: 100, l: 'Sempre' }, { v: 75, l: 'Frequentemente' }, { v: 50, l: 'Às vezes' }, { v: 25, l: 'Raramente' }, { v: 0, l: 'Nunca ou quase nunca' }];
+  var CBI_I = [{ v: 100, l: 'Muitíssimo' }, { v: 75, l: 'Muito' }, { v: 50, l: 'Moderadamente' }, { v: 25, l: 'Pouco' }, { v: 0, l: 'Muito pouco' }];
+  var CBI_R = [{ v: 0, l: 'Sempre' }, { v: 25, l: 'Frequentemente' }, { v: 50, l: 'Às vezes' }, { v: 75, l: 'Raramente' }, { v: 100, l: 'Nunca ou quase nunca' }];
+  var lk = function (id, n, l, o, opc) { return { t: 'likert', id: id, n: n, l: l, o: o, opc: !!opc }; };
+  function media(a, ids) { var s = 0, n = 0, falta = 0; ids.forEach(function (id) { var v = a[id]; if (typeof v === 'number') { s += v; n++; } else falta++; }); return { m: n ? Math.round(s / n) : 0, falta: falta, n: n }; }
+  function fxCbi(m) { return m >= 100 ? { nome: 'Burnout severo', nivel: 4 } : m >= 75 ? { nome: 'Burnout alto', nivel: 3 } : m >= 50 ? { nome: 'Burnout moderado', nivel: 2 } : { nome: 'Baixo', nivel: 0 }; }
+  var CRISE2 = 'Se você está pensando em se machucar, não espere a sessão: ligue 188 (CVV, 24h, gratuito), 192 (SAMU) ou procure o pronto-socorro.';
+  var LISTA_NOVOS = [
+    {
+      id: 'mdq', sigla: 'MDQ', grupo: 'Bipolaridade', nome: 'MDQ · Questionário de Transtornos do Humor (bipolaridade)', min: 5, dem: ['Regulação emocional', 'Impulsividade'],
+      obj: 'Rastreio de sintomas de mania ou hipomania ao longo da vida, para investigar transtorno bipolar.',
+      licenca: 'Distribuído gratuitamente pelo autor para uso clínico, com a nota "Permissão de uso concedida por R. M. A. Hirschfeld". Não é vendido por editora.',
+      ref: 'Hirschfeld, R. M. A. et al. (2000). Development and validation of a screening instrument for bipolar spectrum disorder: the Mood Disorder Questionnaire. Am J Psychiatry, 157(11), 1873-1875. Versão brasileira: Castelo, M. S. et al. (2010). Validity of the Mood Disorder Questionnaire in a Brazilian psychiatric population. Rev Bras Psiquiatr, 32(4), 424-428. Permissão de uso concedida por R. M. A. Hirschfeld.',
+      intro: 'Pense em toda a sua vida, não só no momento atual. Responda sim ou não para cada pergunta: "Já houve algum período em que você não estava no seu normal e…"',
+      f: MDQ.map(function (txt, i) { return lk('i' + (i + 1), i + 1, 'Já houve um período em que ' + txt, [{ v: 1, l: 'Sim' }, { v: 0, l: 'Não' }]); }).concat([
+        lk('p2', 14, 'Se você respondeu "sim" a mais de uma pergunta: várias dessas coisas aconteceram no mesmo período de tempo?', [{ v: 1, l: 'Sim' }, { v: 0, l: 'Não' }]),
+        lk('p3', 15, 'Quanto problema essas situações causaram para você (por exemplo, não conseguir trabalhar, problemas na família, com dinheiro ou com a lei, discussões ou brigas)?', [{ v: 0, l: 'Nenhum problema' }, { v: 1, l: 'Problema pequeno' }, { v: 2, l: 'Problema moderado' }, { v: 3, l: 'Problema grave' }]),
+        { t: 'radio', id: 'fam', l: 'Algum parente de sangue (filhos, irmãos, pais, avós, tios) tem transtorno bipolar ou "psicose maníaco-depressiva"?', o: ['Sim', 'Não', 'Não sei'] },
+        { t: 'radio', id: 'diag', l: 'Algum profissional de saúde já disse que você tem transtorno bipolar ou "psicose maníaco-depressiva"?', o: ['Sim', 'Não'] }
+      ]),
+      calc: function (a) {
+        var r = soma(a, ids(13)), p2 = a.p2 === 1, p3 = typeof a.p3 === 'number' && a.p3 >= 2;
+        var pos = r.s >= 7 && p2 && p3;
+        var falta = r.falta + (typeof a.p2 === 'number' ? 0 : 1) + (typeof a.p3 === 'number' ? 0 : 1);
+        return { falta: falta, linhas: [
+          { nome: 'Parte 1 · sintomas (respostas "sim")', v: r.s, max: 13, faixa: r.s >= 7 ? '7 ou mais' : 'Menos de 7', nivel: r.s >= 7 ? 2 : 0 },
+          { nome: 'Resultado do rastreio', v: pos ? 1 : 0, max: 1, faixa: pos ? 'POSITIVO: investigar transtorno bipolar' : 'Negativo pelos critérios do MDQ', nivel: pos ? 3 : 0 }
+        ], alertas: [],
+          nota: 'Positivo quando há 7 ou mais "sim" na parte 1, os sintomas ocorreram no mesmo período (parte 2) e causaram problema moderado ou grave (parte 3) (Hirschfeld et al., 2000). Mesmo com resultado negativo, um número alto de sintomas merece investigação. Histórico familiar: ' + (a.fam || 'não respondido') + '. Diagnóstico anterior: ' + (a.diag || 'não respondido') + '. Encaminhar para avaliação psiquiátrica quando positivo.' };
+      }
+    },
+    {
+      id: 'cbi', sigla: 'CBI', grupo: 'Burnout', nome: 'CBI · Inventário de Burnout de Copenhague', min: 6, dem: ['Estresse', 'Depressão'],
+      obj: 'Avalia o burnout em três dimensões: pessoal, relacionado ao trabalho e relacionado às pessoas atendidas (clientes, pacientes, alunos).',
+      licenca: 'Uso livre (domínio público).',
+      ref: 'Kristensen, T. S., Borritz, M., Villadsen, E., & Christensen, K. B. (2005). The Copenhagen Burnout Inventory: a new tool for the assessment of burnout. Work & Stress, 19(3), 192-207. Validação brasileira com profissionais de saúde: estudo publicado em 2023 (PMC10416248).',
+      intro: 'Responda pensando nas últimas semanas. Não há respostas certas ou erradas.',
+      f: [{ t: 'h', x: 'Parte 1 · Burnout pessoal' },
+        lk('p1', 1, 'Com que frequência você se sente cansada(o)?', CBI_F), lk('p2', 2, 'Com que frequência você se sente fisicamente esgotada(o)?', CBI_F), lk('p3', 3, 'Com que frequência você se sente emocionalmente esgotada(o)?', CBI_F),
+        lk('p4', 4, 'Com que frequência você pensa: "Não aguento mais"?', CBI_F), lk('p5', 5, 'Com que frequência você se sente desgastada(o)?', CBI_F), lk('p6', 6, 'Com que frequência você se sente fraca(o) e sujeita(o) a ficar doente?', CBI_F),
+        { t: 'h', x: 'Parte 2 · Burnout relacionado ao trabalho' },
+        lk('t1', 7, 'O seu trabalho é emocionalmente desgastante?', CBI_I), lk('t2', 8, 'Você se sente esgotada(o) por causa do seu trabalho?', CBI_I), lk('t3', 9, 'O seu trabalho deixa você frustrada(o)?', CBI_I),
+        lk('t4', 10, 'Você se sente desgastada(o) no fim do dia de trabalho?', CBI_F), lk('t5', 11, 'Você se sente exausta(o) de manhã só de pensar em mais um dia de trabalho?', CBI_F),
+        lk('t6', 12, 'Você sente que cada hora de trabalho é cansativa para você?', CBI_F), lk('t7', 13, 'Você tem energia suficiente para a família e os amigos no tempo livre?', CBI_R),
+        { t: 'h', x: 'Parte 3 · Burnout relacionado às pessoas que você atende' },
+        { t: 'radio', id: 'atende', l: 'No seu trabalho você atende pessoas (clientes, pacientes, alunos, usuários)?', o: ['Sim', 'Não'] },
+        { t: 'p', x: 'Se você respondeu "não", pode pular as perguntas abaixo.' },
+        lk('c1', 14, 'Você acha difícil trabalhar com as pessoas que atende?', CBI_I, true), lk('c2', 15, 'Você acha frustrante trabalhar com as pessoas que atende?', CBI_I, true),
+        lk('c3', 16, 'Trabalhar com as pessoas que atende esgota a sua energia?', CBI_I, true), lk('c4', 17, 'Você sente que dá mais do que recebe quando trabalha com as pessoas que atende?', CBI_I, true),
+        lk('c5', 18, 'Com que frequência você se sente cansada(o) de trabalhar com as pessoas que atende?', CBI_F, true), lk('c6', 19, 'Com que frequência você se pergunta por quanto tempo ainda vai conseguir continuar trabalhando com as pessoas que atende?', CBI_F, true)
+      ],
+      calc: function (a) {
+        var P = media(a, ['p1', 'p2', 'p3', 'p4', 'p5', 'p6']), T = media(a, ['t1', 't2', 't3', 't4', 't5', 't6', 't7']);
+        var temC = a.atende !== 'Não', C = media(a, ['c1', 'c2', 'c3', 'c4', 'c5', 'c6']);
+        var L = [P, T].map(function (x, i) { var f = fxCbi(x.m); return { nome: ['Burnout pessoal', 'Burnout relacionado ao trabalho'][i], v: x.m, max: 100, faixa: f.nome, nivel: f.nivel }; });
+        if (temC && C.n) { var fc = fxCbi(C.m); L.push({ nome: 'Burnout relacionado às pessoas atendidas', v: C.m, max: 100, faixa: fc.nome, nivel: fc.nivel }); }
+        return { falta: P.falta + T.falta + (temC && C.n ? C.falta : 0), linhas: L, alertas: [],
+          nota: 'Cada resposta vale de 0 a 100 (o item 13 é invertido) e cada dimensão é a média dos seus itens. Faixas (Borritz & Kristensen): abaixo de 50 baixo, 50-74 moderado, 75-99 alto, 100 severo. Média de 50 ou mais é considerada nível elevado de burnout. Não faz diagnóstico.' };
+      }
+    },
+    {
+      id: 'msi-bpd', sigla: 'MSI-BPD', grupo: 'Borderline (TPB)', nome: 'MSI-BPD · Rastreio do transtorno de personalidade borderline', min: 3, dem: ['Regulação emocional', 'Impulsividade', 'Relacionamentos', 'Crise'],
+      obj: 'Rastreio breve de traços do transtorno de personalidade borderline (critérios do DSM).',
+      licenca: 'Instrumento publicado em periódico científico; versão brasileira publicada em acesso aberto (2024). Cite a fonte.',
+      ref: 'Zanarini, M. C. et al. (2003). A screening measure for BPD: the McLean Screening Instrument for Borderline Personality Disorder (MSI-BPD). J Pers Disord, 17(6), 568-573. Versão brasileira: Dias, D. S., & Natividade, J. C. (2024). Brazilian adaptation of the McLean Screening Instrument for Borderline Personality Disorder. Trends Psychiatry Psychother. DOI 10.47626/2237-6089-2022-0486.',
+      intro: 'Responda sim ou não pensando em como você tem sido na maior parte da sua vida adulta, e não só nas últimas semanas.',
+      f: [
+        'Algum dos seus relacionamentos mais próximos foi marcado por muitas brigas ou por términos repetidos?',
+        'Você já se machucou de propósito (por exemplo, se bateu, se cortou ou se queimou)? Ou já tentou suicídio?',
+        'Você já teve pelo menos dois outros problemas de impulsividade (por exemplo, comer compulsivamente e gastar demais, ou beber demais e ter explosões verbais)?',
+        'Você tem sido extremamente instável de humor?',
+        'Você tem sentido muita raiva na maior parte do tempo? Ou agido com frequência de forma raivosa ou sarcástica?',
+        'Você tem desconfiado das outras pessoas com frequência?',
+        'Você tem se sentido com frequência irreal, ou como se as coisas ao seu redor não fossem reais?',
+        'Você tem se sentido vazia(o) de forma constante?',
+        'Você tem sentido com frequência que não sabe quem é, ou que não tem identidade?',
+        'Você tem feito esforços desesperados para não se sentir abandonada(o) ou para não ser abandonada(o) (por exemplo, ligar várias vezes para ter certeza de que a pessoa ainda se importa, implorar para que não vá embora, agarrar-se a ela)?'
+      ].map(function (txt, i) { var f = lk('i' + (i + 1), i + 1, txt, [{ v: 1, l: 'Sim' }, { v: 0, l: 'Não' }]); if (i === 1) { f.alerta = 1; f.msg = CRISE2; } return f; }),
+      calc: function (a) {
+        var r = soma(a, ids(10)), al = [];
+        if (a.i2 === 1) al.push('Item 2 (autolesão ou tentativa de suicídio) respondido SIM. Avaliar risco e plano de segurança com prioridade.');
+        var fx = r.s >= 7 ? { nome: 'Positivo (≥ 7): investigar TPB', nivel: 3 } : { nome: 'Abaixo do ponto de corte', nivel: 0 };
+        return { falta: r.falta, linhas: [{ nome: 'Total de respostas "sim"', v: r.s, max: 10, faixa: fx.nome, nivel: fx.nivel }], alertas: al,
+          nota: 'Ponto de corte ≥ 7 (Zanarini et al., 2003). Rastreio não faz diagnóstico de transtorno de personalidade: confirme com entrevista clínica (por exemplo, SCID-5-PD).' };
+      }
+    }
+  ];
+  LISTA = LISTA.concat(LISTA_TDAH).concat(LISTA_TEA).concat(LISTA_NOVOS);
   LISTA.forEach(function (x) { x.ab = 'aval'; });
   window.ATIVIDADES = (window.ATIVIDADES || []).concat(LISTA);
 
   // Instrumentos conhecidos que NÃO estão no app (pagos, com licença ou ainda por incluir).
   window.AVAL_FORA = [
-    { nome: 'BDI-II, BAI, BHS e BSI (Escalas Beck)', motivo: 'Pagas. Testes psicológicos com parecer favorável no SATEPSI, de uso privativo, com manual e folhas vendidos pela editora (Pearson / Casa do Psicólogo).', tipo: 'pago' },
-    { nome: 'IDATE (Inventário de Ansiedade Traço-Estado)', motivo: 'Pago. Comercializado por editora no Brasil.', tipo: 'pago' },
-    { nome: 'HADS (Escala Hospitalar de Ansiedade e Depressão)', motivo: 'Exige licença. Direitos com a GL Assessment; uso clínico requer licença e pagamento.', tipo: 'pago' },
-    { nome: 'ISI (Índice de Gravidade da Insônia)', motivo: 'Exige licença. Distribuído pela Mapi Research Trust, com taxa conforme o uso.', tipo: 'pago' },
-    { nome: 'MBI (Inventário de Burnout de Maslach)', motivo: 'Pago. Vendido pela Mind Garden.', tipo: 'pago' },
-    { nome: 'SCL-90-R', motivo: 'Pago. Vendido pela Pearson.', tipo: 'pago' },
-    { nome: 'PSS-10 (Escala de Estresse Percebido)', motivo: 'Uso livre para fins não comerciais, segundo o autor. Confirme as condições antes de incluir.', tipo: 'verificar' },
-    { nome: 'PCL-5 (estresse pós-traumático)', motivo: 'Uso livre (Centro Nacional de TEPT dos EUA). Ainda não incluído: preciso conferir o texto da versão brasileira.', tipo: 'livre' },
-    { nome: 'CARS e CARS-2 (Childhood Autism Rating Scale)', motivo: 'Paga. Direitos da Western Psychological Services (WPS); exige manual e folhas originais.', tipo: 'pago' },
-    { nome: 'GARS-2 (Gilliam Autism Rating Scale) e a sua correção', motivo: 'Paga. Direitos da Pro-Ed; a correção depende das tabelas normativas do manual.', tipo: 'pago' },
-    { nome: 'ADI-R (Entrevista Diagnóstica para Autismo – Revisada)', motivo: 'Paga e com treinamento obrigatório. Direitos da WPS; uso restrito a profissionais treinados.', tipo: 'pago' },
+    { nome: 'MBI-GS e MBI-HSS (burnout, Maslach)', motivo: 'Pago. Licença por aplicação, inclusive para versões traduzidas.', onde: ['Mind Garden', 'https://www.mindgarden.com'], tipo: 'pago' },
+    { nome: 'Escalas brasileiras de burnout de uso privativo (por exemplo, ECB)', motivo: 'Comercializadas por editoras de testes. Confira no SATEPSI se têm parecer favorável e onde comprar.', onde: ['SATEPSI · Conselho Federal de Psicologia', 'https://satepsi.cfp.org.br'], tipo: 'pago' },
+    { nome: 'HCL-32 (Checklist de Hipomania, bipolaridade)', motivo: 'Uso livre para pesquisa e clínica segundo o autor (Angst), com versão brasileira (Soares et al., 2010). Ainda não incluído: preciso do texto da versão brasileira.', tipo: 'livre' },
+    { nome: 'YMRS (Escala de Mania de Young)', motivo: 'Escala gratuita aplicada pelo profissional (entrevista), com versão brasileira (Vilela et al., 2005). Posso incluir como roteiro na aba Documentos, se quiser.', tipo: 'livre' },
+    { nome: 'SCID-5-PD (entrevista para transtornos de personalidade)', motivo: 'Pago. Edição brasileira em livro, pela Artmed.', onde: ['Grupo A / Artmed', 'https://www.grupoa.com.br'], tipo: 'pago' },
+    { nome: 'PAI (Inventário de Avaliação da Personalidade) · escala BOR', motivo: 'Pago. Vendido pela PAR.', onde: ['PAR', 'https://www.parinc.com'], tipo: 'pago' },
+    { nome: 'BSL-23 (Lista de Sintomas Borderline)', motivo: 'Uso livre para fins não comerciais segundo os autores (Bohus et al., 2009). Não encontrei versão brasileira validada: verifique antes de usar.', tipo: 'verificar' },
+    { nome: 'BDI-II, BAI, BHS e BSI (Escalas Beck)', motivo: 'Pagas. Testes psicológicos com parecer favorável no SATEPSI, de uso privativo, com manual e folhas vendidos pela editora (Pearson / Casa do Psicólogo).', onde: ['Pearson Clinical Brasil', 'https://www.pearsonclinical.com.br'], tipo: 'pago' },
+    { nome: 'IDATE (Inventário de Ansiedade Traço-Estado)', motivo: 'Pago. Comercializado por editora no Brasil.', onde: ['Vetor Editora', 'https://www.vetoreditora.com.br'], tipo: 'pago' },
+    { nome: 'HADS (Escala Hospitalar de Ansiedade e Depressão)', motivo: 'Exige licença. Direitos com a GL Assessment; uso clínico requer licença e pagamento.', onde: ['GL Assessment (licença)', 'https://www.gl-assessment.co.uk'], tipo: 'pago' },
+    { nome: 'ISI (Índice de Gravidade da Insônia)', motivo: 'Exige licença. Distribuído pela Mapi Research Trust, com taxa conforme o uso.', onde: ['Mapi Research Trust · ePROVIDE', 'https://eprovide.mapi-trust.org'], tipo: 'pago' },
+    { nome: 'SCL-90-R', motivo: 'Pago. Vendido pela Pearson.', onde: ['Pearson Assessments', 'https://www.pearsonassessments.com'], tipo: 'pago' },
+    { nome: 'PSS-10 (Escala de Estresse Percebido)', motivo: 'Uso livre para fins não comerciais, segundo o autor. Confirme as condições antes de incluir.', onde: ['Laboratório de Sheldon Cohen (Carnegie Mellon)', 'https://www.cmu.edu/dietrich/psychology/stress-immunity-disease-lab/scales/'], tipo: 'verificar' },
+    { nome: 'PCL-5 (estresse pós-traumático)', motivo: 'Uso livre (Centro Nacional de TEPT dos EUA). Ainda não incluído: preciso conferir o texto da versão brasileira.', onde: ['National Center for PTSD', 'https://www.ptsd.va.gov'], tipo: 'livre' },
+    { nome: 'CARS e CARS-2 (Childhood Autism Rating Scale)', motivo: 'Paga. Direitos da Western Psychological Services (WPS); exige manual e folhas originais.', onde: ['Western Psychological Services (WPS)', 'https://www.wpspublish.com'], tipo: 'pago' },
+    { nome: 'GARS-2 (Gilliam Autism Rating Scale) e a sua correção', motivo: 'Paga. Direitos da Pro-Ed; a correção depende das tabelas normativas do manual.', onde: ['Pro-Ed', 'https://www.proedinc.com'], tipo: 'pago' },
+    { nome: 'ADI-R (Entrevista Diagnóstica para Autismo – Revisada)', motivo: 'Paga e com treinamento obrigatório. Direitos da WPS; uso restrito a profissionais treinados.', onde: ['Western Psychological Services (WPS)', 'https://www.wpspublish.com'], tipo: 'pago' },
     { nome: 'Guia / Inventário Portage', motivo: 'Material comercial com direitos autorais (Portage Project / editoras); use a sua cópia impressa.', tipo: 'pago' },
-    { nome: 'M-CHAT-R/F (autismo, 16 a 30 meses)', motivo: 'Gratuito para uso clínico em papel, sem alterações. Versões digitais exigem autorização dos autores (mchatscreen.com). O arquivo enviado é a versão de Portugal; para o Brasil, baixe a versão brasileira oficial em mchatscreen.com.', tipo: 'verificar' },
-    { nome: 'ABC / ICA (Inventário de Comportamentos Autísticos)', motivo: 'O Autism Behavior Checklist tem direitos autorais (Krug et al.; hoje faz parte do ASIEP-3, da Pro-Ed). Não incluí: se tiver autorização ou confirmação de uso livre, eu incluo, já com a correção por área (o conteúdo que você enviou está pronto).', tipo: 'verificar' },
-    { nome: 'Avaliação intraverbal (protocolo ABA)', motivo: 'Parece adaptado de protocolos de avaliação de linguagem (como o VB-MAPP, que é pago). Não incluí sem confirmar a autoria; use a sua cópia impressa.', tipo: 'verificar' },
-    { nome: 'Escalas de Conners (versões para pais e para professores)', motivo: 'Direitos autorais da Multi-Health Systems (MHS). As traduções que circulam (Barbosa, 1995) podem exigir licença para reprodução e uso digital. Não incluí: se você tiver licença ou confirmação de uso livre, eu incluo (o conteúdo que você enviou já está pronto).', tipo: 'verificar' },
+    { nome: 'M-CHAT-R/F (autismo, 16 a 30 meses)', motivo: 'Gratuito para uso clínico em papel, sem alterações. Versões digitais exigem autorização dos autores (mchatscreen.com). O arquivo enviado é a versão de Portugal; para o Brasil, baixe a versão brasileira oficial em mchatscreen.com.', onde: ['Site oficial do M-CHAT', 'https://www.mchatscreen.com'], tipo: 'verificar' },
+    { nome: 'ABC / ICA (Inventário de Comportamentos Autísticos)', motivo: 'O Autism Behavior Checklist tem direitos autorais (Krug et al.; hoje faz parte do ASIEP-3, da Pro-Ed). Não incluí: se tiver autorização ou confirmação de uso livre, eu incluo, já com a correção por área (o conteúdo que você enviou está pronto).', onde: ['Pro-Ed (ASIEP-3)', 'https://www.proedinc.com'], tipo: 'verificar' },
+    { nome: 'Avaliação intraverbal (protocolo ABA)', motivo: 'Parece adaptado de protocolos de avaliação de linguagem (como o VB-MAPP, que é pago). Não incluí sem confirmar a autoria; use a sua cópia impressa.', onde: ['AVB Press (VB-MAPP)', 'https://avbpress.com'], tipo: 'verificar' },
+    { nome: 'Escalas de Conners (versões para pais e para professores)', motivo: 'Direitos autorais da Multi-Health Systems (MHS). As traduções que circulam (Barbosa, 1995) podem exigir licença para reprodução e uso digital. Não incluí: se você tiver licença ou confirmação de uso livre, eu incluo (o conteúdo que você enviou já está pronto).', onde: ['Multi-Health Systems (MHS)', 'https://mhs.com'], tipo: 'verificar' },
     { nome: 'EPDS (Escala de Depressão Pós-Parto de Edimburgo)', motivo: 'Uso livre, citando a fonte. Ainda não incluído: preciso conferir o texto da versão brasileira.', tipo: 'livre' }
   ];
 })();
