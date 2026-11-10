@@ -222,7 +222,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
 
   <nav class="tabs" role="tablist" aria-label="Seções">
     <button role="tab" data-t="bib" aria-selected="true">Biblioteca</button>
-    <button role="tab" data-t="ava" aria-selected="false">Avaliações</button>
+    <button role="tab" data-t="ava" aria-selected="false">Rastreios</button>
     <button role="tab" data-t="doc" aria-selected="false">Documentos</button>
     <button role="tab" data-t="env" aria-selected="false">Enviar <span id="selcount"></span></button>
     <button role="tab" data-t="res" aria-selected="false">Respostas <span id="rescount"></span></button>
@@ -243,7 +243,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
   <!-- Avaliações -->
   <section id="t-ava" class="stack" hidden>
     <div class="panel stack">
-      <h2>Avaliações</h2>
+      <h2>Rastreios e questionários</h2>
       <p class="muted" style="margin:0">Escalas de rastreio de <b>uso livre</b>, com correção automática. O paciente responde pelo link e você recebe o escore, a faixa de gravidade e os alertas em <b>Respostas</b>. O paciente não vê o resultado: a devolutiva fica com você.</p>
       <div class="warnbox">São instrumentos de <b>rastreio</b>: não fazem diagnóstico, não substituem a avaliação psicológica e não são testes psicológicos do SATEPSI. Use como informação complementar à entrevista. Confira os textos dos itens com o artigo de validação indicado em cada escala antes do primeiro uso.</div>
     </div>
@@ -254,7 +254,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
     </div>
     <div class="grid" id="lib-quest"></div>
     <div class="panel stack">
-      <h3 style="margin-top:0">Avaliações que não estão no app</h3>
+      <h3 style="margin-top:0">Escalas que não estão no app</h3>
       <div class="fora" id="fora"></div>
     </div>
   </section>
@@ -264,7 +264,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
     <div class="panel stack" id="doc-home">
       <h2>Modelos de documentos</h2>
       <p class="muted" style="margin:0">Documentos no formato da Resolução CFP nº 06/2019. Escolha um modelo, preencha, salve e imprima ou salve em PDF com o seu cabeçalho e assinatura.</p>
-      <div class="grid" id="doc-modelos"></div>
+      <div id="doc-modelos" class="stack"></div>
       <h3>Documentos salvos</h3>
       <div class="docl" id="doc-salvos"></div>
       <div class="small muted">Os documentos ficam guardados só neste aparelho (não sincronizam). Depois de assinar, guarde a cópia no prontuário.</div>
@@ -280,6 +280,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       <div class="warnbox small">Antes de entregar: revise todo o texto, rubrique todas as páginas e assine a última. Inclua só as informações necessárias para a finalidade do documento.</div>
       <div class="row">
         <button class="cta" id="doc-print">Imprimir / salvar em PDF</button>
+        <button class="ghost" id="doc-branco">Imprimir em branco</button>
         <button class="ghost" id="doc-dup">Duplicar</button>
         <button class="ghost danger" id="doc-del">Apagar</button>
       </div>
@@ -409,7 +410,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
 <div class="wrap narrow" id="pac" hidden>
   <header class="head">
     <img src="../icons/logo.png" alt="Psi Bárbara Serra">
-    <h1 id="pac-h">Suas atividades</h1>
+    <h1 id="pac-h">Para você</h1>
     <p>Bárbara Serra Oliveira · Psicóloga · CRP 20/13.134</p>
   </header>
 
@@ -420,20 +421,21 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
     <div class="info">
       <p style="margin:0 0 8px"><b>Sobre suas respostas</b></p>
       <ul style="margin:0;padding-left:18px">
-        <li>Estas atividades fazem parte do seu processo de psicoterapia e serão conversadas na sessão. Elas <b>não substituem</b> o atendimento.</li>
+        <li id="p-t1">Estes materiais fazem parte do seu processo de psicoterapia e serão conversados na sessão. Eles <b>não substituem</b> o atendimento.</li>
+        <li id="p-trastreio" hidden>Os <b>rastreios</b> são questionários de triagem: <b>não fazem diagnóstico</b>. O resultado é analisado pela psicóloga e conversado com você na sessão.</li>
         <li>O que você escrever é <b>sigiloso</b> e será visto apenas pela psicóloga, que guarda as informações no seu prontuário, conforme o Código de Ética Profissional do Psicólogo.</li>
         <li>Suas respostas ficam salvas só neste aparelho enquanto você preenche. Elas só são enviadas quando você tocar em <b>Enviar</b>, e você pode apagá-las depois.</li>
         <li>Você pode deixar perguntas em branco, parar quando quiser e trazer suas dúvidas para a sessão.</li>
       </ul>
     </div>
     <div class="warnbox"><b>Se você estiver em crise ou pensando em se machucar</b>, não espere a sessão: ligue <b>188</b> (CVV, 24h, gratuito), <b>192</b> (SAMU) ou vá ao pronto-socorro mais próximo.</div>
-    <label class="opt"><input type="checkbox" id="p-aceite"> <span>Li e concordo em realizar as atividades e enviar minhas respostas para a psicóloga Bárbara Serra.</span></label>
+    <label class="opt"><input type="checkbox" id="p-aceite"> <span id="p-aceite-t">Li e concordo em responder e enviar minhas respostas para a psicóloga Bárbara Serra.</span></label>
     <button class="cta" id="p-comecar" disabled>Começar</button>
   </section>
 
   <!-- Lista -->
   <section class="panel stack" id="p-lista" hidden>
-    <h2>Suas atividades</h2>
+    <h2 id="p-lista-h">Para responder</h2>
     <div id="p-msg" class="info" hidden></div>
     <div class="progress" aria-hidden="true"><i id="p-prog"></i></div>
     <div class="alist" id="p-alist"></div>
@@ -472,14 +474,14 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
     <div class="row">
       <button class="ghost" id="p-print">Guardar uma cópia (PDF)</button>
       <button class="ghost danger" id="p-apagar">Apagar respostas deste aparelho</button>
-      <button class="ghost" id="p-lista2">Voltar às atividades</button>
+      <button class="ghost" id="p-lista2">Voltar à lista</button>
     </div>
     <p class="sign small muted" style="margin:0">Com carinho,<br><b>Bárbara Serra</b> · Psicóloga · CRP 20/13.134</p>
   </section>
 
   <section class="panel" id="p-erro" hidden>
     <h2>Link incompleto</h2>
-    <p>Não encontrei atividades neste link. Peça à psicóloga para enviar o link novamente.</p>
+    <p>Não encontrei nada para responder neste link. Peça à psicóloga para enviar o link novamente.</p>
   </section>
 
   <p class="crisis">Em crise? <b>CVV 188</b> · <b>SAMU 192</b> · pronto-socorro</p>
@@ -505,6 +507,21 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
   var LSK_RESP = 'atv-respostas-v1';
   var LSK_SEL = 'atv-selecao-v1';
   var byId = {}; ATS.forEach(function (a) { byId[a.id] = a; });
+  // Como cada item é chamado para o paciente: rastreio (escalas), questionário ou atividade.
+  var TIPOS = { aval: { s: 'rastreio', p: 'rastreios', f: false }, quest: { s: 'questionário', p: 'questionários', f: false } };
+  function tipoDe(at) { return (at && TIPOS[at.ab]) || { s: 'atividade', p: 'atividades', f: true }; }
+  function cap(t) { return t.charAt(0).toUpperCase() + t.slice(1); }
+  function rotulo(ids) {
+    var vistos = {}, tipos = [];
+    ids.forEach(function (id) { var t = tipoDe(byId[id]); if (!vistos[t.s]) { vistos[t.s] = 1; tipos.push(t); } });
+    var n = ids.length, so = tipos.length === 1 ? tipos[0] : null;
+    var plur = tipos.map(function (t) { return t.p; }).join(tipos.length > 2 ? ', ' : ' e ').replace(/, ([^,]*)$/, ' e $1');
+    return {
+      plur: plur, fem: !!(so && so.f), titulo: n === 1 && so ? so.s : plur,
+      qtd: n === 1 ? (so.f ? 'uma ' : 'um ') + so.s : n + ' ' + (so ? so.p : 'itens (' + plur + ')'),
+      temRastreio: !!vistos.rastreio
+    };
+  }
 
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -789,8 +806,13 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
     function save() { lsSet(KEY, st); $('p-salvo').textContent = 'Salvo neste aparelho'; clearTimeout(salvoT); salvoT = setTimeout(function () { $('p-salvo').textContent = ''; }, 1500); }
     function show(sec) { ['p-termo', 'p-lista', 'p-ativ', 'p-fim'].forEach(function (s) { $(s).hidden = s !== sec; }); window.scrollTo(0, 0); }
 
-    $('p-saud').textContent = (nome ? 'Olá, ' + nome + '! ' : 'Olá! ') + 'A psicóloga Bárbara Serra preparou ' + (ids.length === 1 ? 'uma atividade' : ids.length + ' atividades') + ' para você fazer entre as sessões.';
-    if (nome) $('pac-h').textContent = 'Atividades de ' + nome;
+    var RT = rotulo(ids);
+    $('p-saud').textContent = (nome ? 'Olá, ' + nome + '! ' : 'Olá! ') + 'A psicóloga Bárbara Serra preparou ' + RT.qtd + ' para você responder entre as sessões.';
+    $('pac-h').textContent = cap(RT.titulo) + (nome ? ' · ' + nome : '');
+    $('p-lista-h').textContent = (RT.fem ? 'Suas ' : 'Seus ') + RT.plur;
+    document.title = cap(RT.titulo) + ' | Psi Bárbara Serra';
+    $('p-t1').innerHTML = (RT.fem ? 'Estas ' : 'Estes ') + esc(RT.plur) + ' fazem parte do seu processo de psicoterapia e ' + (RT.fem ? 'serão conversadas' : 'serão conversados') + ' na sessão. ' + (RT.fem ? 'Elas' : 'Eles') + ' <b>não substituem</b> o atendimento.';
+    $('p-trastreio').hidden = !RT.temRastreio;
     if (msg || prazo) { $('p-msg').hidden = false; $('p-msg').innerHTML = (msg ? '<b>Recado da psicóloga:</b> ' + esc(msg) : '') + (prazo ? (msg ? '<br>' : '') + '<b>Prazo:</b> ' + esc(prazo) : ''); }
 
     $('p-aceite').addEventListener('change', function () { $('p-comecar').disabled = !this.checked; });
@@ -803,7 +825,8 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
         var at = byId[id], ok = st.ok[id], tem = st.ans[id] && Object.keys(st.ans[id]).length;
         if (ok) n++;
         var b = document.createElement('button'); b.type = 'button'; b.className = 'aitem';
-        b.innerHTML = '<span class="tt"><b>' + esc(at.nome) + '</b><span class="small muted">' + esc(at.obj) + ' · cerca de ' + at.min + ' min</span></span><span class="st' + (ok ? ' ok' : '') + '">' + (ok ? 'Concluída' : tem ? 'Em andamento' : 'A fazer') + '</span>';
+        var tp = tipoDe(at);
+        b.innerHTML = '<span class="tt"><span class="small muted">' + esc(cap(tp.s)) + '</span><b>' + esc(at.nome) + '</b><span class="small muted">' + esc(at.obj) + ' · cerca de ' + at.min + ' min</span></span><span class="st' + (ok ? ' ok' : '') + '">' + (ok ? (tp.f ? 'Concluída' : 'Concluído') : tem ? 'Em andamento' : 'A fazer') + '</span>';
         b.addEventListener('click', function () { abrir(id); });
         $('p-alist').appendChild(b);
       });
@@ -818,7 +841,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       $('p-intro').textContent = at.intro;
       var form = $('p-form'); form.innerHTML = '';
       renderFields(at.f, form, st.ans[id], save);
-      $('p-concluir').textContent = st.ok[id] ? 'Salvar e voltar' : 'Concluir atividade';
+      $('p-concluir').textContent = st.ok[id] ? 'Salvar e voltar' : 'Concluir ' + tipoDe(at).s;
       show('p-ativ');
     }
     $('p-voltar').addEventListener('click', function () { stopWidgets(); save(); lista(); });
@@ -827,15 +850,16 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       var a = st.ans[atual] || {};
       var faltam = byId[atual].f.filter(function (f) { return f.t === 'likert' && typeof a[f.id] !== 'number'; }).map(function (f) { return f.n; });
       if (faltam.length && !confirm('Faltam ' + faltam.length + (faltam.length === 1 ? ' pergunta' : ' perguntas') + ' (nº ' + faltam.join(', ') + '). Para o resultado ficar correto, responda todas. Concluir mesmo assim?')) return;
-      if (!Object.keys(a).length && !confirm('Você ainda não respondeu nada nesta atividade. Marcar como concluída mesmo assim?')) return;
-      st.ok[atual] = true; save(); toast('Atividade concluída!'); lista();
+      var tp = tipoDe(byId[atual]);
+      if (!Object.keys(a).length && !confirm('Você ainda não respondeu nada ' + (tp.f ? 'nesta ' : 'neste ') + tp.s + '. Marcar como ' + (tp.f ? 'concluída' : 'concluído') + ' mesmo assim?')) return;
+      st.ok[atual] = true; save(); toast(cap(tp.s) + (tp.f ? ' concluída!' : ' concluído!')); lista();
     });
 
     function montar() {
       return { v: 1, k: k, p: nome, ts: new Date().toISOString(), aceite: st.aceite, acts: ids.map(function (id) { return { id: id, ok: !!st.ok[id], a: st.ans[id] || {} }; }) };
     }
     function textoWa(r) {
-      var L = ['Olá, Bárbara! Seguem minhas atividades' + (nome ? ' (' + nome + ')' : '') + ':', ''];
+      var L = ['Olá, Bárbara! Seguem minhas respostas' + (nome ? ' (' + nome + ')' : '') + ':', ''];
       r.acts.forEach(function (x) { var at = byId[x.id]; L.push('*' + at.nome + '*' + (x.ok ? '' : ' (parcial)')); L = L.concat(ansTxt(at.f, x.a)); L.push(''); });
       L.push('Código: AT1:' + enc(r));
       return L.join('\n');
@@ -844,9 +868,9 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
     $('p-enviar').addEventListener('click', function () {
       var r = montar();
       var algum = r.acts.some(function (x) { return Object.keys(x.a).length; });
-      if (!algum) return toast('Responda ao menos uma atividade antes de enviar.');
+      if (!algum) return toast('Responda pelo menos um item antes de enviar.');
       var falta = r.acts.filter(function (x) { return !x.ok; }).length;
-      if (falta && !confirm(falta === 1 ? 'Uma atividade ainda não foi concluída. Enviar mesmo assim?' : falta + ' atividades ainda não foram concluídas. Enviar mesmo assim?')) return;
+      if (falta && !confirm(falta === 1 ? 'Um item ainda não foi concluído. Enviar mesmo assim?' : falta + ' itens ainda não foram concluídos. Enviar mesmo assim?')) return;
       ultimo = r;
       var txt = textoWa(r);
       $('p-wa').href = 'https://wa.me/?text=' + encodeURIComponent(txt);
@@ -874,7 +898,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
     });
     $('p-copy').addEventListener('click', function () { if (ultimo) copy(textoWa(ultimo)); });
     $('p-lista2').addEventListener('click', lista);
-    $('p-print').addEventListener('click', function () { printDoc(nome ? 'Atividades de ' + nome : 'Minhas atividades', 'Respondidas em ' + fmtData(new Date().toISOString()), respHtml(montar())); });
+    $('p-print').addEventListener('click', function () { printDoc(cap(RT.plur) + (nome ? ' · ' + nome : ''), 'Respondidas em ' + fmtData(new Date().toISOString()), respHtml(montar())); });
     $('p-apagar').addEventListener('click', function () {
       if (!confirm('Apagar suas respostas deste aparelho? Faça isso só depois de enviar para a psicóloga.')) return;
       lsDel(KEY); st = { aceite: false, ans: {}, ok: {} }; toast('Respostas apagadas deste aparelho.');
@@ -1010,7 +1034,8 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       p.set('k', rid());
       linkAtual = BASE + '?' + p.toString();
       var nomes = sel.map(function (i) { return '• ' + byId[i].nome; }).join('\n');
-      msgAtual = 'Olá' + (nome ? ', ' + nome : '') + '! Preparei ' + (sel.length === 1 ? 'uma atividade' : 'algumas atividades') + ' para você fazer até a nossa próxima sessão:\n' + nomes + '\n\nAcesse pelo link (suas respostas são sigilosas e chegam só para mim):\n' + linkAtual + '\n\nBárbara Serra · Psicóloga · ' + PSI.crp;
+      var rt = rotulo(sel);
+      msgAtual = 'Olá' + (nome ? ', ' + nome : '') + '! Preparei ' + rt.qtd + ' para você responder até a nossa próxima sessão:\n' + nomes + '\n\nAcesse pelo link (suas respostas são sigilosas e chegam só para mim):\n' + linkAtual + '\n\nBárbara Serra · Psicóloga · ' + PSI.crp;
       $('env-link').textContent = linkAtual;
       $('env-wa').href = 'https://wa.me/?text=' + encodeURIComponent(msgAtual);
       $('env-open').href = linkAtual;
@@ -1021,7 +1046,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       var body = sel.map(function (id) { var a = byId[id]; return '<h4>' + esc(a.nome) + '</h4><p><i>' + esc(a.intro) + '</i></p>' + blankHtml(a.f); }).join('<hr>');
       var refs = sel.map(function (id) { return byId[id].ref; }).filter(function (v, i, s) { return s.indexOf(v) === i; }).join(' ');
       var nome = $('env-nome').value.trim().split(/\s+/)[0];
-      printDoc('Atividades terapêuticas', nome ? 'Para: ' + nome : '', body, refs);
+      printDoc(cap(rotulo(sel).plur), nome ? 'Para: ' + nome : '', body, refs);
     });
 
     // respostas
@@ -1117,7 +1142,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       var t = { pago: ['n4', 'Paga / licença'], verificar: ['n2', 'Verificar'], livre: ['n0', 'Gratuita · em breve'] }[x.tipo] || ['n2', ''];
       return '<div><span class="tg ' + t[0] + '">' + t[1] + '</span><b>' + esc(x.nome) + '</b><br><span class="muted">' + esc(x.motivo) + '</span></div>';
     }).join('');
-    if (location.hash === '#avaliacoes') tab('ava');
+    if (location.hash === '#avaliacoes' || location.hash === '#rastreios') tab('ava');
 
     /* ---------- documentos ---------- */
     var LSK_DOCS = 'atv-documentos-v1', docAtual = null, docT = null;
@@ -1130,6 +1155,13 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
     function docsHome() {
       $('doc-home').hidden = false; $('doc-ed').hidden = true;
       $('doc-modelos').innerHTML = '';
+      var grades = {};
+      (window.DOC_CATS || [['', '']]).forEach(function (ct) {
+        if (!(window.DOC_MODELOS || []).some(function (m) { return (m.cat || '') === ct[0]; })) return;
+        var h3 = document.createElement('h3'); h3.textContent = ct[1]; h3.style.margin = '8px 0 0';
+        var g = document.createElement('div'); g.className = 'grid'; grades[ct[0]] = g;
+        $('doc-modelos').appendChild(h3); $('doc-modelos').appendChild(g);
+      });
       (window.DOC_MODELOS || []).forEach(function (m) {
         var c = document.createElement('article'); c.className = 'card';
         c.innerHTML = '<h4>' + esc(m.nome) + '</h4><p>' + esc(m.desc) + '</p><div class="acts"><button class="cta">Novo</button></div>';
@@ -1138,14 +1170,14 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
           var d = { id: rid() + Date.now().toString(36), modelo: m.id, v: v, em: new Date().toISOString() };
           var l = docsLer(); l.unshift(d); docsGravar(l); abrirDoc(d);
         });
-        $('doc-modelos').appendChild(c);
+        (grades[m.cat || ''] || $('doc-modelos')).appendChild(c);
       });
       var l = docsLer(), box = $('doc-salvos'); box.innerHTML = '';
       if (!l.length) box.innerHTML = '<div class="info">Nenhum documento salvo ainda.</div>';
       l.forEach(function (d) {
         var m = MOD[d.modelo]; if (!m) return;
         var it = document.createElement('div'); it.className = 'it';
-        it.innerHTML = '<span><b>' + esc(m.nome) + '</b><br><span class="small muted">' + esc((d.v.nome || 'sem nome') + ' · ' + fmtData(d.em)) + '</span></span><span class="row"><button class="ghost" data-a>Abrir</button><button class="ghost" data-p>Imprimir</button></span>';
+        it.innerHTML = '<span><b>' + esc(m.nome) + '</b><br><span class="small muted">' + esc((d.v.nome || d.v.crianca || d.v.resp || 'sem nome') + ' · ' + fmtData(d.em)) + '</span></span><span class="row"><button class="ghost" data-a>Abrir</button><button class="ghost" data-p>Imprimir</button></span>';
         it.querySelector('[data-a]').addEventListener('click', function () { abrirDoc(d); });
         it.querySelector('[data-p]').addEventListener('click', function () { imprimirDoc(d); });
         box.appendChild(it);
@@ -1183,7 +1215,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       $('doc-h').textContent = m.nome; $('doc-desc').textContent = m.desc;
       var form = $('doc-form'); form.innerHTML = '';
       var pats = pacientesAgenda();
-      if (pats.length && m.campos.some(function (f) { return f.id === 'nome'; })) {
+      if (pats.length && m.campos.some(function (f) { return f.id === 'nome' || f.id === 'crianca'; })) {
         var dl = document.createElement('datalist'); dl.id = 'doc-pats';
         dl.innerHTML = pats.map(function (p) { return '<option value="' + esc(p.nome) + '">'; }).join('');
         form.appendChild(dl);
@@ -1212,10 +1244,10 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
         if (f.t !== 'area') inp.type = 'text';
         if (f.ph) inp.placeholder = f.ph;
         inp.value = d.v[f.id] || '';
-        if (f.id === 'nome' && pats.length) inp.setAttribute('list', 'doc-pats');
+        if ((f.id === 'nome' || f.id === 'crianca') && pats.length) inp.setAttribute('list', 'doc-pats');
         inp.addEventListener('input', function () {
           d.v[f.id] = inp.value;
-          if (f.id === 'nome') {
+          if (f.id === 'nome' || f.id === 'crianca') {
             var p = pats.filter(function (x) { return x.nome === inp.value; })[0];
             if (p) {
               var nasc = form.querySelector('[data-id=nasc]'), cpf = form.querySelector('[data-id=cpf]');
@@ -1230,9 +1262,10 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       });
       window.scrollTo(0, 0);
     }
-    function docHtml(d) {
-      var m = MOD[d.modelo], v = d.v, nome = v.nome || '________________________';
-      var sub = function (t) { return esc(String(t || '').replace(/\{nome\}/g, nome)); };
+    function docHtml(d, branco) {
+      var m = MOD[d.modelo], v = branco ? {} : d.v, LIN = '________________________';
+      if (branco) m.campos.forEach(function (f) { if (f.t === 'area' && f.v != null) v[f.id] = f.v; if (f.id === 'autor' || f.id === 'local') v[f.id] = f.id === 'autor' ? f.v : ''; });
+      var sub = function (t) { return esc(String(t || '').replace(/\{(\w+)\}/g, function (_, k) { var x = v[k]; return Array.isArray(x) ? x.join(', ') : (x || LIN); })); };
       var h = '<div class="doc"><div class="dh2"><img src="../icons/logo.png" alt=""><div><b>Bárbara Serra Oliveira</b><br>Psicóloga · CRP 20/13.134</div></div><h1>' + esc(m.titulo) + '</h1>';
       var ident = false;
       m.campos.forEach(function (f) {
@@ -1240,19 +1273,22 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
         if (f.id === 'local') return;
         var val = v[f.id];
         var rot = esc(String(f.l || '').replace(/\s*\(opcional\)/, ''));
-        if (f.t === 'text') { if (val || (ident && !/opcional/.test(f.l))) h += '<p><b>' + rot + ':</b> ' + sub(val || '') + '</p>'; return; }
+        if (f.t === 'text') { if (val || branco || (ident && !/opcional/.test(f.l))) h += '<p><b>' + rot + ':</b> ' + (val ? sub(val) : branco ? LIN + LIN : '') + '</p>'; return; }
         if (ident) { h += '</div>'; ident = false; }
-        if (f.t === 'area') { if (val) h += (f.l ? '<p><b>' + esc(f.l) + '</b></p>' : '') + '<p class="tx">' + sub(val) + '</p>'; return; }
+        if (f.t === 'area') { if (val) h += (f.l && !/^Texto|^Cláusulas|^Orientações/.test(f.l) ? '<p><b>' + esc(f.l) + '</b></p>' : '') + '<p class="tx">' + sub(val) + '</p>'; else if (branco) h += (f.l ? '<p><b>' + esc(f.l) + '</b></p>' : '') + '<p class="tx">' + LIN + LIN + LIN + '<br>' + LIN + LIN + LIN + '<br>' + LIN + LIN + LIN + '</p>'; return; }
         if (f.t === 'check') { h += '<p><b>' + esc(f.l) + '</b></p><ul>' + f.o.map(function (o) { return '<li>' + ((val || []).indexOf(o) > -1 ? '☒ ' : '☐ ') + esc(o) + '</li>'; }).join('') + '</ul>'; return; }
-        if (f.t === 'radio') { h += '<p><b>' + esc(f.l) + ':</b> ' + esc(val || '—') + '</p>'; return; }
+        if (f.t === 'radio') { h += branco ? '<p><b>' + esc(f.l) + ':</b> ' + f.o.map(function (o) { return '☐ ' + esc(o); }).join(' &nbsp; ') + '</p>' : '<p><b>' + esc(f.l) + ':</b> ' + esc(val || '—') + '</p>'; return; }
       });
       if (ident) h += '</div>';
-      h += '<p class="loc">' + sub(v.local || '') + '</p><div class="ass">_______________________________________<br>Bárbara Serra Oliveira<br>Psicóloga · CRP 20/13.134</div></div>';
+      h += '<p class="loc">' + (v.local ? sub(v.local) : branco ? 'Manaus, ____ de ______________ de ________.' : '') + '</p>';
+      (m.assin || []).forEach(function (a) { h += '<div class="ass">_______________________________________<br>' + (v[a.n] ? esc(v[a.n]) + '<br>' : '') + esc(a.l) + '</div>'; });
+      h += '<div class="ass">_______________________________________<br>Bárbara Serra Oliveira<br>Psicóloga · CRP 20/13.134</div></div>';
       return h;
     }
-    function imprimirDoc(d) { $('printarea').innerHTML = docHtml(d); setTimeout(function () { window.print(); }, 60); }
+    function imprimirDoc(d, branco) { $('printarea').innerHTML = docHtml(d, branco); setTimeout(function () { window.print(); }, 60); }
     $('doc-voltar').addEventListener('click', function () { salvarDoc(); docAtual = null; docsHome(); });
     $('doc-print').addEventListener('click', function () { salvarDoc(); imprimirDoc(docAtual); });
+    $('doc-branco').addEventListener('click', function () { imprimirDoc(docAtual, true); });
     $('doc-dup').addEventListener('click', function () {
       var c = JSON.parse(JSON.stringify(docAtual)); c.id = rid() + Date.now().toString(36); c.em = new Date().toISOString();
       var l = docsLer(); l.unshift(c); docsGravar(l); abrirDoc(c); toast('Cópia criada');

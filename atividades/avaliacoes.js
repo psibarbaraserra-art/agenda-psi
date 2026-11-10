@@ -11,7 +11,7 @@
 (function () {
   var LISTA_TDAH;
   window.ABORDAGENS = window.ABORDAGENS || {};
-  window.ABORDAGENS.aval = { nome: 'Avaliação', longo: 'Avaliações (escalas de rastreio)' };
+  window.ABORDAGENS.aval = { nome: 'Rastreio', longo: 'Rastreios (escalas)' };
 
   var CRISE = 'Se você está pensando em se machucar, não espere a sessão: ligue 188 (CVV, 24h, gratuito), 192 (SAMU) ou procure o pronto-socorro.';
   function itens(lista, o, extra) {
