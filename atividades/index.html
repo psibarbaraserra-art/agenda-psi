@@ -247,6 +247,11 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       <p class="muted" style="margin:0">Escalas de rastreio de <b>uso livre</b>, com correção automática. O paciente responde pelo link e você recebe o escore, a faixa de gravidade e os alertas em <b>Respostas</b>. O paciente não vê o resultado: a devolutiva fica com você.</p>
       <div class="warnbox">São instrumentos de <b>rastreio</b>: não fazem diagnóstico, não substituem a avaliação psicológica e não são testes psicológicos do SATEPSI. Use como informação complementar à entrevista. Confira os textos dos itens com o artigo de validação indicado em cada escala antes do primeiro uso.</div>
     </div>
+    <div class="panel stack">
+      <h3 style="margin-top:0">Kits prontos</h3>
+      <p class="small muted" style="margin:0">Selecionam de uma vez um conjunto de rastreios e questionários para enviar no mesmo link.</p>
+      <div class="row" id="kits"></div>
+    </div>
     <div class="stack" id="lib-ava"></div>
     <div class="panel stack">
       <h3 style="margin-top:0">Questionários e anamneses para enviar</h3>
@@ -839,7 +844,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       atual = id; var at = byId[id];
       st.ans[id] = st.ans[id] || {};
       $('p-nome').textContent = at.nome; $('p-badge').innerHTML = badge(at.ab);
-      $('p-intro').textContent = at.intro;
+      $('p-intro').textContent = at.intro + (at.complementar ? ' Este questionário apoia o seu atendimento e não é um teste: ele não faz diagnóstico.' : '');
       var form = $('p-form'); form.innerHTML = '';
       renderFields(at.f, form, st.ans[id], save);
       $('p-concluir').textContent = st.ok[id] ? 'Salvar e voltar' : 'Concluir ' + tipoDe(at).s;
@@ -850,7 +855,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       stopWidgets();
       var a = st.ans[atual] || {};
       var faltam = byId[atual].f.filter(function (f) { return f.t === 'likert' && !f.opc && typeof a[f.id] !== 'number'; }).map(function (f) { return f.n; });
-      if (faltam.length && !confirm('Faltam ' + faltam.length + (faltam.length === 1 ? ' pergunta' : ' perguntas') + ' (nº ' + faltam.join(', ') + '). Para o resultado ficar correto, responda todas. Concluir mesmo assim?')) return;
+      if (faltam.length && !confirm('Faltam ' + faltam.length + (faltam.length === 1 ? ' pergunta' : ' perguntas') + (faltam.every(function (n) { return n; }) ? ' (nº ' + faltam.join(', ') + ')' : '') + '. Para o resultado ficar correto, responda todas. Concluir mesmo assim?')) return;
       var tp = tipoDe(byId[atual]);
       if (!Object.keys(a).length && !confirm('Você ainda não respondeu nada ' + (tp.f ? 'nesta ' : 'neste ') + tp.s + '. Marcar como ' + (tp.f ? 'concluída' : 'concluído') + ' mesmo assim?')) return;
       st.ok[atual] = true; save(); toast(cap(tp.s) + (tp.f ? ' concluída!' : ' concluído!')); lista();
@@ -980,6 +985,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
         c.querySelector('[data-v]').addEventListener('click', function () { previa(a); });
         c.querySelector('[data-p]').addEventListener('click', function () { printDoc(a.nome, (ABS[a.ab] || {}).longo, '<p><i>' + esc(a.intro) + '</i></p>' + blankHtml(a.f), a.ref); });
         if (a.licenca) { var lc = document.createElement('div'); lc.className = 'meta'; lc.textContent = '✓ ' + a.licenca; c.insertBefore(lc, c.querySelector('.acts')); }
+        if (a.complementar) { var cp = document.createElement('div'); cp.className = 'meta'; cp.style.color = 'var(--warn)'; cp.textContent = 'Instrumento clínico complementar · não validado para diagnóstico'; c.insertBefore(cp, c.querySelector('.acts')); }
         return c;
     }
     function toggle(id) { var i = sel.indexOf(id); if (i > -1) sel.splice(i, 1); else sel.push(id); lsSet(LSK_SEL, sel); lib(); }
@@ -1148,6 +1154,11 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
     $('res-fetch').addEventListener('click', function () { buscar(true); });
 
     drawFilters(); lib();
+    [['Kit puerpério', ['epds', 'gad7', 'mdq', 'quest-puerperio']], ['Kit gestação', ['epds', 'gad7', 'quest-gestacao']]].forEach(function (k) {
+      var bt = document.createElement('button'); bt.className = 'ghost'; bt.textContent = k[0] + ' (' + k[1].map(function (i) { return (byId[i] || {}).sigla || 'questionário'; }).join(', ').replace(/, ([^,]*)$/, ' e $1') + ')';
+      bt.addEventListener('click', function () { k[1].forEach(function (i) { if (byId[i] && sel.indexOf(i) < 0) sel.push(i); }); lsSet(LSK_SEL, sel); lib(); toast(k[0] + ' selecionado'); });
+      $('kits').appendChild(bt);
+    });
     $('fora').innerHTML = (window.AVAL_FORA || []).map(function (x) {
       var t = { pago: ['n4', 'Paga / licença'], verificar: ['n2', 'Verificar'], livre: ['n0', 'Gratuita · em breve'] }[x.tipo] || ['n2', ''];
       return '<div><span class="tg ' + t[0] + '">' + t[1] + '</span><b>' + esc(x.nome) + '</b><br><span class="muted">' + esc(x.motivo) + '</span>' +
@@ -1175,7 +1186,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       });
       (window.DOC_MODELOS || []).forEach(function (m) {
         var c = document.createElement('article'); c.className = 'card';
-        c.innerHTML = '<h4>' + esc(m.nome) + '</h4><p>' + esc(m.desc) + '</p><div class="acts"><button class="cta">Novo</button></div>';
+        c.innerHTML = '<h4>' + esc(m.nome) + '</h4><p>' + esc(m.desc) + '</p>' + (m.complementar ? '<div class="meta" style="color:var(--warn)">Instrumento clínico complementar · não validado para diagnóstico</div>' : '') + '<div class="acts"><button class="cta">Novo</button></div>';
         c.querySelector('button').addEventListener('click', function () {
           var v = {}; m.campos.forEach(function (f) { if (f.id && f.v != null) v[f.id] = f.v; });
           var d = { id: rid() + Date.now().toString(36), modelo: m.id, v: v, em: new Date().toISOString() };
@@ -1277,7 +1288,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       var m = MOD[d.modelo], v = branco ? {} : d.v, LIN = '________________________';
       if (branco) m.campos.forEach(function (f) { if (f.t === 'area' && f.v != null) v[f.id] = f.v; if (f.id === 'autor' || f.id === 'local') v[f.id] = f.id === 'autor' ? f.v : ''; });
       var sub = function (t) { return esc(String(t || '').replace(/\{(\w+)\}/g, function (_, k) { var x = v[k]; return Array.isArray(x) ? x.join(', ') : (x || LIN); })); };
-      var h = '<div class="doc"><div class="dh2"><img src="../icons/logo.png" alt=""><div><b>Bárbara Serra Oliveira</b><br>Psicóloga · CRP 20/13.134</div></div><h1>' + esc(m.titulo) + '</h1>';
+      var h = '<div class="doc"><div class="dh2"><img src="../icons/logo.png" alt=""><div><b>Bárbara Serra Oliveira</b><br>Psicóloga · CRP 20/13.134</div></div><h1>' + esc(m.titulo) + '</h1>' + (m.complementar ? '<p style="text-align:center;font-size:10pt;margin:-8px 0 14px"><i>Instrumento clínico complementar, não validado para diagnóstico. Não é teste psicológico nem escala psicométrica.</i></p>' : '');
       var ident = false;
       m.campos.forEach(function (f) {
         if (f.s) { if (ident) { h += '</div>'; ident = false; } h += '<h2>' + esc(f.s) + '</h2>'; if (/Identifica/.test(f.s)) { h += '<div class="id">'; ident = true; } return; }
