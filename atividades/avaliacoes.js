@@ -524,7 +524,38 @@
       }
     }
   ];
-  LISTA = LISTA.concat(LISTA_TDAH).concat(LISTA_TEA).concat(LISTA_NOVOS);
+
+  // ---------- Gestação e puerpério ----------
+  var o4 = function (a) { return a.map(function (x) { return { v: x[0], l: x[1] }; }); };
+  var LISTA_PERI = [
+    {
+      id: 'epds', sigla: 'EPDS', grupo: 'Gestação e puerpério', nome: 'EPDS · Escala de Depressão Pós-Parto de Edimburgo', min: 5, dem: ['Depressão', 'Ansiedade'],
+      obj: 'Rastreio de sintomas depressivos no pós-parto (também pode ser usada na gestação), nos últimos 7 dias.',
+      licenca: 'Uso livre: os autores permitem reproduzir a escala sem autorização, desde que citada a fonte.',
+      ref: 'Cox, J. L., Holden, J. M., & Sagovsky, R. (1987). Detection of postnatal depression: development of the 10-item Edinburgh Postnatal Depression Scale. Br J Psychiatry, 150, 782-786. Versão brasileira: Santos, I. S. et al. (2007). Validation of the Edinburgh Postnatal Depression Scale (EPDS) in a sample of mothers from the 2004 Pelotas Birth Cohort Study. Cad. Saúde Pública, 23(11), 2577-2588.',
+      intro: 'Você teve um bebê há pouco tempo (ou está gestante) e gostaríamos de saber como você está se sentindo. Marque a resposta que mais se aproxima do que você sentiu nos últimos 7 dias, e não apenas hoje.',
+      f: [
+        { t: 'likert', id: 'i1', n: 1, l: 'Eu tenho sido capaz de rir e achar graça das coisas', o: o4([[0, 'Como eu sempre fiz'], [1, 'Não tanto quanto antes'], [2, 'Sem dúvida, menos que antes'], [3, 'De jeito nenhum']]) },
+        { t: 'likert', id: 'i2', n: 2, l: 'Eu tenho pensado no futuro com alegria', o: o4([[0, 'Sim, como de costume'], [1, 'Um pouco menos que de costume'], [2, 'Muito menos que de costume'], [3, 'Praticamente não']]) },
+        { t: 'likert', id: 'i3', n: 3, l: 'Eu tenho me culpado sem razão quando as coisas dão errado', o: o4([[3, 'Sim, na maioria das vezes'], [2, 'Sim, algumas vezes'], [1, 'Não muitas vezes'], [0, 'Não, nenhuma vez']]) },
+        { t: 'likert', id: 'i4', n: 4, l: 'Eu tenho ficado ansiosa ou preocupada sem uma boa razão', o: o4([[0, 'Não, de maneira alguma'], [1, 'Pouquíssimas vezes'], [2, 'Sim, algumas vezes'], [3, 'Sim, muitas vezes']]) },
+        { t: 'likert', id: 'i5', n: 5, l: 'Eu tenho me sentido assustada ou em pânico sem um bom motivo', o: o4([[3, 'Sim, muitas vezes'], [2, 'Sim, algumas vezes'], [1, 'Não muitas vezes'], [0, 'Não, nenhuma vez']]) },
+        { t: 'likert', id: 'i6', n: 6, l: 'Eu tenho me sentido sobrecarregada pelas tarefas e acontecimentos do meu dia a dia', o: o4([[3, 'Sim, na maioria das vezes eu não consigo lidar bem com eles'], [2, 'Sim, algumas vezes não consigo lidar tão bem quanto antes'], [1, 'Não, na maioria das vezes consigo lidar bem com eles'], [0, 'Não, consigo lidar com eles tão bem quanto antes']]) },
+        { t: 'likert', id: 'i7', n: 7, l: 'Eu tenho me sentido tão infeliz que tenho tido dificuldade para dormir', o: o4([[3, 'Sim, na maioria das vezes'], [2, 'Sim, algumas vezes'], [1, 'Não muitas vezes'], [0, 'Não, nenhuma vez']]) },
+        { t: 'likert', id: 'i8', n: 8, l: 'Eu tenho me sentido triste ou arrasada', o: o4([[3, 'Sim, na maioria das vezes'], [2, 'Sim, muitas vezes'], [1, 'Não muitas vezes'], [0, 'Não, de jeito nenhum']]) },
+        { t: 'likert', id: 'i9', n: 9, l: 'Eu tenho me sentido tão infeliz que tenho chorado', o: o4([[3, 'Sim, quase todo o tempo'], [2, 'Sim, muitas vezes'], [1, 'De vez em quando'], [0, 'Não, nunca']]) },
+        { t: 'likert', id: 'i10', n: 10, l: 'A ideia de fazer mal a mim mesma passou pela minha cabeça', o: o4([[3, 'Sim, muitas vezes, ultimamente'], [2, 'Algumas vezes nos últimos dias'], [1, 'Pouquíssimas vezes, ultimamente'], [0, 'Nenhuma vez']]), alerta: 1, msg: CRISE2 }
+      ],
+      calc: function (a) {
+        var r = soma(a, ids(10)), al = [], ans = (a.i4 || 0) + (a.i5 || 0) + (a.i3 || 0);
+        if (a.i10 > 0) al.push('Item 10 (ideia de fazer mal a si mesma) pontuado: ' + a.i10 + '. Avaliar risco de suicídio imediatamente (use o roteiro de avaliação clínica de risco).');
+        var fx = r.s >= 13 ? { nome: 'Provável depressão (≥ 13)', nivel: 4 } : r.s >= 10 ? { nome: 'Possível depressão (≥ 10): avaliar', nivel: 3 } : { nome: 'Abaixo do ponto de corte', nivel: 0 };
+        return { falta: r.falta, linhas: [{ nome: 'Escore total', v: r.s, max: 30, faixa: fx.nome, nivel: fx.nivel }, { nome: 'Subescala de ansiedade (itens 3, 4 e 5)', v: ans, max: 9, faixa: ans >= 6 ? 'Elevada (≥ 6)' : '', nivel: ans >= 6 ? 2 : 0 }], alertas: al,
+          nota: 'Na amostra brasileira (Santos et al., 2007), ponto de corte ≥ 10; o corte ≥ 13 é usado para maior especificidade (Cox et al., 1987). Qualquer pontuação no item 10 exige avaliação de risco. A subescala de ansiedade (EPDS-3A) é complementar. Rastreio não faz diagnóstico.' };
+      }
+    }
+  ];
+  LISTA = LISTA.concat(LISTA_TDAH).concat(LISTA_TEA).concat(LISTA_NOVOS).concat(LISTA_PERI);
   LISTA.forEach(function (x) { x.ab = 'aval'; });
   window.ATIVIDADES = (window.ATIVIDADES || []).concat(LISTA);
 
@@ -551,7 +582,6 @@
     { nome: 'M-CHAT-R/F (autismo, 16 a 30 meses)', motivo: 'Gratuito para uso clínico em papel, sem alterações. Versões digitais exigem autorização dos autores (mchatscreen.com). O arquivo enviado é a versão de Portugal; para o Brasil, baixe a versão brasileira oficial em mchatscreen.com.', onde: ['Site oficial do M-CHAT', 'https://www.mchatscreen.com'], tipo: 'verificar' },
     { nome: 'ABC / ICA (Inventário de Comportamentos Autísticos)', motivo: 'O Autism Behavior Checklist tem direitos autorais (Krug et al.; hoje faz parte do ASIEP-3, da Pro-Ed). Não incluí: se tiver autorização ou confirmação de uso livre, eu incluo, já com a correção por área (o conteúdo que você enviou está pronto).', onde: ['Pro-Ed (ASIEP-3)', 'https://www.proedinc.com'], tipo: 'verificar' },
     { nome: 'Avaliação intraverbal (protocolo ABA)', motivo: 'Parece adaptado de protocolos de avaliação de linguagem (como o VB-MAPP, que é pago). Não incluí sem confirmar a autoria; use a sua cópia impressa.', onde: ['AVB Press (VB-MAPP)', 'https://avbpress.com'], tipo: 'verificar' },
-    { nome: 'Escalas de Conners (versões para pais e para professores)', motivo: 'Direitos autorais da Multi-Health Systems (MHS). As traduções que circulam (Barbosa, 1995) podem exigir licença para reprodução e uso digital. Não incluí: se você tiver licença ou confirmação de uso livre, eu incluo (o conteúdo que você enviou já está pronto).', onde: ['Multi-Health Systems (MHS)', 'https://mhs.com'], tipo: 'verificar' },
-    { nome: 'EPDS (Escala de Depressão Pós-Parto de Edimburgo)', motivo: 'Uso livre, citando a fonte. Ainda não incluído: preciso conferir o texto da versão brasileira.', tipo: 'livre' }
+    { nome: 'Escalas de Conners (versões para pais e para professores)', motivo: 'Direitos autorais da Multi-Health Systems (MHS). As traduções que circulam (Barbosa, 1995) podem exigir licença para reprodução e uso digital. Não incluí: se você tiver licença ou confirmação de uso livre, eu incluo (o conteúdo que você enviou já está pronto).', onde: ['Multi-Health Systems (MHS)', 'https://mhs.com'], tipo: 'verificar' }
   ];
 })();

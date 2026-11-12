@@ -75,3 +75,8 @@ Para editar: `atividades/avaliacoes.js`, `atividades/questionarios.js` e `ativid
 ## Bipolaridade, burnout e borderline
 - **Rastreios:** MDQ (bipolaridade), CBI – Inventário de Burnout de Copenhague e MSI-BPD (borderline), com correção automática e alerta de autolesão no MSI-BPD.
 - Na lista "Escalas que não estão no app", cada instrumento pago ou com licença tem o link de onde adquirir ou solicitar (MBI, SCID-5-PD, PAI, Beck, IDATE, CARS, ADI-R etc.).
+
+## Gestação e puerpério
+- **Rastreios:** EPDS (Edimburgo, com alerta no item 10 e subescala de ansiedade). GAD-7 e MDQ já estavam no app. Botões **Kit puerpério** (EPDS, GAD-7, MDQ e questionário) e **Kit gestação**.
+- **Questionários (instrumentos clínicos complementares, não validados para diagnóstico):** Saúde emocional na gestação, Como estou no pós-parto, A experiência do meu parto e Meu plano de apoio para o pós-parto. Itens de risco geram alerta para a psicóloga e mostram contatos de apoio para a paciente (CVV 188, SAMU 192, 180, 190).
+- **Documentos → Gestação e puerpério:** Questionário puerpério (roteiro de entrevista clínica da psicóloga) e Avaliação clínica de risco (ideação suicida e violência).

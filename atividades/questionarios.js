@@ -343,6 +343,129 @@
       ].map(function (q, i) { return rd('q' + (i + 1), (i + 1) + '. ' + q, SIM3); })).concat([ar('exemplos', 'Conte exemplos das situações que você marcou como "sim" ou "às vezes"')])
     }
   ]);
+
+  // ---------- Gestação e puerpério (instrumentos clínicos complementares) ----------
+  var SAN = [{ v: 2, l: 'Sim' }, { v: 1, l: 'Às vezes' }, { v: 0, l: 'Não' }];
+  var CRISEP = 'Você não está sozinha e isso tem tratamento. Se estiver pensando em se machucar agora, não espere a sessão: ligue 188 (CVV, 24h, gratuito), 192 (SAMU) ou procure o pronto-socorro.';
+  var BEBE = 'Pensamentos assustadores sobre o bebê acontecem com muitas mães e podem ser tratados; falar sobre eles com a psicóloga é seguro. Se você sentir que pode perder o controle, peça para alguém ficar com o bebê e ligue 192 (SAMU) ou procure o pronto-socorro.';
+  var VIOL = 'Você tem direito de estar segura. Em risco agora, ligue 190 (Polícia). Para orientação e apoio, ligue 180 (Central de Atendimento à Mulher, 24h, gratuito).';
+  var PSIC = 'Esses sinais precisam de avaliação médica rápida. Fale hoje com a psicóloga ou procure o pronto-socorro; peça para alguém de confiança ficar com você e com o bebê.';
+  function sinal(id, l, alerta, msg) { var f = { t: 'likert', id: id, l: l, o: SAN }; if (alerta) { f.alerta = 1; f.msg = msg; f.critico = true; } return f; }
+  function calcSinais(itens, criticos) {
+    return function (a) {
+      var marc = [], al = [];
+      itens.forEach(function (f) { if (a[f.id] >= 1) marc.push(f.l + (a[f.id] === 1 ? ' (às vezes)' : '')); });
+      (criticos || []).forEach(function (c) { if (a[c[0]] >= 1) al.push(c[1] + ' (' + (a[c[0]] === 2 ? 'sim' : 'às vezes') + ').'); });
+      return { falta: 0, linhas: [{ nome: 'Sinais de atenção marcados', v: marc.length, max: itens.length, faixa: al.length ? 'Há sinais de risco: priorizar' : marc.length >= 4 ? 'Vários sinais: aprofundar na sessão' : marc.length ? 'Conversar na sessão' : 'Nenhum sinal marcado', nivel: al.length ? 4 : marc.length >= 4 ? 3 : marc.length ? 2 : 0 }], alertas: al,
+        nota: 'Instrumento clínico complementar, não validado para diagnóstico (não é teste psicológico nem escala psicométrica). Sinais marcados: ' + (marc.join('; ') || 'nenhum') + '.' };
+    };
+  }
+  var PU_S = [
+    sinal('s1', 'Tenho chorado com frequência, mesmo sem um motivo claro'),
+    sinal('s2', 'Tenho me sentido triste, vazia ou sem esperança na maior parte do dia'),
+    sinal('s3', 'Perdi o prazer ou o interesse por coisas de que eu gostava'),
+    sinal('s4', 'Tenho me sentido muito irritada, impaciente ou com raiva'),
+    sinal('s5', 'Tenho preocupação excessiva ou medo constante de que algo ruim aconteça com o bebê ou com a família'),
+    sinal('s6', 'Tenho pensamentos repetitivos ou assustadores que não consigo controlar'),
+    sinal('s7', 'Não consigo dormir mesmo quando o bebê dorme ou quando alguém cuida dele'),
+    sinal('s8', 'Tenho dificuldade de sentir carinho ou conexão com o bebê'),
+    sinal('s9', 'Sinto muita culpa ou medo de não ser uma boa mãe'),
+    sinal('s10', 'Sinto que estou vivendo no automático ou que as coisas não parecem reais'),
+    sinal('s11', 'Sinto que não tenho com quem contar'),
+    sinal('s12', 'Tenho tido energia muito alta, pouca necessidade de sono ou pensamentos acelerados')
+  ];
+  var PU_C = [
+    sinal('c1', 'Pensei que seria melhor não estar aqui, ou pensei em me machucar', true, CRISEP),
+    sinal('c2', 'Tive pensamentos ou impulsos de machucar o bebê ou outro filho', true, BEBE),
+    sinal('c3', 'Tenho ouvido vozes, visto coisas que outras pessoas não percebem ou me sentido confusa', true, PSIC),
+    sinal('c4', 'Tenho me sentido insegura ou ameaçada dentro de casa', true, VIOL)
+  ];
+  var GE_S = [
+    sinal('s1', 'Tenho me sentido triste ou desanimada na maior parte do dia'),
+    sinal('s2', 'Perdi o prazer ou o interesse por coisas de que eu gostava'),
+    sinal('s3', 'Tenho preocupação excessiva com a gestação, o parto ou o bebê'),
+    sinal('s4', 'Tenho muito medo do parto'),
+    sinal('s5', 'Tenho me sentido muito irritada ou impaciente'),
+    sinal('s6', 'Estou dormindo mal, mesmo quando tenho oportunidade de descansar'),
+    sinal('s7', 'Sinto que não tenho apoio suficiente nesta gestação'),
+    sinal('s8', 'Tenho usado álcool, cigarro ou outras substâncias'),
+    sinal('s9', 'Já tive depressão ou ansiedade antes, inclusive em outra gestação ou pós-parto')
+  ];
+  var GE_C = [
+    sinal('c1', 'Pensei que seria melhor não estar aqui, ou pensei em me machucar', true, CRISEP),
+    sinal('c2', 'Tenho me sentido insegura ou ameaçada dentro de casa', true, VIOL)
+  ];
+  var PA_S = [
+    sinal('s1', 'Tenho lembranças, imagens ou pesadelos do parto que me angustiam'),
+    sinal('s2', 'Evito pensar ou falar sobre o parto, ou passar perto do hospital'),
+    sinal('s3', 'Fico em alerta, assustada ou sobressaltada com facilidade desde o parto'),
+    sinal('s4', 'Sinto culpa, vergonha ou raiva quando penso no parto')
+  ];
+  LISTA = LISTA.concat([
+    {
+      id: 'quest-gestacao', grupo: 'Gestação e puerpério', complementar: true, nome: 'Saúde emocional na gestação', min: 12, dem: ['Ansiedade', 'Depressão', 'Estresse'],
+      obj: 'Acompanhar como a gestante está se sentindo, seus medos, sua rede de apoio e fatores de risco para depressão perinatal.',
+      ref: 'Instrumento clínico complementar elaborado para o consultório, sem validação psicométrica.',
+      intro: 'Estas perguntas ajudam a psicóloga a acompanhar como você está vivendo a gestação. Não existe resposta certa: responda com sinceridade e com suas palavras.',
+      f: [h('Sobre a gestação'), tx('semanas', 'Com quantas semanas de gestação você está?'), rd('planej', 'A gravidez foi planejada?', ['Sim', 'Não', 'Em parte']),
+        rd('primeira', 'É a sua primeira gestação?', ['Sim', 'Não']), ar('noticia', 'Como você recebeu a notícia da gravidez? E as pessoas próximas?'),
+        ar('sentir', 'Como você tem se sentido emocionalmente nas últimas semanas?'),
+        h('Como você tem se sentido')].concat(GE_S).concat([h('Segurança')]).concat(GE_C).concat([
+        h('Rede de apoio e expectativas'),
+        ar('apoio', 'Quem está ao seu lado nesta gestação? Com quem você pode contar?'),
+        ar('medos', 'Quais são os seus maiores medos ou preocupações sobre o parto e a maternidade?'),
+        ar('plano', 'O que você imagina e deseja para o parto e para os primeiros meses com o bebê?'),
+        ar('cuidar', 'O que tem ajudado você a se sentir bem? Do que você precisa agora?')]),
+      calc: calcSinais(GE_S.concat(GE_C), [['c1', 'Pensamentos de morte ou de se machucar'], ['c2', 'Sente-se insegura ou ameaçada em casa (avaliar violência doméstica)']])
+    },
+    {
+      id: 'quest-puerperio', grupo: 'Gestação e puerpério', complementar: true, nome: 'Como estou no pós-parto (resguardo)', min: 12, dem: ['Depressão', 'Ansiedade', 'Sono', 'Crise'],
+      obj: 'Identificar sinais de sofrimento no puerpério: humor, ansiedade, vínculo com o bebê, sono, rede de apoio e sinais de risco.',
+      ref: 'Instrumento clínico complementar elaborado para o consultório, a partir dos eixos do Questionário Puerpério da psicóloga. Sem validação psicométrica.',
+      intro: 'Depois do nascimento de um bebê, muitas mães passam por mudanças fortes nas emoções, no corpo e na rotina. Estas perguntas ajudam a psicóloga a entender como você está. Responda pensando nas últimas duas semanas.',
+      f: [h('Sobre você e o bebê'), tx('idadebebe', 'Idade do bebê'), rd('parto', 'Tipo de parto', ['Normal', 'Cesárea', 'Outro']), rd('primeiro', 'É o seu primeiro filho?', ['Sim', 'Não']),
+        ar('estado', 'Como você descreveria o seu estado emocional nos últimos dias?'),
+        h('Nas últimas duas semanas')].concat(PU_S).concat([h('Segurança'), { t: 'p', x: 'As perguntas abaixo são importantes para o seu cuidado. Responder com sinceridade ajuda a psicóloga a te apoiar da melhor forma.' }]).concat(PU_C).concat([
+        h('Sono, corpo e autocuidado'),
+        tx('horas', 'Quantas horas, mais ou menos, você tem conseguido dormir em 24 horas?'),
+        ar('corpo', 'Como estão a sua recuperação física, a alimentação e os cuidados com você mesma?'),
+        ar('identidade', 'Como você tem se sentido em relação ao seu corpo e a quem você era antes da maternidade?'),
+        h('Rede de apoio'),
+        ar('ajuda', 'Quem está ajudando você neste momento? Em quê?'),
+        rd('suficiente', 'Você sente que recebe apoio suficiente?', ['Sim', 'Em parte', 'Não']),
+        ar('relacoes', 'Como está a relação com o(a) companheiro(a) e com a família?'),
+        h('Histórico'),
+        ar('antes', 'Você já teve depressão, ansiedade ou outro problema emocional antes, ou fez acompanhamento?'),
+        rd('famhist', 'Há na sua família casos de depressão, transtorno bipolar ou depressão pós-parto?', ['Sim', 'Não', 'Não sei']),
+        ar('precisa', 'Do que você mais precisa agora?')]),
+      calc: calcSinais(PU_S.concat(PU_C), [['c1', 'Pensamentos de morte ou de se machucar'], ['c2', 'Pensamentos ou impulsos de machucar o bebê: diferenciar pensamentos intrusivos indesejados de intenção'], ['c3', 'Possíveis sintomas psicóticos ou confusão: avaliar psicose puerperal com urgência'], ['c4', 'Sente-se insegura ou ameaçada em casa (avaliar violência doméstica)']])
+    },
+    {
+      id: 'experiencia-parto', grupo: 'Gestação e puerpério', complementar: true, nome: 'A experiência do meu parto', min: 15, dem: ['Luto e perdas', 'Ansiedade', 'Autoconhecimento'],
+      obj: 'Espaço para a mulher narrar o parto, nomear o que foi bom e o que foi difícil e identificar sinais de experiência traumática.',
+      ref: 'Instrumento clínico complementar elaborado para o consultório, sem validação psicométrica.',
+      intro: 'Contar a própria história do parto pode ajudar a organizar o que foi vivido. Escreva no seu ritmo; se ficar difícil, faça uma pausa e traga para a sessão.',
+      f: [ar('relato', 'Como foi o seu parto? Conte com as suas palavras.'), ar('bom', 'O que foi bom ou te deu força nesse momento?'), ar('dificil', 'O que foi mais difícil?'),
+        rd('respeito', 'Você se sentiu respeitada e informada pela equipe?', ['Sim', 'Em parte', 'Não']),
+        rd('medo', 'Houve momentos de medo intenso por você ou pelo bebê?', ['Sim', 'Não']), ar('medoq', 'Se quiser, conte como foi.'),
+        h('Depois do parto')].concat(PA_S).concat([ar('dizer', 'Há algo que você gostaria de ter vivido de outro jeito, ou que gostaria de dizer sobre o parto?')]),
+      calc: calcSinais(PA_S, [])
+    },
+    {
+      id: 'plano-apoio-pos-parto', grupo: 'Gestação e puerpério', complementar: true, nome: 'Meu plano de apoio para o pós-parto', min: 15, dem: ['Estresse', 'Relacionamentos', 'Crise'],
+      obj: 'Organizar com antecedência (ou no resguardo) quem ajuda em quê, momentos de descanso, sinais de alerta e contatos de apoio.',
+      ref: 'Instrumento clínico complementar elaborado para o consultório (plano de cuidado), sem validação psicométrica.',
+      intro: 'Planejar a ajuda antes de precisar faz diferença. Preencha com calma; se quiser, faça junto com quem vai estar com você.',
+      f: [h('Quem pode ajudar'),
+        tx('casa', 'Tarefas da casa'), tx('noite', 'Cuidados com o bebê à noite (para eu poder dormir)'), tx('refeicoes', 'Refeições'), tx('filhos', 'Outros filhos'), tx('consultas', 'Ir comigo às consultas'),
+        ar('pedir', 'Como vou pedir ajuda quando precisar? (frase que posso usar)'),
+        ar('descanso', 'Meus momentos de descanso e autocuidado na semana'),
+        ck('alertas', 'Sinais de alerta que quero observar em mim', ['Choro frequente', 'Tristeza na maior parte do dia', 'Não conseguir dormir mesmo podendo', 'Ansiedade ou medo constante', 'Irritação intensa', 'Dificuldade de me conectar com o bebê', 'Pensamentos de me machucar ou de machucar o bebê', 'Sentir que estou confusa ou ouvindo coisas']),
+        ar('avisar', 'Se eu notar esses sinais, vou avisar (nome e telefone)'),
+        { t: 'p', x: 'Contatos importantes: CVV 188 (24h, gratuito) · SAMU 192 · Central de Atendimento à Mulher 180 · Polícia 190 · sua maternidade ou UBS · sua psicóloga.' },
+        tx('ubs', 'Minha UBS / maternidade / médico(a) de referência')]
+    }
+  ]);
   LISTA.forEach(function (x) { x.ab = 'quest'; });
   window.ATIVIDADES = (window.ATIVIDADES || []).concat(LISTA);
 })();
