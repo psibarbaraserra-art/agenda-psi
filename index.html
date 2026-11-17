@@ -445,10 +445,6 @@ body.sheet-open .wrap { display: none; }
           <div id="fcats"></div>
         </section>
         <section class="panel">
-          <h2>Por serviço</h2>
-          <div id="fbyserv"></div>
-        </section>
-        <section class="panel">
           <h2>Serviços e valores</h2>
           <div class="hint" style="margin-bottom:8px">Toque num serviço para mudar nome ou valor. Os valores novos valem para as próximas sessões.</div>
           <div class="svc" id="svclist-fin"></div>
@@ -660,22 +656,6 @@ body.sheet-open .wrap { display: none; }
       <div class="r">
         <button type="button" class="ghost" id="y-cancel">Cancelar</button>
         <button type="submit" class="cta" id="y-ok">Continuar</button>
-      </div>
-    </div>
-  </form>
-</div>
-
-<div class="overlay" id="voverlay" hidden>
-  <form class="sheet f" id="vform" role="dialog" aria-modal="true" aria-labelledby="vttl" autocomplete="off">
-    <h2 id="vttl">Mudar valor</h2>
-    <div class="hint" id="v-info"></div>
-    <label for="v-valor">Novo valor por sessão (R$)<input id="v-valor" type="number" min="0" step="5" inputmode="decimal" required></label>
-    <label class="check" for="v-todas"><input id="v-todas" type="checkbox"> Mudar também as sessões já pagas</label>
-    <div class="warn" id="v-err" hidden></div>
-    <div class="actions">
-      <div class="r">
-        <button type="button" class="ghost" id="v-cancel">Cancelar</button>
-        <button type="submit" class="cta">Aplicar</button>
       </div>
     </div>
   </form>
@@ -1556,7 +1536,6 @@ body.sheet-open .wrap { display: none; }
     if (!$('poverlay').hidden) closeP();
     if (!$('soverlay').hidden) closeS();
     if (!$('yoverlay').hidden) closeY();
-    if (!$('voverlay').hidden) closeV();
   });
 
   /* ---------- tipo de item (sessão ou compromisso pessoal) ---------- */
@@ -2163,7 +2142,7 @@ body.sheet-open .wrap { display: none; }
     clearTimeout(showErr.h); showErr.h = setTimeout(function () { b.hidden = true; }, 12000);
   }
   window.addEventListener('error', function (e) { showErr('Erro na página: ' + (e && e.message)); });
-  var sheets = ['overlay', 'poverlay', 'soverlay', 'yoverlay', 'voverlay'].map(function (id) { return $(id); });
+  var sheets = ['overlay', 'poverlay', 'soverlay', 'yoverlay'].map(function (id) { return $(id); });
   var savedY = 0;
   var mo = new MutationObserver(function () {
     var openEl = sheets.filter(function (o) { return !o.hidden; })[0];
@@ -2388,7 +2367,7 @@ body.sheet-open .wrap { display: none; }
         '<small class="num">recebido ' + money(c.rec) + ' · a receber ' + money(c.tot - c.rec) + '</small></div>';
     };
     $('fcats').innerHTML = all.length ? linha('Escutas terapêuticas', C.escuta, false) + linha('Planos terapêuticos', C.plano, true) +
-      '<div class="hint" style="margin-top:6px">Valor errado? Use <b>Editar</b> em cada sessão da lista, <b>Mudar valor das sessões</b> em "Por serviço", ou toque no serviço em "Serviços e valores" para mudar o preço e o grupo (escuta ou plano).</div>' : '<div class="note">Sem sessões no mês.</div>';
+      '<div class="hint" style="margin-top:6px">Valor errado? Use <b>Editar</b> em cada sessão da lista ou toque no serviço em "Serviços e valores" para mudar o preço e o grupo (escuta ou plano).</div>' : '<div class="note">Sem sessões no mês.</div>';
     var list = all.filter(function (a) {
       if (finFilter === 'todas') return true;
       if (finFilter === 'escuta' || finFilter === 'plano') return catSessao(a) === finFilter;
@@ -2402,42 +2381,8 @@ body.sheet-open .wrap { display: none; }
         esc(fmtBr(a.dia) + ' ' + a.hora + ' · ' + (a.snome || svcName(a.servico)) + ' · ' + (catSessao(a) === 'plano' ? 'Plano' : 'Escuta')) + '</small></button>' +
         '<div class="side">' + right + '<span class="val num">' + money(v) + '</span><button class="lnk" data-edit="' + esc(a.id) + '">Editar</button></div></div>';
     }).join('') : '<div class="note">Nenhuma sessão neste filtro em ' + esc(monthLabel(finMonth)) + '.</div>';
-    var by = {};
-    all.forEach(function (a) {
-      var k = a.snome || svcName(a.servico);
-      by[k] = by[k] || { n: 0, tot: 0, rec: 0, ids: [] };
-      by[k].ids.push(a.id);
-      by[k].n++; by[k].tot += +a.valor || 0; if (a.pago) by[k].rec += +a.valor || 0;
-    });
-    var keys = Object.keys(by);
-    $('fbyserv').innerHTML = keys.length ? keys.map(function (k) {
-      return '<div class="srow"><b>' + esc(k) + '</b><b class="num">' + money(by[k].tot) + '</b><small class="num">' + by[k].n + (by[k].n === 1 ? ' sessão' : ' sessões') + '</small><small class="num">recebido ' + money(by[k].rec) + '</small>' +
-        '<span style="grid-column:1/-1"><button class="lnk" data-bulk="' + esc(by[k].ids.join(',')) + '" data-nome="' + esc(k) + '">Mudar valor das sessões</button></span></div>';
-    }).join('') : '<div class="note">Sem sessões no mês.</div>';
     $('svclist-fin').innerHTML = svcHtml(true);
   }
-  // mudar o valor de várias sessões de uma vez (as que já têm valor; as "incluídas no pacote" ficam em R$ 0)
-  var bulkIds = [];
-  $('fbyserv').addEventListener('click', function (e) {
-    var b = e.target.closest('[data-bulk]'); if (!b) return;
-    bulkIds = b.getAttribute('data-bulk').split(',');
-    var ss = appts.filter(function (a) { return bulkIds.indexOf(a.id) > -1 && (+a.valor || 0) > 0; });
-    $('vttl').textContent = b.getAttribute('data-nome');
-    $('v-info').textContent = ss.length + (ss.length === 1 ? ' sessão com valor' : ' sessões com valor') + ' em ' + monthLabel(finMonth) + '. As sessões "incluídas no pacote" continuam em R$ 0,00.';
-    $('v-valor').value = ss.length ? ss[0].valor : ''; $('v-todas').checked = false; $('v-err').hidden = true;
-    $('voverlay').hidden = false; setTimeout(function () { $('v-valor').focus(); }, 30);
-  });
-  function closeV() { $('voverlay').hidden = true; }
-  $('v-cancel').addEventListener('click', closeV);
-  $('voverlay').addEventListener('click', function (e) { if (e.target === $('voverlay')) closeV(); });
-  $('vform').addEventListener('submit', function (e) {
-    e.preventDefault();
-    var v = parseFloat(String($('v-valor').value).replace(',', '.'));
-    if (isNaN(v) || v < 0) { $('v-err').textContent = 'Informe o novo valor.'; $('v-err').hidden = false; return; }
-    var todas = $('v-todas').checked;
-    var alvo = appts.filter(function (a) { return bulkIds.indexOf(a.id) > -1 && (+a.valor || 0) > 0 && (todas || !a.pago); });
-    Promise.all(alvo.map(function (a) { a.valor = v; return save(a); })).then(function () { closeV(); render(); toast(alvo.length + (alvo.length === 1 ? ' sessão atualizada' : ' sessões atualizadas')); }, function () { toast('Não foi possível atualizar.'); });
-  });
   $('fprev').addEventListener('click', function () { finMonth = shiftMonth(finMonth, -1); renderFin(); });
   $('fnext').addEventListener('click', function () { finMonth = shiftMonth(finMonth, 1); renderFin(); });
   $('fnow').addEventListener('click', function () { finMonth = ymd(new Date()).slice(0, 7); renderFin(); });
