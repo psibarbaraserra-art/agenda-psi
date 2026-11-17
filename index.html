@@ -90,6 +90,10 @@ button { cursor: pointer; }
 
 /* resumo */
 .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.crow { padding: 10px 0; border-bottom: 1px solid var(--line); display: grid; gap: 2px; }
+.crow:last-child { border-bottom: 0; }
+.crow .t { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.crow small { color: var(--muted); font-size: 12.5px; }
 .kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; min-width: 0; }
 .kpi span { display: block; font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .kpi b { display: block; margin-top: 2px; font: 600 26px/1.15 var(--font-display); color: var(--wine); white-space: nowrap; }
@@ -429,10 +433,17 @@ body.sheet-open .wrap { display: none; }
           <button class="tab" data-f="todas" aria-selected="true">Todas</button>
           <button class="tab" data-f="pendentes" aria-selected="false">Pendentes</button>
           <button class="tab" data-f="pagas" aria-selected="false">Pagas</button>
+          <button class="tab" data-f="escuta" aria-selected="false">Escutas</button>
+          <button class="tab" data-f="plano" aria-selected="false">Planos</button>
         </div>
         <div id="flist"></div>
       </section>
       <aside class="stackbtn">
+        <section class="panel">
+          <h2>Escutas e planos</h2>
+          <div class="hint" style="margin-bottom:8px">Escuta terapêutica = serviço avulso. Plano terapêutico = serviço marcado como pacote em "Serviços e valores".</div>
+          <div id="fcats"></div>
+        </section>
         <section class="panel">
           <h2>Por serviço</h2>
           <div id="fbyserv"></div>
@@ -2317,24 +2328,48 @@ body.sheet-open .wrap { display: none; }
   /* ---------- financeiro ---------- */
   function monthLabel(m) { var p = m.split('-'); return new Date(+p[0], +p[1] - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }); }
   function shiftMonth(m, n) { var p = m.split('-'); var d = new Date(+p[0], +p[1] - 1 + n, 1); return d.getFullYear() + '-' + pad(d.getMonth() + 1); }
+  // escuta terapêutica (serviço avulso) ou plano terapêutico (serviço com pacote)
+  function catSessao(a) {
+    var sv = SERVICES.filter(function (x) { return x.id === a.servico; })[0];
+    if (sv) return sv.pacote ? 'plano' : 'escuta';
+    return (+a.valor || 0) === 0 ? 'plano' : 'escuta';
+  }
   function renderFin() {
     $('finlabel').textContent = monthLabel(finMonth);
     var all = appts.filter(function (a) { return a.tipo !== 'pessoal' && a.status !== 'cancelado' && String(a.dia).slice(0, 7) === finMonth; })
       .sort(function (a, b) { return (a.dia + a.hora).localeCompare(b.dia + b.hora); });
     var rec = 0, pen = 0;
     all.forEach(function (a) { var v = +a.valor || 0; if (a.pago) rec += v; else pen += v; });
+    var C = { escuta: { n: 0, real: 0, tot: 0, rec: 0, pac: 0 }, plano: { n: 0, real: 0, tot: 0, rec: 0, pac: 0 } };
+    all.forEach(function (a) {
+      var c = C[catSessao(a)], v = +a.valor || 0;
+      c.n++; if (a.status === 'realizado') c.real++; c.tot += v; if (a.pago) c.rec += v; if (v > 0) c.pac++;
+    });
     $('fkpis').innerHTML =
       '<div class="kpi"><span>Recebido</span><b class="num">' + money(rec) + '</b><small>no mês</small></div>' +
       '<div class="kpi"><span>A receber</span><b class="num">' + money(pen) + '</b><small>no mês</small></div>' +
       '<div class="kpi"><span>Total</span><b class="num">' + money(rec + pen) + '</b><small>previsto</small></div>' +
-      '<div class="kpi"><span>Sessões</span><b class="num">' + all.length + '</b><small>no mês</small></div>';
-    var list = all.filter(function (a) { return finFilter === 'todas' || (finFilter === 'pagas' ? a.pago : !a.pago); });
+      '<div class="kpi"><span>Sessões</span><b class="num">' + all.length + '</b><small>no mês</small></div>' +
+      '<div class="kpi"><span>Escutas</span><b class="num">' + C.escuta.n + '</b><small class="num">' + money(C.escuta.tot) + '</small></div>' +
+      '<div class="kpi"><span>Sessões de plano</span><b class="num">' + C.plano.n + '</b><small class="num">' + money(C.plano.tot) + '</small></div>';
+    var linha = function (rot, c, plano) {
+      return '<div class="crow"><div class="t"><b>' + rot + '</b><b class="num">' + money(c.tot) + '</b></div>' +
+        '<small class="num">' + c.n + (c.n === 1 ? ' atendimento' : ' atendimentos') + ' · ' + c.real + (c.real === 1 ? ' realizado' : ' realizados') + '</small>' +
+        (plano ? '<small class="num">' + c.pac + (c.pac === 1 ? ' plano vendido' : ' planos vendidos') + ' no mês</small>' : '') +
+        '<small class="num">recebido ' + money(c.rec) + ' · a receber ' + money(c.tot - c.rec) + '</small></div>';
+    };
+    $('fcats').innerHTML = all.length ? linha('Escutas terapêuticas', C.escuta, false) + linha('Planos terapêuticos', C.plano, true) : '<div class="note">Sem sessões no mês.</div>';
+    var list = all.filter(function (a) {
+      if (finFilter === 'todas') return true;
+      if (finFilter === 'escuta' || finFilter === 'plano') return catSessao(a) === finFilter;
+      return finFilter === 'pagas' ? a.pago : !a.pago;
+    });
     $('flist').innerHTML = list.length ? list.map(function (a) {
       var v = +a.valor || 0;
       var right = a.pago ? '<span class="pill paidp">Pago · ' + esc(a.forma || 'Pix') + '</span>'
         : (v > 0 ? '<button class="lnk" data-pay="' + esc(a.id) + '">Marcar pago</button>' : '<span class="pill">Incluída no pacote</span>');
       return '<div class="pat"><button class="nm" data-id="' + esc(a.id) + '"><b>' + esc(a.paciente) + '</b><small class="num">' +
-        esc(fmtBr(a.dia) + ' ' + a.hora + ' · ' + (a.snome || svcName(a.servico))) + '</small></button>' +
+        esc(fmtBr(a.dia) + ' ' + a.hora + ' · ' + (a.snome || svcName(a.servico)) + ' · ' + (catSessao(a) === 'plano' ? 'Plano' : 'Escuta')) + '</small></button>' +
         '<div class="side">' + right + '<span class="val num">' + money(v) + '</span></div></div>';
     }).join('') : '<div class="note">Nenhuma sessão neste filtro em ' + esc(monthLabel(finMonth)) + '.</div>';
     var by = {};
