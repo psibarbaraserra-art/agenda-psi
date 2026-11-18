@@ -145,6 +145,15 @@ button { cursor: pointer; }
   background: var(--bg); border: 1px solid var(--line); border-left: 4px solid var(--rose); border-radius: 12px; padding: 9px 12px;
 }
 .appt:hover { border-color: var(--rose); }
+.appt.cor { border-left-color: var(--cb) !important; border-left-width: 6px; background: color-mix(in srgb, var(--c) var(--ml), var(--bg)); }
+.appt.cor .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: 999px; background: var(--cb); color: #fff; margin-left: 6px; vertical-align: 1px; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .appt.cor { background: color-mix(in srgb, var(--c) var(--md), var(--bg)); } :root:not([data-theme="light"]) .appt.cor .tag { background: var(--c); color: var(--ct); } }
+:root[data-theme="dark"] .appt.cor { background: color-mix(in srgb, var(--c) var(--md), var(--bg)); }
+:root[data-theme="dark"] .appt.cor .tag { background: var(--c); color: var(--ct); }
+.legenda { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); margin: 0 0 8px; }
+.legenda i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -2px; margin-right: 5px; border: 1px solid rgba(0,0,0,.15); }
+.ecores { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.ecores input[type=color] { width: 100%; height: 40px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); padding: 3px; }
 .appt .who { min-width: 0; }
 .appt .who b { display: block; overflow-wrap: anywhere; }
 .appt .who small { color: var(--muted); font-size: 12.5px; }
@@ -449,6 +458,13 @@ body.sheet-open .wrap { display: none; }
           <h2>Valores da Essência</h2>
           <div class="hint" style="margin-bottom:8px">Informe quanto a clínica cobra por sessão e qual porcentagem ela repassa para você em cada tipo de atendimento.</div>
           <form class="f" id="eform" onsubmit="return false">
+            <div class="crow"><b>Cores na agenda</b><small>Os seus atendimentos continuam com as cores do seu app.</small>
+              <div class="ecores">
+                <label>Essência · Particular<input type="color" id="e-cor-part" value="#7d8a3c"></label>
+                <label>Essência · Social<input type="color" id="e-cor-social" value="#eadbb2"></label>
+              </div>
+              <button type="button" class="lnk" id="e-cor-padrao" style="justify-self:start">Voltar às cores sugeridas (verde-oliva e creme)</button>
+            </div>
             <div id="e-servs"></div>
             <label class="check" for="e-aplicar"><input id="e-aplicar" type="checkbox" checked> Aplicar também às sessões deste mês em diante com repasse ainda não recebido</label>
             <button class="cta" id="e-salvar" type="submit">Salvar valores</button>
@@ -1211,7 +1227,8 @@ body.sheet-open .wrap { display: none; }
     $('weeklabel').textContent = fm(a, false) + ' – ' + fm(b, true);
     for (var i = 0; i < 7; i++) {
       var d = addDays(ws, i), n = byDay(d).filter(function (x) { return x.status !== 'cancelado'; }).length, dots = '';
-      for (var k = 0; k < Math.min(n, 4); k++) dots += '<u></u>';
+      var itens = byDay(d).filter(function (x) { return x.status !== 'cancelado'; });
+      for (var k = 0; k < Math.min(n, 4); k++) { var ck = corSess(itens[k]); dots += ck ? '<u style="background:' + (corClara(ck) ? escurecer(ck, 0.72) : ck) + '"></u>' : '<u></u>'; }
       var dt = parse(d);
       html += '<button class="day' + (d === sel ? ' sel' : '') + (d === today ? ' today' : '') + '" data-d="' + d + '" aria-pressed="' + (d === sel) + '" aria-label="' +
         dt.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }) + ', ' + n + ' sessões">' +
@@ -1229,8 +1246,9 @@ body.sheet-open .wrap { display: none; }
         '<span class="who"><b>' + esc(a.titulo) + '</b><small class="num">' + esc(meta.join(' · ')) + '</small></span>' +
         '<span class="side"><span class="pill">' + pl + '</span></span></button>';
     }
-    return '<button class="appt s-' + esc(a.status) + '" data-id="' + esc(a.id) + '">' +
-      '<span class="who"><b class="pn" data-pn="' + esc(a.paciente) + '" title="Abrir ficha do paciente">' + esc(a.paciente) + '</b><small class="num">' + esc(a.hora) + ' · ' + esc(a.snome || svcName(a.servico)) + ' · ' + esc(a.modalidade) + '</small></span>' +
+    var cs = corSess(a);
+    return '<button class="appt s-' + esc(a.status) + (cs ? ' cor' : '') + '" data-id="' + esc(a.id) + '"' + (cs ? ' style="' + corStyle(cs) + '"' : '') + '>' +
+      '<span class="who"><b class="pn" data-pn="' + esc(a.paciente) + '" title="Abrir ficha do paciente">' + esc(a.paciente) + '</b>' + (cs ? '<span class="tag">Essência · ' + esc(essTipoSess(a)) + '</span>' : '') + '<small class="num">' + esc(a.hora) + ' · ' + esc(a.snome || svcName(a.servico)) + ' · ' + esc(a.modalidade) + '</small></span>' +
       '<span class="side"><span class="pill">' + esc(STATUS[a.status] || a.status) + '</span>' +
       ((a.status === 'agendado' || a.status === 'confirmado') && waSessao(a) ? '<b class="wa" data-wa="' + esc(a.id) + '">' + (serieDe(a).ultima ? 'Confirmar + novo ciclo' : 'Pedir confirmação') + '</b>' : '') +
       '<span class="val num">' + money(a.valor) + (a.pago ? ' · <span class="paid">pago</span>' : '') + '</span></span></button>';
@@ -1259,6 +1277,13 @@ body.sheet-open .wrap { display: none; }
     var other = list.filter(function (a) { return !used[a.id]; });
     if (other.length) {
       html += '<div class="slot"><time>Outros</time><div class="stack">' + other.map(apptHtml).join('') + '</div></div>';
+    }
+    var temEss = list.some(isEss);
+    if (temEss) {
+      var cP = essSvcs().filter(function (x) { return x.essTipo === 'Particular'; })[0], cS = essSvcs().filter(function (x) { return x.essTipo === 'Social'; })[0];
+      html = '<div class="legenda"><span><i style="background:var(--rose)"></i>Meus atendimentos</span>' +
+        '<span><i style="background:' + esc((cP && cP.cor) || COR_PART) + '"></i>Essência · Particular</span>' +
+        '<span><i style="background:' + esc((cS && cS.cor) || COR_SOCIAL) + '"></i>Essência · Social</span></div>' + html;
     }
     $('slots').innerHTML = html;
   }
@@ -2334,7 +2359,7 @@ body.sheet-open .wrap { display: none; }
     }).join('');
   }
   function saveServ(list) {
-    list = list.map(function (s) { return { id: s.id, nome: s.nome, sub: s.sub || '', valor: +s.valor || 0, pacote: !!s.pacote, cat: s.cat === 'plano' || s.cat === 'escuta' ? s.cat : (s.pacote ? 'plano' : 'escuta'), origem: s.origem === 'essencia' ? 'essencia' : '', perc: +s.perc || 0, essTipo: s.essTipo || '', essOpc: s.essOpc || '' }; });
+    list = list.map(function (s) { return { id: s.id, nome: s.nome, sub: s.sub || '', valor: +s.valor || 0, pacote: !!s.pacote, cat: s.cat === 'plano' || s.cat === 'escuta' ? s.cat : (s.pacote ? 'plano' : 'escuta'), origem: s.origem === 'essencia' ? 'essencia' : '', perc: +s.perc || 0, essTipo: s.essTipo || '', essOpc: s.essOpc || '', cor: /^#[0-9a-f]{6}$/i.test(s.cor || '') ? s.cor : '' }; });
     if (store.mode === 'db') return store.base.collection('config').doc('servicos').set({ lista: list });
     SERVICES = list;
     try { localStorage.setItem(LSS, JSON.stringify(list)); } catch (e) {}
@@ -2461,11 +2486,12 @@ body.sheet-open .wrap { display: none; }
   });
 
   /* ---------- Clínica Essência ---------- */
+  var COR_SOCIAL = '#eadbb2', COR_PART = '#7d8a3c';
   var ESS_PADRAO = [
-    { id: 'ess-social', nome: 'Essência · Social', sub: 'Clínica Essência · atendimento social', valor: 0, pacote: false, cat: 'escuta', origem: 'essencia', perc: 0, essTipo: 'Social', essOpc: 'Sessão' },
-    { id: 'ess-particular', nome: 'Essência · Particular · Sessão avulsa', sub: 'Clínica Essência · sessão particular', valor: 200, pacote: false, cat: 'escuta', origem: 'essencia', perc: 0, essTipo: 'Particular', essOpc: 'Sessão avulsa' },
-    { id: 'ess-part-quinzena', nome: 'Essência · Particular · Quinzena', sub: 'Quinzena: 2 sessões', valor: 360, pacote: true, cat: 'plano', origem: 'essencia', perc: 0, essTipo: 'Particular', essOpc: 'Quinzena' },
-    { id: 'ess-part-pacote', nome: 'Essência · Particular · Pacote terapêutico', sub: 'Pacote de 4 sessões: R$ 800,00 com 10% de desconto', valor: 720, pacote: true, cat: 'plano', origem: 'essencia', perc: 0, essTipo: 'Particular', essOpc: 'Pacote terapêutico' }
+    { id: 'ess-social', nome: 'Essência · Social', sub: 'Clínica Essência · atendimento social', valor: 0, pacote: false, cat: 'escuta', origem: 'essencia', perc: 0, essTipo: 'Social', essOpc: 'Sessão', cor: '#eadbb2' },
+    { id: 'ess-particular', nome: 'Essência · Particular · Sessão avulsa', sub: 'Clínica Essência · sessão particular', valor: 200, pacote: false, cat: 'escuta', origem: 'essencia', perc: 0, essTipo: 'Particular', essOpc: 'Sessão avulsa', cor: '#7d8a3c' },
+    { id: 'ess-part-quinzena', nome: 'Essência · Particular · Quinzena', sub: 'Quinzena: 2 sessões', valor: 360, pacote: true, cat: 'plano', origem: 'essencia', perc: 0, essTipo: 'Particular', essOpc: 'Quinzena', cor: '#7d8a3c' },
+    { id: 'ess-part-pacote', nome: 'Essência · Particular · Pacote terapêutico', sub: 'Pacote de 4 sessões: R$ 800,00 com 10% de desconto', valor: 720, pacote: true, cat: 'plano', origem: 'essencia', perc: 0, essTipo: 'Particular', essOpc: 'Pacote terapêutico', cor: '#7d8a3c' }
   ];
   // cria os serviços da Essência que faltam (e atualiza o Particular antigo); devolve true se mudou algo
   function ensureEss() {
@@ -2477,6 +2503,10 @@ body.sheet-open .wrap { display: none; }
       mudou = true;
     }
     var percPart = part ? (+part.perc || 0) : 0;
+    list = list.map(function (x) {
+      if (x.origem !== 'essencia' || x.cor) return x;
+      mudou = true; return Object.assign({}, x, { cor: x.essTipo === 'Social' ? COR_SOCIAL : COR_PART });
+    });
     ESS_PADRAO.forEach(function (d) {
       if (list.some(function (x) { return x.id === d.id; })) return;
       var n = Object.assign({}, d); if (d.essTipo === 'Particular' && d.id !== 'ess-particular') n.perc = percPart;
@@ -2489,6 +2519,16 @@ body.sheet-open .wrap { display: none; }
     syncTouched();
     return true;
   }
+  function hexRgb(h) { var n = parseInt(String(h).slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+  function corClara(h) { var c = hexRgb(h); return (0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2]) / 255 > 0.7; }
+  function escurecer(h, f) { var c = hexRgb(h); return '#' + c.map(function (v) { return ('0' + Math.round(v * f).toString(16)).slice(-2); }).join(''); }
+  // cor do atendimento na agenda (só Essência; os seus seguem a identidade do app)
+  function corSess(a) {
+    if (!isEss(a)) return '';
+    var sv = svcOf(a), c = sv && sv.cor;
+    return /^#[0-9a-f]{6}$/i.test(c || '') ? c : (essTipoSess(a) === 'Social' ? COR_SOCIAL : COR_PART);
+  }
+  function corStyle(c) { var cl = corClara(c); return '--c:' + c + ';--cb:' + (cl ? escurecer(c, 0.62) : c) + ';--ml:' + (cl ? '70%' : '24%') + ';--md:' + (cl ? '18%' : '32%') + ';--ct:' + (cl ? '#3d3420' : '#fff'); }
   function essOpcSess(a) { var sv = svcOf(a); return (sv && sv.essOpc) || (sv ? sv.nome.replace(/^Essência · (Social|Particular) ?·? ?/, '') : '') || ''; }
   function essSvcs() { return SERVICES.filter(function (s) { return s.origem === 'essencia'; }); }
   function svcOf(a) { return SERVICES.filter(function (x) { return x.id === a.servico; })[0]; }
@@ -2537,6 +2577,8 @@ body.sheet-open .wrap { display: none; }
     $('e-allpaid').hidden = !all.some(function (a) { return !a.pago && (+a.valor || 0) > 0; });
     // valores
     if (!$('eform').contains(document.activeElement)) {
+      var sP = essSvcs().filter(function (x) { return x.essTipo === 'Particular'; })[0], sS = essSvcs().filter(function (x) { return x.essTipo === 'Social'; })[0];
+      $('e-cor-part').value = (sP && sP.cor) || COR_PART; $('e-cor-social').value = (sS && sS.cor) || COR_SOCIAL;
       $('e-servs').innerHTML = essSvcs().map(function (sv) {
         return '<div class="crow" data-sv="' + esc(sv.id) + '"><b>' + esc(sv.nome) + '</b>' + (sv.pacote ? '<small>' + esc(sv.sub || '') + '. O valor é lançado na primeira sessão; as demais ficam "incluídas no pacote".</small>' : '') + '<div class="two">' +
           '<label>' + (sv.pacote ? (sv.essOpc === 'Quinzena' ? 'Valor da quinzena' : 'Valor do pacote') + ' (R$)' : 'Valor cobrado pela clínica (R$)') + '<input type="number" min="0" step="5" inputmode="decimal" data-k="valor" value="' + (+sv.valor || '') + '"></label>' +
@@ -2594,7 +2636,11 @@ body.sheet-open .wrap { display: none; }
       novos[row.getAttribute('data-sv')] = { valor: v || 0, perc: pc || 0 };
     });
     if (erro) { toast(erro); return; }
-    var list = SERVICES.map(function (sv) { return novos[sv.id] ? Object.assign({}, sv, novos[sv.id]) : sv; });
+    var corP = $('e-cor-part').value, corS = $('e-cor-social').value;
+    var list = SERVICES.map(function (sv) {
+      if (!novos[sv.id]) return sv;
+      return Object.assign({}, sv, novos[sv.id], { cor: sv.essTipo === 'Social' ? corS : corP });
+    });
     var aplicar = $('e-aplicar').checked, ini = ymd(new Date()).slice(0, 7) + '-01';
     document.activeElement && document.activeElement.blur && document.activeElement.blur();
     saveServ(list).then(function () {
@@ -2604,6 +2650,7 @@ body.sheet-open .wrap { display: none; }
     }).then(function (n) { render(); toast('Valores da Essência salvos' + (n ? ' e ' + n + (n === 1 ? ' sessão atualizada' : ' sessões atualizadas') : '')); });
   });
   $('pfiltro').addEventListener('change', renderPatients);
+  $('e-cor-padrao').addEventListener('click', function () { $('e-cor-part').value = COR_PART; $('e-cor-social').value = COR_SOCIAL; toast('Cores sugeridas aplicadas. Toque em Salvar valores.'); });
 
   /* ---------- protocolos: modelos e documentos ---------- */
   function fillModelos() {

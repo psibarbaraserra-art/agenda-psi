@@ -89,3 +89,4 @@ Aba **Essência** para os atendimentos feitos pela clínica (Social e Particular
 4. Marque o repasse recebido sessão a sessão ou todos do mês de uma vez.
 Cada sessão guarda a porcentagem do momento em que foi lançada; ao mudar os valores, dá para aplicar às sessões ainda não recebidas.
 - **Particular da Essência:** sessão avulsa (R$ 200), quinzena (2 sessões, R$ 360) e pacote terapêutico (4 sessões, R$ 800 com 10% de desconto = R$ 720). Nos pacotes, o valor e o repasse ficam na primeira sessão; as demais aparecem como "incluídas no pacote".
+- **Cores na agenda:** atendimentos da Essência aparecem coloridos (Particular em verde-oliva e Social em creme, por padrão), com etiqueta e legenda. As cores podem ser trocadas em *Essência → Valores da Essência → Cores na agenda*. Os seus atendimentos mantêm as cores do app.
