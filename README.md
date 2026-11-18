@@ -88,3 +88,4 @@ Aba **Essência** para os atendimentos feitos pela clínica (Social e Particular
 3. Agende normalmente na Agenda: a sessão entra na aba Essência com o valor cobrado, a porcentagem e o seu repasse.
 4. Marque o repasse recebido sessão a sessão ou todos do mês de uma vez.
 Cada sessão guarda a porcentagem do momento em que foi lançada; ao mudar os valores, dá para aplicar às sessões ainda não recebidas.
+- **Particular da Essência:** sessão avulsa (R$ 200), quinzena (2 sessões, R$ 360) e pacote terapêutico (4 sessões, R$ 800 com 10% de desconto = R$ 720). Nos pacotes, o valor e o repasse ficam na primeira sessão; as demais aparecem como "incluídas no pacote".
