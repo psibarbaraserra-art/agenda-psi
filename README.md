@@ -80,3 +80,11 @@ Para editar: `atividades/avaliacoes.js`, `atividades/questionarios.js` e `ativid
 - **Rastreios:** EPDS (Edimburgo, com alerta no item 10 e subescala de ansiedade). GAD-7 e MDQ já estavam no app. Botões **Kit puerpério** (EPDS, GAD-7, MDQ e questionário) e **Kit gestação**.
 - **Questionários (instrumentos clínicos complementares, não validados para diagnóstico):** Saúde emocional na gestação, Como estou no pós-parto, A experiência do meu parto e Meu plano de apoio para o pós-parto. Itens de risco geram alerta para a psicóloga e mostram contatos de apoio para a paciente (CVV 188, SAMU 192, 180, 190).
 - **Documentos → Gestação e puerpério:** Questionário puerpério (roteiro de entrevista clínica da psicóloga) e Avaliação clínica de risco (ideação suicida e violência).
+
+## Clínica Essência
+Aba **Essência** para os atendimentos feitos pela clínica (Social e Particular), separada do Financeiro do consultório:
+1. Em **Valores da Essência**, informe quanto a clínica cobra por sessão e a sua porcentagem de repasse em cada tipo.
+2. No cadastro do paciente da Essência, em **Serviço contratado**, escolha *Essência · Social* ou *Essência · Particular*.
+3. Agende normalmente na Agenda: a sessão entra na aba Essência com o valor cobrado, a porcentagem e o seu repasse.
+4. Marque o repasse recebido sessão a sessão ou todos do mês de uma vez.
+Cada sessão guarda a porcentagem do momento em que foi lançada; ao mudar os valores, dá para aplicar às sessões ainda não recebidas.

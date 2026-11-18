@@ -324,6 +324,7 @@ body.sheet-open .wrap { display: none; }
     <button class="tab" role="tab" id="tab-pac" aria-selected="false" data-v="pac">Pacientes</button>
     <button class="tab" role="tab" id="tab-pes" aria-selected="false" data-v="pes">Pessoal</button>
     <button class="tab" role="tab" id="tab-fin" aria-selected="false" data-v="fin">Financeiro</button>
+    <button class="tab" role="tab" id="tab-ess" aria-selected="false" data-v="ess">Essência</button>
   </div>
 
   <section class="banner" id="banner" hidden aria-label="Aniversários da semana"></section>
@@ -375,6 +376,7 @@ body.sheet-open .wrap { display: none; }
         <h2>Pacientes</h2>
         <div class="tools">
           <input type="search" id="psearch" placeholder="Buscar por nome" aria-label="Buscar paciente">
+          <select id="pfiltro" aria-label="Filtrar pacientes" style="max-width:150px"><option value="">Todos</option><option value="cons">Consultório</option><option value="ess">Essência</option></select>
           <button class="cta" id="newpat">Novo paciente</button>
         </div>
         <div id="orphans"></div>
@@ -414,6 +416,49 @@ body.sheet-open .wrap { display: none; }
         <h2>Próximos compromissos</h2>
         <div class="hint" style="margin-bottom:6px">Compromissos pessoais dos próximos 14 dias. Para criar um, use "Compromisso" na aba Agenda.</div>
         <div class="stack" id="plist2"></div>
+      </aside>
+    </div>
+  </div>
+  <div class="view" id="view-ess" hidden>
+    <div class="grid">
+      <section class="panel">
+        <h2 style="margin-bottom:4px">Clínica Essência</h2>
+        <div class="hint" style="margin-bottom:10px">Atendimentos feitos pela Essência. A clínica cobra a sessão do paciente e repassa uma porcentagem para você. Estes valores não entram no seu Financeiro.</div>
+        <div class="weekbar">
+          <div class="label" id="esslabel"></div>
+          <div class="btnrow">
+            <button class="ghost" id="eprev" aria-label="Mês anterior">&lsaquo;</button>
+            <button class="ghost" id="enow">Este mês</button>
+            <button class="ghost" id="enext" aria-label="Próximo mês">&rsaquo;</button>
+          </div>
+        </div>
+        <div class="warn" id="e-config" hidden></div>
+        <div class="kpis" id="ekpis"></div>
+        <div class="tabs" id="efilters" style="margin:14px 0 6px">
+          <button class="tab" data-f="todas" aria-selected="true">Todas</button>
+          <button class="tab" data-f="Social" aria-selected="false">Social</button>
+          <button class="tab" data-f="Particular" aria-selected="false">Particular</button>
+          <button class="tab" data-f="areceber" aria-selected="false">Repasse a receber</button>
+          <button class="tab" data-f="recebidos" aria-selected="false">Recebidos</button>
+        </div>
+        <div id="elist"></div>
+        <button class="ghost" id="e-allpaid" style="margin-top:10px" hidden>Marcar todos os repasses do mês como recebidos</button>
+      </section>
+      <aside class="stackbtn">
+        <section class="panel">
+          <h2>Valores da Essência</h2>
+          <div class="hint" style="margin-bottom:8px">Informe quanto a clínica cobra por sessão e qual porcentagem ela repassa para você em cada tipo de atendimento.</div>
+          <form class="f" id="eform" onsubmit="return false">
+            <div id="e-servs"></div>
+            <label class="check" for="e-aplicar"><input id="e-aplicar" type="checkbox" checked> Aplicar também às sessões deste mês em diante com repasse ainda não recebido</label>
+            <button class="cta" id="e-salvar" type="submit">Salvar valores</button>
+          </form>
+        </section>
+        <section class="panel">
+          <h2>Pacientes da Essência</h2>
+          <div id="epats"></div>
+          <div class="hint" style="margin-top:8px">Para marcar um paciente como da Essência, abra o cadastro dele, aba Financeiro, e escolha em "Serviço contratado" <b>Essência · Social</b> ou <b>Essência · Particular</b>. Assim, ao agendar, a sessão já vem com o serviço e o valor certos.</div>
+        </section>
       </aside>
     </div>
   </div>
@@ -864,6 +909,7 @@ body.sheet-open .wrap { display: none; }
     else {
       o.paciente = a.paciente; o.servico = a.servico; o.snome = a.snome || ''; o.modalidade = a.modalidade; o.valor = a.valor;
       o.pago = !!a.pago; o.forma = a.forma || 'Pix'; o.pagoEm = a.pagoEm || '';
+      if (a.ess) { o.ess = true; o.perc = a.perc == null ? null : +a.perc; }
     }
     return o;
   }
@@ -1081,7 +1127,8 @@ body.sheet-open .wrap { display: none; }
   function renderPatients() {
     var q = ($('psearch').value || '').trim().toLowerCase();
     var list = pats.slice().sort(function (a, b) { return a.nome.localeCompare(b.nome); })
-      .filter(function (p) { return !q || (p.nome + ' ' + (p.n1 || '') + ' ' + (p.n2 || '')).toLowerCase().indexOf(q) > -1; });
+      .filter(function (p) { return !q || (p.nome + ' ' + (p.n1 || '') + ' ' + (p.n2 || '')).toLowerCase().indexOf(q) > -1; })
+      .filter(function (p) { var f = $('pfiltro').value; return !f || (f === 'ess') === !!patEss(p); });
     $('tab-pac').textContent = 'Pacientes' + (pats.length ? ' (' + pats.length + ')' : '');
     if (!pats.length) {
       $('plist').innerHTML = '<div class="note">Nenhum paciente cadastrado ainda. Toque em Novo paciente para cadastrar.</div>';
@@ -1105,6 +1152,7 @@ body.sheet-open .wrap { display: none; }
           if (n) wal = '<a class="lnk" target="_blank" rel="noopener" href="https://wa.me/' + n + '">WhatsApp</a>';
         }
         sub.push(p.mod || 'Presencial');
+        if (patEss(p)) sub.push(patEss(p).nome);
         return '<div class="pat"><button class="nm" data-id="' + esc(p.id) + '"><b>' + esc(p.nome) + '</b><small class="num">' + esc(sub.join(' · ')) + '</small></button>' + wal + '</div>';
       }).join('');
     }
@@ -1124,6 +1172,8 @@ body.sheet-open .wrap { display: none; }
     $('view-pac').hidden = v !== 'pac';
     $('view-pes').hidden = v !== 'pes';
     $('view-fin').hidden = v !== 'fin';
+    $('view-ess').hidden = v !== 'ess';
+    $('tab-ess').setAttribute('aria-selected', String(v === 'ess'));
     $('tab-fin').setAttribute('aria-selected', String(v === 'fin'));
     $('tab-pes').setAttribute('aria-selected', String(v === 'pes'));
     $('tab-agenda').setAttribute('aria-selected', String(v === 'agenda'));
@@ -1140,8 +1190,9 @@ body.sheet-open .wrap { display: none; }
     var ws = weekStart(sel), days = [];
     for (var i = 0; i < 7; i++) days.push(addDays(ws, i));
     var wk = appts.filter(function (a) { return days.indexOf(a.dia) > -1 && a.status !== 'cancelado' && a.tipo !== 'pessoal'; });
-    var prev = wk.reduce(function (s, a) { return s + (+a.valor || 0); }, 0);
-    var rec = wk.filter(function (a) { return a.pago; }).reduce(function (s, a) { return s + (+a.valor || 0); }, 0);
+    var wkc = wk.filter(function (a) { return !isEss(a); });
+    var prev = wkc.reduce(function (s, a) { return s + (+a.valor || 0); }, 0);
+    var rec = wkc.filter(function (a) { return a.pago; }).reduce(function (s, a) { return s + (+a.valor || 0); }, 0);
     var hj = appts.filter(function (a) { return a.dia === today && a.status !== 'cancelado'; });
     var hoje = hj.length;
     var hs = hj.filter(function (a) { return a.tipo !== 'pessoal'; }).length;
@@ -1149,8 +1200,8 @@ body.sheet-open .wrap { display: none; }
     $('kpis').innerHTML =
       '<div class="kpi"><span>Hoje</span><b class="num">' + hoje + '</b><small>' + hs + (hs === 1 ? ' sessão' : ' sessões') + ' · ' + hc + (hc === 1 ? ' compromisso' : ' compromissos') + '</small></div>' +
       '<div class="kpi"><span>Semana</span><b class="num">' + wk.length + '</b><small>' + (wk.length === 1 ? 'sessão' : 'sessões') + ' marcadas</small></div>' +
-      '<div class="kpi"><span>Previsto</span><b class="num">' + money(prev) + '</b><small>na semana</small></div>' +
-      '<div class="kpi"><span>Recebido</span><b class="num">' + money(rec) + '</b><small>na semana</small></div>';
+      '<div class="kpi"><span>Previsto</span><b class="num">' + money(prev) + '</b><small>na semana' + (wkc.length < wk.length ? ' · sem Essência' : '') + '</small></div>' +
+      '<div class="kpi"><span>Recebido</span><b class="num">' + money(rec) + '</b><small>na semana' + (wkc.length < wk.length ? ' · sem Essência' : '') + '</small></div>';
   }
 
   function renderWeek() {
@@ -1213,7 +1264,7 @@ body.sheet-open .wrap { display: none; }
   }
 
   function render() {
-    renderKpis(); renderWeek(); renderDay(); renderBanner(); renderPatients(); renderPessoal(); renderFin();
+    renderKpis(); renderWeek(); renderDay(); renderBanner(); renderPatients(); renderPessoal(); renderFin(); renderEss();
     $('svclist').innerHTML = svcHtml(false);
     renderOrphans();
     if (!$('poverlay').hidden) { renderPSum(); renderEvList(); renderHist(); renderPFin(); }
@@ -1372,6 +1423,8 @@ body.sheet-open .wrap { display: none; }
       a.valor = Math.max(0, parseFloat($('f-valor').value) || 0); a.pago = $('f-pago').checked;
       a.forma = $('f-forma').value;
       a.pagoEm = a.pago ? ((editing && editing.pagoEm) || ymd(new Date())) : '';
+      var svE = SERVICES.filter(function (x) { return x.id === a.servico; })[0];
+      if (svE && svE.origem === 'essencia') { a.ess = true; a.perc = (editing && editing.servico === a.servico && editing.perc != null) ? editing.perc : (+svE.perc || 0); }
     }
     if (!a.dia || !a.hora) return;
     var reps = editing ? 1 : (parseInt($('f-rep').value, 10) || 1);
@@ -2265,6 +2318,7 @@ body.sheet-open .wrap { display: none; }
 
   /* ---------- serviços e valores ---------- */
   function fillServ() {
+    ensureEss();
     var cur = $('f-servico').value;
     $('f-servico').innerHTML = SERVICES.map(function (s) { return '<option value="' + esc(s.id) + '">' + esc(s.nome) + ' — ' + money(s.valor) + '</option>'; }).join('');
     if (cur && SERVICES.some(function (s) { return s.id === cur; })) $('f-servico').value = cur;
@@ -2274,12 +2328,12 @@ body.sheet-open .wrap { display: none; }
     if (pc && SERVICES.some(function (s) { return s.id === pc; })) $('pf-servico').value = pc;
   }
   function svcHtml(edit) {
-    return SERVICES.map(function (s) {
+    return SERVICES.filter(function (s) { return s.origem !== 'essencia'; }).map(function (s) {
       return '<div' + (edit ? ' class="clk" role="button" tabindex="0" data-s="' + esc(s.id) + '"' : '') + '><b>' + esc(s.nome) + '</b><small>' + esc(s.sub || '') + '</small><em class="num">' + money(s.valor) + '</em></div>';
     }).join('');
   }
   function saveServ(list) {
-    list = list.map(function (s) { return { id: s.id, nome: s.nome, sub: s.sub || '', valor: +s.valor || 0, pacote: !!s.pacote, cat: s.cat === 'plano' || s.cat === 'escuta' ? s.cat : (s.pacote ? 'plano' : 'escuta') }; });
+    list = list.map(function (s) { return { id: s.id, nome: s.nome, sub: s.sub || '', valor: +s.valor || 0, pacote: !!s.pacote, cat: s.cat === 'plano' || s.cat === 'escuta' ? s.cat : (s.pacote ? 'plano' : 'escuta'), origem: s.origem === 'essencia' ? 'essencia' : '', perc: +s.perc || 0, essTipo: s.essTipo || '' }; });
     if (store.mode === 'db') return store.base.collection('config').doc('servicos').set({ lista: list });
     SERVICES = list;
     try { localStorage.setItem(LSS, JSON.stringify(list)); } catch (e) {}
@@ -2344,7 +2398,7 @@ body.sheet-open .wrap { display: none; }
   }
   function renderFin() {
     $('finlabel').textContent = monthLabel(finMonth);
-    var all = appts.filter(function (a) { return a.tipo !== 'pessoal' && a.status !== 'cancelado' && String(a.dia).slice(0, 7) === finMonth; })
+    var all = appts.filter(function (a) { return a.tipo !== 'pessoal' && a.status !== 'cancelado' && String(a.dia).slice(0, 7) === finMonth && !isEss(a); })
       .sort(function (a, b) { return (a.dia + a.hora).localeCompare(b.dia + b.hora); });
     var rec = 0, pen = 0;
     all.forEach(function (a) { var v = +a.valor || 0; if (a.pago) rec += v; else pen += v; });
@@ -2404,6 +2458,124 @@ body.sheet-open .wrap { display: none; }
       if (a2) openPatientByName(a2.paciente, 'fin');
     }
   });
+
+  /* ---------- Clínica Essência ---------- */
+  var ESS_PADRAO = [
+    { id: 'ess-social', nome: 'Essência · Social', sub: 'Clínica Essência · atendimento social', valor: 0, pacote: false, cat: 'escuta', origem: 'essencia', perc: 0, essTipo: 'Social' },
+    { id: 'ess-particular', nome: 'Essência · Particular', sub: 'Clínica Essência · atendimento particular', valor: 0, pacote: false, cat: 'escuta', origem: 'essencia', perc: 0, essTipo: 'Particular' }
+  ];
+  function ensureEss() {
+    if (!loaded || SERVICES.some(function (s) { return s.origem === 'essencia'; })) return;
+    SERVICES = SERVICES.concat(ESS_PADRAO.map(function (x) { return Object.assign({}, x); }));
+    if (store.mode === 'db') { saveServ(SERVICES); return; }
+    try { localStorage.setItem(LSS, JSON.stringify(SERVICES)); } catch (e) {}
+    syncTouched();
+  }
+  function essSvcs() { return SERVICES.filter(function (s) { return s.origem === 'essencia'; }); }
+  function svcOf(a) { return SERVICES.filter(function (x) { return x.id === a.servico; })[0]; }
+  function isEss(a) { if (!a || a.tipo === 'pessoal') return false; if (a.ess) return true; var sv = svcOf(a); return !!(sv && sv.origem === 'essencia'); }
+  function essTipoSess(a) { var sv = svcOf(a); if (sv && sv.essTipo) return sv.essTipo; return /social/i.test((sv && sv.nome) || a.snome || '') ? 'Social' : 'Particular'; }
+  function essPerc(a) { if (a.perc != null) return +a.perc; var sv = svcOf(a); return sv ? (+sv.perc || 0) : 0; }
+  function repasse(a) { return Math.round((+a.valor || 0) * essPerc(a)) / 100; }
+  function patEss(p) { var id = p && p.fin && p.fin.servico; if (!id) return null; var sv = SERVICES.filter(function (x) { return x.id === id; })[0]; return sv && sv.origem === 'essencia' ? sv : null; }
+  var essMonth = ymd(new Date()).slice(0, 7), essFilter = 'todas';
+  function renderEss() {
+    if (!$('ekpis')) return;
+    if (loaded && !essSvcs().length) { ensureEss(); fillServ(); }
+    $('esslabel').textContent = monthLabel(essMonth);
+    var all = appts.filter(function (a) { return isEss(a) && a.status !== 'cancelado' && String(a.dia).slice(0, 7) === essMonth; })
+      .sort(function (a, b) { return (a.dia + a.hora).localeCompare(b.dia + b.hora); });
+    var T = { n: 0, real: 0, cob: 0, rep: 0, rec: 0, Social: 0, Particular: 0 };
+    all.forEach(function (a) { var r = repasse(a); T.n++; if (a.status === 'realizado') T.real++; T.cob += +a.valor || 0; T.rep += r; if (a.pago) T.rec += r; T[essTipoSess(a)]++; });
+    var semValor = essSvcs().filter(function (sv) { return !(+sv.valor) || !(+sv.perc); });
+    $('e-config').hidden = !semValor.length;
+    $('e-config').textContent = semValor.length ? 'Preencha em "Valores da Essência" o valor da sessão e a sua porcentagem de: ' + semValor.map(function (x) { return x.essTipo || x.nome; }).join(' e ') + '.' : '';
+    $('ekpis').innerHTML =
+      '<div class="kpi"><span>Atendimentos</span><b class="num">' + T.n + '</b><small>' + T.Social + ' social · ' + T.Particular + ' particular</small></div>' +
+      '<div class="kpi"><span>Cobrado pela clínica</span><b class="num">' + money(T.cob) + '</b><small>no mês</small></div>' +
+      '<div class="kpi"><span>Meu repasse</span><b class="num">' + money(T.rep) + '</b><small>previsto no mês</small></div>' +
+      '<div class="kpi"><span>Repasse recebido</span><b class="num">' + money(T.rec) + '</b><small>a receber ' + money(T.rep - T.rec) + '</small></div>';
+    var list = all.filter(function (a) {
+      if (essFilter === 'Social' || essFilter === 'Particular') return essTipoSess(a) === essFilter;
+      if (essFilter === 'areceber') return !a.pago;
+      if (essFilter === 'recebidos') return a.pago;
+      return true;
+    });
+    $('elist').innerHTML = list.length ? list.map(function (a) {
+      var st = a.pago ? '<span class="pill paidp">Repasse recebido</span> <button class="lnk" data-eun="' + esc(a.id) + '">Desfazer</button>'
+        : '<button class="lnk" data-epay="' + esc(a.id) + '">Marcar repasse recebido</button>';
+      return '<div class="pat"><button class="nm" data-id="' + esc(a.id) + '"><b>' + esc(a.paciente) + '</b><small class="num">' +
+        esc(fmtBr(a.dia) + ' ' + a.hora + ' · ' + essTipoSess(a) + ' · cobrado ' + money(+a.valor || 0) + ' · ' + String(essPerc(a)).replace('.', ',') + '%' + (a.status === 'realizado' ? ' · realizada' : '')) + '</small></button>' +
+        '<div class="side">' + st + '<span class="val num">' + money(repasse(a)) + '</span><button class="lnk" data-eedit="' + esc(a.id) + '">Editar</button></div></div>';
+    }).join('') : '<div class="note">Nenhum atendimento da Essência neste filtro em ' + esc(monthLabel(essMonth)) + '. Para lançar, agende uma sessão escolhendo o serviço Essência · Social ou Essência · Particular.</div>';
+    $('e-allpaid').hidden = !all.some(function (a) { return !a.pago; });
+    // valores
+    if (!$('eform').contains(document.activeElement)) {
+      $('e-servs').innerHTML = essSvcs().map(function (sv) {
+        return '<div class="crow" data-sv="' + esc(sv.id) + '"><b>' + esc(sv.nome) + '</b><div class="two">' +
+          '<label>Valor cobrado pela clínica (R$)<input type="number" min="0" step="5" inputmode="decimal" data-k="valor" value="' + (+sv.valor || '') + '"></label>' +
+          '<label>Seu repasse (%)<input type="number" min="0" max="100" step="1" inputmode="decimal" data-k="perc" value="' + (+sv.perc || '') + '"></label></div>' +
+          '<small class="num" data-calc>Você recebe ' + money(Math.round((+sv.valor || 0) * (+sv.perc || 0)) / 100) + ' por sessão</small></div>';
+      }).join('');
+    }
+    // pacientes
+    var eps = pats.filter(function (p) { return patEss(p); }).sort(function (a, b) { return a.nome.localeCompare(b.nome); });
+    $('epats').innerHTML = eps.length ? eps.map(function (p) {
+      var n = all.filter(function (a) { return a.paciente === p.nome; }).length;
+      return '<div class="pat"><button class="nm" data-pn="' + esc(p.nome) + '"><b>' + esc(p.nome) + '</b><small class="num">' + esc(patEss(p).essTipo || patEss(p).nome) + ' · ' + n + (n === 1 ? ' sessão' : ' sessões') + ' no mês</small></button></div>';
+    }).join('') : '<div class="note">Nenhum paciente marcado como da Essência.</div>';
+  }
+  $('eprev').addEventListener('click', function () { essMonth = shiftMonth(essMonth, -1); renderEss(); });
+  $('enext').addEventListener('click', function () { essMonth = shiftMonth(essMonth, 1); renderEss(); });
+  $('enow').addEventListener('click', function () { essMonth = ymd(new Date()).slice(0, 7); renderEss(); });
+  $('efilters').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-f]'); if (!b) return;
+    essFilter = b.getAttribute('data-f');
+    Array.prototype.forEach.call($('efilters').children, function (x) { x.setAttribute('aria-selected', String(x === b)); });
+    renderEss();
+  });
+  function essSet(id, pago) {
+    var a = appts.filter(function (x) { return x.id === id; })[0]; if (!a) return;
+    var c = Object.assign({}, a, { pago: pago, pagoEm: pago ? ymd(new Date()) : '' });
+    save(c).then(function () { render(); toast(pago ? 'Repasse marcado como recebido' : 'Repasse desmarcado'); });
+  }
+  $('elist').addEventListener('click', function (e) {
+    var x = e.target.closest('[data-epay]'); if (x) { essSet(x.getAttribute('data-epay'), true); return; }
+    x = e.target.closest('[data-eun]'); if (x) { essSet(x.getAttribute('data-eun'), false); return; }
+    x = e.target.closest('[data-eedit]') || e.target.closest('.nm');
+    if (x) { var id = x.getAttribute('data-eedit') || x.getAttribute('data-id'); var a = appts.filter(function (y) { return y.id === id; })[0]; if (a) openForm({ appt: a }); }
+  });
+  $('e-allpaid').addEventListener('click', function () {
+    var alvo = appts.filter(function (a) { return isEss(a) && a.status !== 'cancelado' && !a.pago && String(a.dia).slice(0, 7) === essMonth; });
+    if (!alvo.length || !confirm('Marcar ' + alvo.length + (alvo.length === 1 ? ' repasse' : ' repasses') + ' de ' + monthLabel(essMonth) + ' como recebidos?')) return;
+    var hoje = ymd(new Date());
+    Promise.all(alvo.map(function (a) { return save(Object.assign({}, a, { pago: true, pagoEm: hoje })); })).then(function () { render(); toast('Repasses do mês marcados como recebidos'); });
+  });
+  $('epats').addEventListener('click', function (e) { var b = e.target.closest('[data-pn]'); if (b) openPatientByName(b.getAttribute('data-pn'), 'fin'); });
+  $('e-servs').addEventListener('input', function (e) {
+    var row = e.target.closest('[data-sv]'); if (!row) return;
+    var v = parseFloat(row.querySelector('[data-k=valor]').value) || 0, pc = parseFloat(row.querySelector('[data-k=perc]').value) || 0;
+    row.querySelector('[data-calc]').textContent = 'Você recebe ' + money(Math.round(v * pc) / 100) + ' por sessão';
+  });
+  $('eform').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var novos = {}, erro = '';
+    [].forEach.call($('e-servs').querySelectorAll('[data-sv]'), function (row) {
+      var v = parseFloat(row.querySelector('[data-k=valor]').value), pc = parseFloat(row.querySelector('[data-k=perc]').value);
+      if (isNaN(v) || v < 0 || isNaN(pc) || pc < 0 || pc > 100) erro = 'Confira os valores e as porcentagens (de 0 a 100).';
+      novos[row.getAttribute('data-sv')] = { valor: v || 0, perc: pc || 0 };
+    });
+    if (erro) { toast(erro); return; }
+    var list = SERVICES.map(function (sv) { return novos[sv.id] ? Object.assign({}, sv, novos[sv.id]) : sv; });
+    var aplicar = $('e-aplicar').checked, ini = ymd(new Date()).slice(0, 7) + '-01';
+    document.activeElement && document.activeElement.blur && document.activeElement.blur();
+    saveServ(list).then(function () {
+      if (!aplicar) return 0;
+      var alvo = appts.filter(function (a) { return isEss(a) && novos[a.servico] && !a.pago && String(a.dia) >= ini && a.status !== 'cancelado'; });
+      return Promise.all(alvo.map(function (a) { return save(Object.assign({}, a, { valor: novos[a.servico].valor, perc: novos[a.servico].perc, ess: true })); })).then(function () { return alvo.length; });
+    }).then(function (n) { render(); toast('Valores da Essência salvos' + (n ? ' e ' + n + (n === 1 ? ' sessão atualizada' : ' sessões atualizadas') : '')); });
+  });
+  $('pfiltro').addEventListener('change', renderPatients);
 
   /* ---------- protocolos: modelos e documentos ---------- */
   function fillModelos() {
