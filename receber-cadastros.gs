@@ -1,8 +1,10 @@
 /**
- * Caixa de entrada das atividades e sincronizacao da Agenda Psi (Barbara Serra) - versao 6.
+ * Caixa de entrada das atividades e sincronizacao da Agenda Psi (Barbara Serra) - versao 7.
  * Versao 5: recebe so as respostas das atividades terapeuticas (aba "Atividades").
  * Versao 6: guarda a sincronizacao entre aparelhos (aba "Sincronizacao"). Os dados chegam
  *           ja criptografados pelo aplicativo: a planilha nao consegue le-los.
+ * Versao 7: recebe as respostas do link de confirmacao de sessao (aba "Confirmacoes"). Chegam so um
+ *           codigo aleatorio e a resposta (sim/nao): nenhum nome, data ou telefone do paciente.
  * Cadastros com nome, CPF e nascimento nao sao mais recebidos: a psicologa cadastra na Agenda.
  *
  * 1) Troque SENHA (so na linha abaixo) por uma senha so sua, com letras e numeros.
@@ -40,6 +42,12 @@ function abaSync_() {
   const ss = planilha_();
   let sh = ss.getSheetByName('Sincronizacao');
   if (!sh) { sh = ss.insertSheet('Sincronizacao'); sh.getRange(1, 1).setValue('Dados criptografados pelo aplicativo. Nao edite.'); }
+  return sh;
+}
+function abaConf_() {
+  const ss = planilha_();
+  let sh = ss.getSheetByName('Confirmacoes');
+  if (!sh) { sh = ss.insertSheet('Confirmacoes'); sh.appendRow(['id', 'recebido em', 'codigo', 'resposta', 'importado']); }
   return sh;
 }
 function senhaOk_(t) { return SENHA !== PADRAO && String(t || '').trim() === SENHA.trim(); }
@@ -84,6 +92,18 @@ function doPost(e) {
         return resp_({ ok: true, ver: syncGravar_(o.data) });
       } finally { trava.releaseLock(); }
     }
+    if (o && typeof o.conf === 'string') {
+      // paciente confirmou ou pediu para desmarcar pelo link (sem dados pessoais)
+      if (!/^[A-Za-z0-9]{12,40}$/.test(o.conf) || (o.r !== 'sim' && o.r !== 'nao')) return resp_({ ok: false, erro: 'dados' });
+      const tc = LockService.getScriptLock();
+      tc.waitLock(15000);
+      try {
+        const sc = abaConf_();
+        if (sc.getLastRow() > 5000) return resp_({ ok: false, erro: 'cheio' });
+        sc.appendRow([Utilities.getUuid(), new Date().toISOString(), o.conf, o.r, '']);
+      } finally { tc.releaseLock(); }
+      return resp_({ ok: true });
+    }
     if (!o || typeof o.code !== 'string') return resp_({ ok: false, erro: 'dados' });
     const atividade = o.code.indexOf('AT1:') === 0 && o.code.length <= 45000;
     if (!atividade) return resp_({ ok: false, erro: 'dados' });
@@ -102,10 +122,23 @@ function doGet(e) {
     const p = (e && e.parameter) || {};
     if (p.ping) {
       const sh = aba_();
-      return resp_({ ok: true, versao: 6, senhaConfigurada: SENHA !== PADRAO, planilha: planilha_().getUrl(), linhas: Math.max(0, sh.getLastRow() - 1) });
+      return resp_({ ok: true, versao: 7, senhaConfigurada: SENHA !== PADRAO, planilha: planilha_().getUrl(), linhas: Math.max(0, sh.getLastRow() - 1) });
     }
     if (!senhaOk_(p.token)) return resp_({ ok: false, erro: 'token' });
     if (p.action === 'sync_get') { const r = syncLer_(); return resp_({ ok: true, ver: r.ver, data: r.data }); }
+    if (p.action === 'confirmacoes' || p.action === 'confirmacoes_ok') {
+      const sc = abaConf_();
+      const dc = sc.getDataRange().getValues();
+      if (p.action === 'confirmacoes_ok') {
+        const idc = String(p.ids || '').split(',');
+        // apaga as linhas ja lidas pela Agenda (de baixo para cima)
+        for (let i = dc.length - 1; i >= 1; i--) if (idc.indexOf(String(dc[i][0])) > -1) sc.deleteRow(i + 1);
+        return resp_({ ok: true });
+      }
+      const conf = [];
+      for (let i = 1; i < dc.length; i++) conf.push({ id: String(dc[i][0]), ts: String(dc[i][1]), t: String(dc[i][2]), r: String(dc[i][3]) });
+      return resp_({ ok: true, itens: conf });
+    }
     const ativ = p.action === 'atividades' || p.action === 'atividades_ok';
     const sh = ativ ? abaAtividades_() : aba_();
     const dados = sh.getDataRange().getValues();
