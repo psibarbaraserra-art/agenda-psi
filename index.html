@@ -779,6 +779,10 @@ body.sheet-open .wrap { display: none; }
     <label for="f-paciente">Paciente
       <input id="f-paciente" type="text" maxlength="80" list="plist-dl" placeholder="Nome do paciente ou do casal" required>
     </label>
+    <label for="f-tel" id="lbl-tel">WhatsApp do paciente (opcional)
+      <input id="f-tel" type="tel" inputmode="tel" maxlength="20" placeholder="(92) 99999-9999">
+      <span class="hint">Para quem não tem ficha cadastrada. Fica guardado só nesta sessão, e o "Pedir confirmação" já vai para este número.</span>
+    </label>
     <label for="f-servico">Serviço
       <select id="f-servico"></select>
     </label>
@@ -979,6 +983,7 @@ body.sheet-open .wrap { display: none; }
       o.pago = !!a.pago; o.forma = a.forma || 'Pix'; o.pagoEm = a.pagoEm || '';
       if (a.ess) { o.ess = true; o.perc = a.perc == null ? null : +a.perc; }
       if (a.encaixe) o.encaixe = true;
+      if (a.tel) o.tel = a.tel;
       if (a.ctok) o.ctok = a.ctok;
       if (a.desmarcou) o.desmarcou = a.desmarcou;
       if (a.confEm) o.confEm = a.confEm;
@@ -1187,14 +1192,32 @@ body.sheet-open .wrap { display: none; }
     d = ini; while (d < a.dia) { d = addDays(d, 7); i++; }
     return { n: n, i: i, ultima: n > 1 && a.dia === fim };
   }
+  // Paciente sem cadastro (ou sem telefone): abre o WhatsApp com a mensagem pronta e você escolhe o contato.
+  function waSemCadastro(a) {
+    var quem = firstName(a.paciente);
+    var quando = parse(a.dia).toLocaleDateString('pt-BR', { weekday: 'long' }) + ', ' + fmtBr(a.dia).slice(0, 5) + ' às ' + a.hora;
+    var s = serieDe(a);
+    var txt = 'Olá' + (quem ? ', ' + quem : '') + '! Aqui é a Bárbara Serra, psicóloga. Sua sessão está marcada para ' + quando + ' (' + (a.modalidade || 'Presencial').toLowerCase() + ').\n\n' +
+      'Você pode confirmar a presença? Responda *SIM* para confirmar ou me avise com antecedência se precisar remarcar.';
+    if (s.n > 1) txt += '\n\nEsta é a sessão ' + s.i + ' de ' + s.n + ' do ciclo atual.';
+    var lk = linkConf(a, quem);
+    if (lk) txt += '\n\nSe preferir, confirme ou desmarque por este link:\n' + lk;
+    return 'https://wa.me/' + waNum(a.tel) + '?text=' + encodeURIComponent(txt);
+  }
+  // mostra o campo de telefone só quando o paciente não tem ficha com WhatsApp
+  function telVis() {
+    var p = findPat($('f-paciente').value);
+    var tem = p && (waNum(p.tel) || waNum(p.rt) || waNum(p.tel2));
+    $('lbl-tel').hidden = !!tem;
+  }
   function waSessao(a, idx) {
     if (!a || a.tipo === 'pessoal') return '';
     var p = findPat(a.paciente);
-    if (!p) return '';
+    if (!p) return idx ? '' : waSemCadastro(a);
     var casal = isCasal(p), ps = pessoas(p), who = ps[idx || 0] || ps[0];
     var minor = !casal && ageNow(p.nasc) < 18;
     var n = casal ? (waNum(who.tel) || (idx === undefined ? waNum(ps[1].tel) : '')) : (waNum(minor && p.rt ? p.rt : p.tel) || waNum(p.tel) || waNum(p.rt));
-    if (!n) return '';
+    if (!n) return (casal || idx) ? '' : waSemCadastro(a);
     var quando = parse(a.dia).toLocaleDateString('pt-BR', { weekday: 'long' }) + ', ' + fmtBr(a.dia).slice(0, 5) + ' às ' + a.hora;
     var s = serieDe(a);
     var outro = casal ? ps[(idx || 0) ? 0 : 1] : null;
@@ -1512,6 +1535,7 @@ body.sheet-open .wrap { display: none; }
     $('f-tipo').hidden = !!editing;
     $('formttl').textContent = (editing ? 'Editar ' : 'Novo ') + (t === 'pessoal' ? 'compromisso' : 'agendamento');
     $('f-paciente').value = a.paciente || '';
+    $('f-tel').value = a.tel || ''; telVis();
     $('f-titulo').value = a.titulo || '';
     $('f-cat').value = a.cat || 'Pessoal';
     $('f-fim').value = a.fim || '';
@@ -1531,7 +1555,7 @@ body.sheet-open .wrap { display: none; }
     (function () {
       var pe = editing && t === 'sessao' ? findPat(editing.paciente) : null, ps = pe ? pessoas(pe) : [];
       var c = isCasal(pe);
-      $('f-wa').hidden = !(pe && !!waSessao(editing, 0));
+      $('f-wa').hidden = !(editing && t === 'sessao' && !!waSessao(editing, 0));
       $('f-wa').textContent = c ? 'Confirmar com ' + firstName(ps[0].nome) : 'Pedir confirmação';
       $('f-wa2').hidden = !(c && !!waSessao(editing, 1));
       if (c && ps[1]) $('f-wa2').textContent = 'Confirmar com ' + firstName(ps[1].nome);
@@ -1561,7 +1585,7 @@ body.sheet-open .wrap { display: none; }
     var wa = e.target.closest('.wa');
     if (wa) {
       var id0 = wa.getAttribute('data-wa'), a0 = garanteTok(appts.filter(function (x) { return x.id === id0; })[0]), u = waSessao(a0);
-      if (u) { window.open(u, '_blank', 'noopener'); toast('Abrindo o WhatsApp com a mensagem pronta'); }
+      if (u) { window.open(u, '_blank', 'noopener'); toast(u.indexOf('wa.me/?') > -1 ? 'Mensagem pronta: escolha o contato no WhatsApp' : 'Abrindo o WhatsApp com a mensagem pronta'); }
       return;
     }
     var pn = e.target.closest('.pn');
@@ -1617,6 +1641,9 @@ body.sheet-open .wrap { display: none; }
       a.titulo = tit; a.cat = $('f-cat').value; a.fim = $('f-fim').value; a.local = $('f-local').value.trim();
     } else {
       a.paciente = nome; a.servico = $('f-servico').value; a.snome = svcName(a.servico); a.modalidade = modality;
+      var tl = $('f-tel').value.trim();
+      if (!$('lbl-tel').hidden && tl && !waNum(tl)) { $('f-tel').focus(); toast('Telefone incompleto: use DDD + número'); return; }
+      if (!$('lbl-tel').hidden) { if (tl) a.tel = tl; } else if (editing && editing.tel) a.tel = editing.tel;
       a.valor = Math.max(0, parseFloat($('f-valor').value) || 0); a.pago = $('f-pago').checked;
       a.forma = $('f-forma').value;
       a.pagoEm = a.pago ? ((editing && editing.pagoEm) || ymd(new Date())) : '';
@@ -1850,7 +1877,8 @@ body.sheet-open .wrap { display: none; }
   $('f-wa').addEventListener('click', function () {
     if (editing) editing = garanteTok(editing);
     var u = editing && waSessao(editing);
-    if (u) window.open(u, '_blank', 'noopener'); else toast('Paciente sem WhatsApp cadastrado');
+    if (u) { window.open(u, '_blank', 'noopener'); if (u.indexOf('wa.me/?') > -1) toast('Mensagem pronta: escolha o contato no WhatsApp'); }
+    else toast('Paciente sem WhatsApp cadastrado');
   });
   $('f-wa2').addEventListener('click', function () {
     if (editing) editing = garanteTok(editing);
@@ -2677,6 +2705,7 @@ body.sheet-open .wrap { display: none; }
     suggestRep();
     hint();
   }
+  $('f-paciente').addEventListener('input', telVis);
   $('f-paciente').addEventListener('change', function () {
     if (!editing && tipo === 'sessao') applyFin(findPat($('f-paciente').value));
   });
