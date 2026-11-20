@@ -168,6 +168,16 @@ button { cursor: pointer; }
 .appt.s-faltou .pill { background: var(--warn-bg); color: var(--warn); }
 .appt.s-cancelado { border-left-color: var(--line); opacity: .65; }
 .appt.s-cancelado .who b { text-decoration: line-through; }
+/* encaixe, bloqueio e confirmação pelo paciente */
+.appt .mini { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: 999px; margin-left: 6px; vertical-align: 1px; background: var(--surface-2); color: var(--muted); }
+.appt .mini.alerta { background: var(--warn-bg); color: var(--warn); }
+.appt.bloq { border-left-color: var(--muted); background: repeating-linear-gradient(-45deg, var(--bg) 0 9px, var(--surface-2) 9px 10px); }
+.free.blk { cursor: default; border-style: solid; opacity: .7; }
+.free.blk:hover { border-color: var(--line); color: var(--muted); }
+.confaviso { display: grid; gap: 8px; margin-bottom: 12px; }
+.confaviso .warn { display: flex; gap: 8px 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.payf { display: inline-flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; max-width: 168px; }
+.payf button { font-size: 12px; padding: 4px 9px; }
 .paid { color: var(--ok); font-weight: 600; }
 .note { color: var(--muted); font-size: 13px; padding: 14px 0; }
 
@@ -339,6 +349,7 @@ body.sheet-open .wrap { display: none; }
   <section class="banner" id="banner" hidden aria-label="Aniversários da semana"></section>
 
   <div class="view" id="view-agenda">
+  <section class="confaviso" id="confaviso" hidden aria-label="Respostas dos pacientes"></section>
   <section class="kpis" id="kpis" aria-label="Resumo"></section>
 
   <div class="grid">
@@ -357,6 +368,7 @@ body.sheet-open .wrap { display: none; }
         <div class="btnrow">
           <button class="cta" id="newbtn">Nova sessão</button>
           <button class="ghost" id="newpers">Compromisso</button>
+          <button class="ghost" id="newbloq">Bloquear</button>
         </div>
       </div>
       <div id="dayinfo" class="hint"></div>
@@ -783,10 +795,18 @@ body.sheet-open .wrap { display: none; }
       <label for="f-hora">Horário<input id="f-hora" type="time" step="300" required></label>
     </div>
     <div class="pane" id="grp-rep">
-      <label for="f-rep">Repetir toda semana, no mesmo dia e horário
-        <select id="f-rep"></select>
-      </label>
+      <div class="two">
+        <label for="f-freq">Repetir
+          <select id="f-freq"><option value="7">Toda semana</option><option value="14">A cada 2 semanas (quinzenal)</option><option value="28">A cada 4 semanas</option></select>
+        </label>
+        <label for="f-rep">Quantidade
+          <select id="f-rep"></select>
+        </label>
+      </div>
       <div class="hint" id="f-rephint"></div>
+    </div>
+    <div class="pane" id="grp-serie" hidden>
+      <label class="check" for="f-serie"><input id="f-serie" type="checkbox"> <span id="f-serie-t">Aplicar a mudança de data, horário e modalidade às próximas sessões desta série</span></label>
     </div>
     <div class="two">
       <label for="f-valor" id="lbl-valor">Valor (R$)<input id="f-valor" type="number" min="0" step="10" inputmode="decimal"></label>
@@ -805,12 +825,40 @@ body.sheet-open .wrap { display: none; }
     <div class="warn" id="f-warn" hidden></div>
     <div class="actions">
       <button type="button" class="danger" id="f-del" hidden>Excluir</button>
+      <button type="button" class="danger" id="f-del2" hidden>Excluir esta e as próximas</button>
       <div class="r">
         <button type="button" class="ghost" id="f-evol" hidden>Ficha do paciente</button>
         <button type="button" class="ghost" id="f-wa" hidden>Pedir confirmação</button>
         <button type="button" class="ghost" id="f-wa2" hidden>Pedir confirmação</button>
         <button type="button" class="ghost" id="f-cancel">Cancelar</button>
         <button type="submit" class="cta">Salvar</button>
+      </div>
+    </div>
+  </form>
+</div>
+<div class="overlay" id="boverlay" hidden>
+  <form class="sheet f" id="bform" role="dialog" aria-modal="true" aria-labelledby="bttl" autocomplete="off">
+    <h2 id="bttl">Bloquear horário</h2>
+    <div class="hint" id="b-info">Para folgas, férias, supervisão ou compromissos. O horário aparece como indisponível na agenda.</div>
+    <div class="pane" id="b-campos">
+      <label class="check" for="b-todo"><input id="b-todo" type="checkbox"> Dia inteiro (ou vários dias, como férias)</label>
+      <div class="two">
+        <label for="b-d1">De<input id="b-d1" type="date" required></label>
+        <label for="b-d2">Até<input id="b-d2" type="date" required></label>
+      </div>
+      <div class="two" id="b-horas">
+        <label for="b-h1">Das<input id="b-h1" type="time" step="300" value="12:00"></label>
+        <label for="b-h2">Às<input id="b-h2" type="time" step="300" value="13:00"></label>
+      </div>
+      <label for="b-motivo">Motivo (só você vê)<input id="b-motivo" type="text" maxlength="80" placeholder="Ex.: supervisão, férias, consulta médica"></label>
+    </div>
+    <div class="warn" id="b-warn" hidden></div>
+    <div class="actions">
+      <button type="button" class="danger" id="b-del" hidden>Desbloquear este dia</button>
+      <button type="button" class="danger" id="b-delall" hidden>Desbloquear o período todo</button>
+      <div class="r">
+        <button type="button" class="ghost" id="b-cancel">Cancelar</button>
+        <button type="submit" class="cta" id="b-ok">Bloquear</button>
       </div>
     </div>
   </form>
@@ -921,11 +969,19 @@ body.sheet-open .wrap { display: none; }
 
   function strip(a) {
     var o = { tipo: a.tipo === 'pessoal' ? 'pessoal' : 'sessao', dia: a.dia, hora: a.hora, status: a.status, obs: a.obs || '' };
-    if (o.tipo === 'pessoal') { o.titulo = a.titulo; o.cat = a.cat || 'Pessoal'; o.fim = a.fim || ''; o.local = a.local || ''; }
-    else {
+    if (a.serie) o.serie = a.serie;
+    if (a.freq) o.freq = +a.freq;
+    if (o.tipo === 'pessoal') {
+      o.titulo = a.titulo; o.cat = a.cat || 'Pessoal'; o.fim = a.fim || ''; o.local = a.local || '';
+      if (a.bloq) { o.bloq = true; o.inteiro = !!a.inteiro; }
+    } else {
       o.paciente = a.paciente; o.servico = a.servico; o.snome = a.snome || ''; o.modalidade = a.modalidade; o.valor = a.valor;
       o.pago = !!a.pago; o.forma = a.forma || 'Pix'; o.pagoEm = a.pagoEm || '';
       if (a.ess) { o.ess = true; o.perc = a.perc == null ? null : +a.perc; }
+      if (a.encaixe) o.encaixe = true;
+      if (a.ctok) o.ctok = a.ctok;
+      if (a.desmarcou) o.desmarcou = a.desmarcou;
+      if (a.confEm) o.confEm = a.confEm;
     }
     return o;
   }
@@ -972,6 +1028,20 @@ body.sheet-open .wrap { display: none; }
   function saveMany(list) {
     if (store.mode === 'db') return Promise.all(list.map(function (c) { return store.col.doc(c.id).set(strip(c)); }));
     list.forEach(function (c) { appts.push(c); });
+    lsSave(); render();
+    return Promise.resolve();
+  }
+  function saveAll(list) {
+    if (!list.length) return Promise.resolve();
+    if (store.mode === 'db') return Promise.all(list.map(function (c) { return store.col.doc(c.id).set(strip(c)); }));
+    var m = {}; list.forEach(function (c) { m[c.id] = c; });
+    appts = appts.map(function (x) { return m[x.id] || x; });
+    lsSave(); render();
+    return Promise.resolve();
+  }
+  function removeMany(ids) {
+    if (store.mode === 'db') return Promise.all(ids.map(function (id) { return store.col.doc(id).delete(); }));
+    appts = appts.filter(function (x) { return ids.indexOf(x.id) < 0; });
     lsSave(); render();
     return Promise.resolve();
   }
@@ -1098,6 +1168,12 @@ body.sheet-open .wrap { display: none; }
   }
   /* ---------- mensagens de confirmação (WhatsApp) ---------- */
   function serieDe(a) {
+    if (a.serie) {
+      var it = appts.filter(function (x) { return x.serie === a.serie && x.status !== 'cancelado'; })
+        .sort(function (x, y) { return (x.dia + x.hora).localeCompare(y.dia + y.hora); });
+      var pos = it.map(function (x) { return x.id; }).indexOf(a.id) + 1;
+      return { n: it.length, i: pos || 1, ultima: it.length > 1 && it[it.length - 1].id === a.id };
+    }
     var key = String(a.paciente || '').trim().toLowerCase();
     var mesmos = appts.filter(function (x) {
       return x.tipo !== 'pessoal' && x.status !== 'cancelado' && String(x.paciente || '').trim().toLowerCase() === key && x.servico === a.servico;
@@ -1122,14 +1198,39 @@ body.sheet-open .wrap { display: none; }
     var quando = parse(a.dia).toLocaleDateString('pt-BR', { weekday: 'long' }) + ', ' + fmtBr(a.dia).slice(0, 5) + ' às ' + a.hora;
     var s = serieDe(a);
     var outro = casal ? ps[(idx || 0) ? 0 : 1] : null;
-    var txt = 'Olá, ' + firstName(casal ? who.nome : (minor && p.rn ? p.rn : p.nome)) + '! Aqui é a Bárbara Serra, psicóloga. ' +
+    var quem = firstName(casal ? who.nome : (minor && p.rn ? p.rn : p.nome));
+    var txt = 'Olá, ' + quem + '! Aqui é a Bárbara Serra, psicóloga. ' +
       (casal ? 'A sessão de casal de vocês' + (outro && outro.nome ? ' (você e ' + firstName(outro.nome) + ')' : '') : (minor ? 'A sessão de ' + firstName(p.nome) : 'Sua sessão')) + ' está marcada para ' + quando + ' (' + (a.modalidade || 'Presencial').toLowerCase() + ').\n\n' +
       '' + (casal ? 'Podem confirmar a presença de vocês dois? Responda *SIM*' : 'Você pode confirmar a presença? Responda *SIM*') + ' para confirmar ou me avise com antecedência se precisar remarcar.';
     if (s.n > 1) txt += '\n\nEsta é a sessão ' + s.i + ' de ' + s.n + ' do ciclo atual.';
     if (s.ultima) txt += ' Como é a última sessão deste ciclo, vamos conversar sobre o início de um novo ciclo de atendimentos.';
+    var lk = linkConf(a, quem);
+    if (lk) txt += '\n\nSe preferir, confirme ou desmarque por este link:\n' + lk;
     return 'https://wa.me/' + n + '?text=' + encodeURIComponent(txt);
   }
   function fmtBr(s) { var p = s.split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
+
+  /* ---------- confirmação pelo paciente (link) ----------
+     O link leva só um código aleatório e, depois do #, o primeiro nome, a data e o horário (o # não vai para servidor nenhum).
+     A planilha recebe apenas o código e a resposta (sim ou não). */
+  function confAtiva() { return STANDALONE && !!(window.AGENDA_CFG || {}).endpoint && !!(window.crypto && crypto.getRandomValues); }
+  function novoTok() {
+    var al = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789', b = new Uint8Array(16);
+    crypto.getRandomValues(b);
+    return Array.prototype.map.call(b, function (x) { return al[x % al.length]; }).join('');
+  }
+  function linkConf(a, nome) {
+    if (!a || !a.ctok || !confAtiva()) return '';
+    var js = JSON.stringify({ t: a.ctok, n: nome || '', d: a.dia, h: a.hora, m: a.modalidade || 'Presencial' });
+    var b64 = btoa(unescape(encodeURIComponent(js))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    return new URL('confirmar/', location.href.split('#')[0]).href + '#' + b64;
+  }
+  function garanteTok(a) {
+    if (!a || a.tipo === 'pessoal' || a.ctok || !confAtiva()) return a;
+    var c = Object.assign({}, a, { ctok: novoTok() });
+    save(c);
+    return c;
+  }
 
   function renderBanner() {
     var list = upcoming(7), b = $('banner');
@@ -1209,7 +1310,7 @@ body.sheet-open .wrap { display: none; }
     var wkc = wk.filter(function (a) { return !isEss(a); });
     var prev = wkc.reduce(function (s, a) { return s + (+a.valor || 0); }, 0);
     var rec = wkc.filter(function (a) { return a.pago; }).reduce(function (s, a) { return s + (+a.valor || 0); }, 0);
-    var hj = appts.filter(function (a) { return a.dia === today && a.status !== 'cancelado'; });
+    var hj = appts.filter(function (a) { return a.dia === today && a.status !== 'cancelado' && !a.bloq; });
     var hoje = hj.length;
     var hs = hj.filter(function (a) { return a.tipo !== 'pessoal'; }).length;
     var hc = hoje - hs;
@@ -1238,6 +1339,11 @@ body.sheet-open .wrap { display: none; }
   }
 
   function apptHtml(a) {
+    if (a.bloq) {
+      return '<button class="appt pessoal bloq" data-id="' + esc(a.id) + '">' +
+        '<span class="who"><b>' + esc(a.titulo || 'Horário bloqueado') + '</b><small class="num">' + esc(a.inteiro ? 'Dia todo' : a.hora + (a.fim ? '–' + a.fim : '')) + '</small></span>' +
+        '<span class="side"><span class="pill">Bloqueado</span></span></button>';
+    }
     if (a.tipo === 'pessoal') {
       var meta = [a.hora + (a.fim ? '–' + a.fim : ''), a.cat || 'Pessoal'];
       if (a.local) meta.push(a.local);
@@ -1248,7 +1354,10 @@ body.sheet-open .wrap { display: none; }
     }
     var cs = corSess(a);
     return '<button class="appt s-' + esc(a.status) + (cs ? ' cor' : '') + '" data-id="' + esc(a.id) + '"' + (cs ? ' style="' + corStyle(cs) + '"' : '') + '>' +
-      '<span class="who"><b class="pn" data-pn="' + esc(a.paciente) + '" title="Abrir ficha do paciente">' + esc(a.paciente) + '</b>' + (cs ? '<span class="tag">Essência · ' + esc(essTipoSess(a)) + '</span>' : '') + '<small class="num">' + esc(a.hora) + ' · ' + esc(a.snome || svcName(a.servico)) + ' · ' + esc(a.modalidade) + '</small></span>' +
+      '<span class="who"><b class="pn" data-pn="' + esc(a.paciente) + '" title="Abrir ficha do paciente">' + esc(a.paciente) + '</b>' + (cs ? '<span class="tag">Essência · ' + esc(essTipoSess(a)) + '</span>' : '') +
+      (a.encaixe ? '<span class="mini">Encaixe</span>' : '') +
+      (a.desmarcou && (a.status === 'agendado' || a.status === 'confirmado') ? '<span class="mini alerta">Pediu para desmarcar</span>' : '') +
+      '<small class="num">' + esc(a.hora) + ' · ' + esc(a.snome || svcName(a.servico)) + ' · ' + esc(a.modalidade) + '</small></span>' +
       '<span class="side"><span class="pill">' + esc(STATUS[a.status] || a.status) + '</span>' +
       ((a.status === 'agendado' || a.status === 'confirmado') && waSessao(a) ? '<b class="wa" data-wa="' + esc(a.id) + '">' + (serieDe(a).ultima ? 'Confirmar + novo ciclo' : 'Pedir confirmação') + '</b>' : '') +
       '<span class="val num">' + money(a.valor) + (a.pago ? ' · <span class="paid">pago</span>' : '') + '</span></span></button>';
@@ -1266,12 +1375,21 @@ body.sheet-open .wrap { display: none; }
       (bds.length ? ' · Aniversário: ' + bds.join(', ') : '');
     if (!loaded) { $('slots').innerHTML = '<div class="note">Carregando agenda…</div>'; return; }
     var html = '', used = {};
+    var blqs = list.filter(function (a) { return a.bloq && a.status !== 'cancelado'; });
+    var diaTodo = blqs.filter(function (a) { return a.inteiro; });
+    diaTodo.forEach(function (a) { used[a.id] = 1; });
+    if (diaTodo.length) html += '<div class="slot"><time>Dia</time><div class="stack">' + diaTodo.map(apptHtml).join('') + '</div></div>';
+    var bloqueada = function (h) {
+      if (diaTodo.length) return true;
+      var i = h * 60, f = i + 60;
+      return blqs.some(function (b) { var r = faixa(b); return r[0] < f && r[1] > i; });
+    };
     HOURS.forEach(function (h) {
       var hh = pad(h) + ':00';
-      var here = list.filter(function (a) { return parseInt((a.hora || '0').slice(0, 2), 10) === h; });
+      var here = list.filter(function (a) { return !used[a.id] && parseInt((a.hora || '0').slice(0, 2), 10) === h; });
       here.forEach(function (a) { used[a.id] = 1; });
       html += '<div class="slot"><time class="num">' + hh + '</time><div class="stack">' +
-        (here.length ? here.map(apptHtml).join('') : '<button class="free" data-h="' + hh + '">Horário livre · agendar</button>') +
+        (here.length ? here.map(apptHtml).join('') : (bloqueada(h) ? '<div class="free blk">Horário bloqueado</div>' : '<button class="free" data-h="' + hh + '">Horário livre · agendar</button>')) +
         '</div></div>';
     });
     var other = list.filter(function (a) { return !used[a.id]; });
@@ -1289,7 +1407,7 @@ body.sheet-open .wrap { display: none; }
   }
 
   function render() {
-    renderKpis(); renderWeek(); renderDay(); renderBanner(); renderPatients(); renderPessoal(); renderFin(); renderEss();
+    renderConfAviso(); renderKpis(); renderWeek(); renderDay(); renderBanner(); renderPatients(); renderPessoal(); renderFin(); renderEss();
     $('svclist').innerHTML = svcHtml(false);
     renderOrphans();
     if (!$('poverlay').hidden) { renderPSum(); renderEvList(); renderHist(); renderPFin(); }
@@ -1320,7 +1438,7 @@ body.sheet-open .wrap { display: none; }
   function repHint() {
     var n = parseInt($('f-rep').value, 10) || 1, d = $('f-dia').value, el = $('f-rephint');
     if (n < 2 || !d) { el.textContent = ''; return; }
-    var ds = [], i; for (i = 0; i < n; i++) ds.push(fmtBr(addDays(d, 7 * i)).slice(0, 5));
+    var ds = [], i; for (i = 0; i < n; i++) ds.push(fmtBr(addDays(d, freqDias() * i)).slice(0, 5));
     var id = $('f-servico').value, s = SERVICES.filter(function (x) { return x.id === id; })[0];
     el.textContent = 'Serão agendadas ' + n + ' sessões: ' + ds.join(', ') + '.' +
       (tipo !== 'pessoal' && s && s.pacote ? ' O valor fica na primeira; as demais entram como "incluída no pacote".' : '');
@@ -1333,16 +1451,56 @@ body.sheet-open .wrap { display: none; }
     repHint();
   }
   (function () {
-    var h = ''; for (var i = 1; i <= 12; i++) h += '<option value="' + i + '">' + (i === 1 ? 'Não repetir (só esta sessão)' : i + ' sessões no total (com esta)') + '</option>';
+    var h = ''; for (var i = 1; i <= 24; i++) h += '<option value="' + i + '">' + (i === 1 ? 'Não repetir (só esta sessão)' : i + ' sessões no total (com esta)') + '</option>';
     $('f-rep').innerHTML = h;
   })();
+  function freqDias() { return parseInt($('f-freq').value, 10) || 7; }
   $('f-rep').addEventListener('change', repHint);
+  $('f-freq').addEventListener('change', repHint);
   $('f-dia').addEventListener('change', repHint);
+  var DUR = 50; // duração considerada para a sessão, em minutos
+  function minDe(h) { var p = String(h || '0:0').split(':'); return (+p[0] || 0) * 60 + (+p[1] || 0); }
+  function faixa(a) {
+    if (a.bloq && a.inteiro) return [0, 24 * 60];
+    var i = minDe(a.hora), f = a.tipo === 'pessoal' && a.fim && minDe(a.fim) > i ? minDe(a.fim) : i + (a.tipo === 'pessoal' ? 60 : DUR);
+    return [i, f];
+  }
+  function conflitos(dia, hora, ignorar) {
+    var i = minDe(hora), f = i + DUR;
+    return appts.filter(function (a) {
+      if (a.dia !== dia || a.status === 'cancelado' || ignorar.indexOf(a.id) > -1) return false;
+      var r = faixa(a); return r[0] < f && r[1] > i;
+    });
+  }
+  function descConf(c) {
+    if (c.bloq) return 'horário bloqueado' + (c.titulo && c.titulo !== 'Horário bloqueado' ? ' (' + c.titulo + ')' : '');
+    return (c.paciente || c.titulo) + ' às ' + c.hora;
+  }
   function conflict() {
     var d = $('f-dia').value, h = $('f-hora').value, w = $('f-warn');
-    var c = appts.filter(function (a) { return a.dia === d && a.hora === h && a.status !== 'cancelado' && (!editing || a.id !== editing.id); })[0];
-    if (c) { w.textContent = 'Já existe um item às ' + h + ' neste dia: ' + (c.paciente || c.titulo) + '.'; w.hidden = false; } else { w.hidden = true; }
+    var c = d && h ? conflitos(d, h, editing ? [editing.id] : []) : [];
+    var txt = '';
+    if (editing && editing.desmarcou && (editing.status === 'agendado' || editing.status === 'confirmado')) txt += 'O paciente pediu para desmarcar esta sessão pelo link. ';
+    if (c.length) txt += 'Conflito de horário: ' + c.map(descConf).join('; ') + '.' + (tipo === 'pessoal' ? '' : ' Se salvar, a sessão fica marcada como encaixe.');
+    w.textContent = txt; w.hidden = !txt;
   }
+  function proximas(a) {
+    if (!a || a.tipo === 'pessoal') return [];
+    var ativo = function (x) { return x.status === 'agendado' || x.status === 'confirmado'; };
+    if (a.serie) {
+      return appts.filter(function (x) { return x.serie === a.serie && x.id !== a.id && x.dia > a.dia && ativo(x); })
+        .sort(function (x, y) { return x.dia.localeCompare(y.dia); });
+    }
+    var key = String(a.paciente || '').trim().toLowerCase(), out = [], d = a.dia;
+    for (var k = 0; k < 60; k++) {
+      d = addDays(d, 7);
+      var x = appts.filter(function (y) { return y.dia === d && y.tipo !== 'pessoal' && y.status !== 'cancelado' && y.servico === a.servico && String(y.paciente || '').trim().toLowerCase() === key; })[0];
+      if (!x) break;
+      if (ativo(x)) out.push(x);
+    }
+    return out;
+  }
+  function diffDias(d1, d2) { return Math.round((parse(d2) - parse(d1)) / 864e5); }
   function openForm(opts) {
     editing = opts.appt || null;
     delArmed = false;
@@ -1379,7 +1537,12 @@ body.sheet-open .wrap { display: none; }
       if (c && ps[1]) $('f-wa2').textContent = 'Confirmar com ' + firstName(ps[1].nome);
     })();
     if (!editing && t === 'sessao') applyFin(findPat(a.paciente));
-    $('grp-rep').hidden = !!editing; $('f-rep').value = '1'; repHint();
+    $('grp-rep').hidden = !!editing; $('f-rep').value = '1'; $('f-freq').value = '7'; repHint();
+    var prx = editing ? proximas(editing) : [];
+    $('grp-serie').hidden = !prx.length; $('f-serie').checked = false;
+    $('f-serie-t').textContent = 'Aplicar a mudança de data, horário e modalidade às próximas ' + prx.length + (prx.length === 1 ? ' sessão' : ' sessões') + ' desta série';
+    del2Armed = false; $('f-del2').hidden = !prx.length;
+    $('f-del2').textContent = 'Excluir esta e as próximas'; $('f-del2').classList.remove('armed');
     hint(); conflict();
     $('overlay').hidden = false;
     setTimeout(function () { (t === 'pessoal' ? $('f-titulo') : $('f-paciente')).focus(); }, 30);
@@ -1397,7 +1560,7 @@ body.sheet-open .wrap { display: none; }
   $('slots').addEventListener('click', function (e) {
     var wa = e.target.closest('.wa');
     if (wa) {
-      var id0 = wa.getAttribute('data-wa'), a0 = appts.filter(function (x) { return x.id === id0; })[0], u = waSessao(a0);
+      var id0 = wa.getAttribute('data-wa'), a0 = garanteTok(appts.filter(function (x) { return x.id === id0; })[0]), u = waSessao(a0);
       if (u) { window.open(u, '_blank', 'noopener'); toast('Abrindo o WhatsApp com a mensagem pronta'); }
       return;
     }
@@ -1406,7 +1569,7 @@ body.sheet-open .wrap { display: none; }
     var f = e.target.closest('.free');
     if (f) { openForm({ dia: sel, hora: f.getAttribute('data-h') }); return; }
     var b = e.target.closest('.appt');
-    if (b) { var id = b.getAttribute('data-id'); var a = appts.filter(function (x) { return x.id === id; })[0]; if (a) openForm({ appt: a }); }
+    if (b) { var id = b.getAttribute('data-id'); var a = appts.filter(function (x) { return x.id === id; })[0]; if (a) { if (a.bloq) abrirBloq(a); else openForm({ appt: a }); } }
   });
   $('f-servico').addEventListener('change', function () {
     var s = SERVICES.filter(function (x) { return x.id === $('f-servico').value; })[0];
@@ -1428,6 +1591,15 @@ body.sheet-open .wrap { display: none; }
     remove(id).then(function () { closeForm(); toast('Agendamento excluído'); }, function () { toast('Não foi possível excluir. Tente de novo.'); });
   });
 
+  var del2Armed = false;
+  $('f-del2').addEventListener('click', function () {
+    if (!editing) return;
+    var prx = proximas(editing);
+    if (!del2Armed) { del2Armed = true; this.textContent = 'Confirmar: excluir ' + (prx.length + 1) + ' sessões'; this.classList.add('armed'); return; }
+    removeMany([editing.id].concat(prx.map(function (x) { return x.id; }))).then(function () {
+      closeForm(); toast((prx.length + 1) + ' sessões excluídas');
+    }, function () { toast('Não foi possível excluir. Tente de novo.'); });
+  });
   $('form').addEventListener('submit', function (e) {
     e.preventDefault();
     var pes = tipo === 'pessoal';
@@ -1452,11 +1624,39 @@ body.sheet-open .wrap { display: none; }
       if (svE && svE.origem === 'essencia') { a.ess = true; a.perc = (editing && editing.servico === a.servico && editing.perc != null) ? editing.perc : (+svE.perc || 0); }
     }
     if (!a.dia || !a.hora) return;
-    var reps = editing ? 1 : (parseInt($('f-rep').value, 10) || 1);
+    // mantém os campos que o formulário não mostra (série, encaixe, confirmação, bloqueio)
+    if (editing) ['serie', 'freq', 'encaixe', 'ctok', 'desmarcou', 'confEm', 'bloq', 'inteiro'].forEach(function (k) { if (editing[k] != null && editing[k] !== '') a[k] = editing[k]; });
+    var mudouHora = !!editing && (editing.dia !== a.dia || editing.hora !== a.hora);
+    if (mudouHora && !pes) {
+      delete a.desmarcou; delete a.ctok; delete a.confEm;
+      if (a.status === 'confirmado' && editing.status === 'confirmado') a.status = 'agendado';
+    }
+    var reps = editing ? 1 : (parseInt($('f-rep').value, 10) || 1), passo = freqDias();
+    if (!pes && (!editing || mudouHora)) {
+      var datas = []; for (var q = 0; q < reps; q++) datas.push(addDays(a.dia, passo * q));
+      var cfl = datas.map(function (d) { return { d: d, c: conflitos(d, a.hora, editing ? [editing.id] : []) }; }).filter(function (x) { return x.c.length; });
+      if (cfl.length && !confirm('Conflito de horário:\n\n' + cfl.slice(0, 6).map(function (x) { return '• ' + fmtBr(x.d).slice(0, 5) + ': ' + x.c.map(descConf).join('; '); }).join('\n') +
+        (cfl.length > 6 ? '\n…' : '') + '\n\nAgendar mesmo assim como encaixe?')) return;
+      var encDias = {}; cfl.forEach(function (x) { encDias[x.d] = true; });
+      if (editing) { if (encDias[a.dia]) a.encaixe = true; else delete a.encaixe; }
+    }
+    if (editing && !pes && !$('grp-serie').hidden && $('f-serie').checked) {
+      var desloc = diffDias(editing.dia, a.dia);
+      var serieMud = proximas(editing).map(function (x) {
+        var y = Object.assign({}, x, { dia: addDays(x.dia, desloc), hora: a.hora, modalidade: a.modalidade });
+        if (y.dia !== x.dia || y.hora !== x.hora) { delete y.desmarcou; delete y.ctok; delete y.confEm; if (y.status === 'confirmado') y.status = 'agendado'; }
+        return y;
+      });
+      saveAll([a].concat(serieMud)).then(function () {
+        sel = a.dia; closeForm(); render(); toast('Sessão e mais ' + serieMud.length + ' da série atualizadas');
+      }, function () { toast('Não foi possível salvar. Tente de novo.'); });
+      return;
+    }
     if (reps > 1) {
       var lote = [], base = Date.now().toString(36);
       for (var i = 0; i < reps; i++) {
-        var c = Object.assign({}, a, { id: 'a' + base + (i < 10 ? '0' : '') + i, dia: addDays(a.dia, 7 * i) });
+        var c = Object.assign({}, a, { id: 'a' + base + (i < 10 ? '0' : '') + i, dia: addDays(a.dia, passo * i), serie: 's' + base, freq: passo });
+        if (!pes && encDias && encDias[c.dia]) c.encaixe = true;
         if (i > 0 && !pes) {
           var sv = SERVICES.filter(function (x) { return x.id === a.servico; })[0];
           if (sv && sv.pacote) c.valor = 0;
@@ -1469,6 +1669,7 @@ body.sheet-open .wrap { display: none; }
       }, function () { toast('Não foi possível salvar. Tente de novo.'); });
       return;
     }
+    if (!editing && !pes && encDias && encDias[a.dia]) a.encaixe = true;
     save(a).then(function () {
       sel = a.dia; closeForm(); render(); toast('Agendamento salvo');
     }, function () { toast('Não foi possível salvar. Tente de novo.'); });
@@ -1647,10 +1848,12 @@ body.sheet-open .wrap { display: none; }
   $('f-tipo').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) setTipo(b.getAttribute('data-v')); });
   $('newpers').addEventListener('click', function () { openForm({ dia: sel, tipo: 'pessoal' }); });
   $('f-wa').addEventListener('click', function () {
+    if (editing) editing = garanteTok(editing);
     var u = editing && waSessao(editing);
     if (u) window.open(u, '_blank', 'noopener'); else toast('Paciente sem WhatsApp cadastrado');
   });
   $('f-wa2').addEventListener('click', function () {
+    if (editing) editing = garanteTok(editing);
     var u = editing && waSessao(editing, 1);
     if (u) window.open(u, '_blank', 'noopener');
   });
@@ -1821,8 +2024,10 @@ body.sheet-open .wrap { display: none; }
       (done.length ? '<div class="hint" style="margin:14px 0 4px">Concluídas</div>' + done.slice(0, 8).map(row).join('') : '');
 
     var end = addDays(today, 14);
+    var visto = {};
     var ev = appts.filter(function (a) { return a.tipo === 'pessoal' && a.status !== 'cancelado' && a.dia >= today && a.dia <= end; })
-      .sort(function (a, b) { return (a.dia + a.hora).localeCompare(b.dia + b.hora); });
+      .sort(function (a, b) { return (a.dia + a.hora).localeCompare(b.dia + b.hora); })
+      .filter(function (a) { if (!a.bloq || !a.serie) return true; if (visto[a.serie]) return false; visto[a.serie] = 1; return true; });
     var html = '', last = '';
     ev.forEach(function (a) {
       if (a.dia !== last) {
@@ -1837,7 +2042,7 @@ body.sheet-open .wrap { display: none; }
     var b = e.target.closest('.appt'); if (!b) return;
     var id = b.getAttribute('data-id');
     var a = appts.filter(function (x) { return x.id === id; })[0];
-    if (a) { sel = a.dia; openForm({ appt: a }); }
+    if (a) { sel = a.dia; if (a.bloq) abrirBloq(a); else openForm({ appt: a }); }
   });
   $('tform').addEventListener('submit', function (e) {
     e.preventDefault();
@@ -2213,6 +2418,131 @@ body.sheet-open .wrap { display: none; }
     }, function () { toast('Não foi possível abrir o arquivo.'); });
   }
 
+  /* ---------- bloqueio de horários e dias ---------- */
+  var editingB = null, bArmed = false, bDelArmed = false;
+  function abrirBloq(a) {
+    editingB = a || null; bArmed = false; bDelArmed = false;
+    var novo = !a;
+    $('bttl').textContent = novo ? 'Bloquear horário' : (a.titulo || 'Horário bloqueado');
+    $('b-campos').hidden = !novo; $('b-ok').hidden = !novo;
+    $('b-del').hidden = novo; $('b-delall').hidden = true;
+    $('b-del').textContent = 'Desbloquear este dia'; $('b-del').classList.remove('armed');
+    $('b-delall').textContent = 'Desbloquear o período todo'; $('b-delall').classList.remove('armed');
+    $('b-warn').hidden = true;
+    if (novo) {
+      $('b-info').textContent = 'Para folgas, férias, supervisão ou compromissos. O horário aparece como indisponível na agenda.';
+      $('b-d1').value = sel; $('b-d2').value = sel; $('b-todo').checked = false; $('b-horas').hidden = false;
+      $('b-h1').value = '12:00'; $('b-h2').value = '13:00'; $('b-motivo').value = '';
+    } else {
+      var per = a.serie ? appts.filter(function (x) { return x.serie === a.serie; }).sort(function (x, y) { return x.dia.localeCompare(y.dia); }) : [a];
+      $('b-delall').hidden = per.length < 2;
+      $('b-info').textContent = (per.length > 1 ? 'De ' + fmtBr(per[0].dia) + ' a ' + fmtBr(per[per.length - 1].dia) + ' (' + per.length + ' dias)' : fmtBr(a.dia)) +
+        ' · ' + (a.inteiro ? 'dia todo' : a.hora + '–' + a.fim) + '.';
+    }
+    $('boverlay').hidden = false;
+  }
+  function fecharBloq() { $('boverlay').hidden = true; editingB = null; }
+  $('newbloq').addEventListener('click', function () { abrirBloq(null); });
+  $('b-cancel').addEventListener('click', fecharBloq);
+  $('b-todo').addEventListener('change', function () { $('b-horas').hidden = this.checked; bArmed = false; });
+  $('b-d1').addEventListener('change', function () { if (!$('b-d2').value || $('b-d2').value < this.value) $('b-d2').value = this.value; bArmed = false; });
+  ['b-d2', 'b-h1', 'b-h2'].forEach(function (id) { $(id).addEventListener('change', function () { bArmed = false; }); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('boverlay').hidden) fecharBloq(); });
+  $('bform').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var w = $('b-warn'), aviso = function (t) { w.textContent = t; w.hidden = false; };
+    var todo = $('b-todo').checked, d1 = $('b-d1').value, d2 = $('b-d2').value || d1, h1 = $('b-h1').value, h2 = $('b-h2').value;
+    if (!d1) return aviso('Escolha a data.');
+    if (d2 < d1) return aviso('A data final precisa ser igual ou depois da inicial.');
+    if (!todo && !(h1 && h2 && h2 > h1)) return aviso('O horário final precisa ser depois do inicial.');
+    var dias = [], d = d1;
+    while (d <= d2 && dias.length < 92) { dias.push(d); d = addDays(d, 1); }
+    if (d <= d2) return aviso('Bloqueie no máximo 92 dias de uma vez.');
+    var i0 = todo ? 0 : minDe(h1), f0 = todo ? 24 * 60 : minDe(h2);
+    var afet = appts.filter(function (x) {
+      if (x.tipo === 'pessoal' || dias.indexOf(x.dia) < 0 || (x.status !== 'agendado' && x.status !== 'confirmado')) return false;
+      var r = faixa(x); return r[0] < f0 && r[1] > i0;
+    });
+    if (afet.length && !bArmed) {
+      bArmed = true;
+      return aviso('Há ' + afet.length + (afet.length === 1 ? ' sessão agendada' : ' sessões agendadas') + ' nesse período (' +
+        afet.slice(0, 4).map(function (x) { return firstName(x.paciente) + ' ' + fmtBr(x.dia).slice(0, 5) + ' ' + x.hora; }).join(', ') + (afet.length > 4 ? '…' : '') +
+        '). Elas continuam na agenda: desmarque com os pacientes se for o caso. Toque em Bloquear de novo para confirmar.');
+    }
+    var motivo = $('b-motivo').value.trim() || 'Horário bloqueado', base = Date.now().toString(36);
+    var lote = dias.map(function (dia, i) {
+      var o = { id: 'a' + base + 'b' + (i < 10 ? '0' : '') + i, tipo: 'pessoal', bloq: true, inteiro: todo, titulo: motivo, cat: 'Pessoal',
+        dia: dia, hora: todo ? '00:00' : h1, fim: todo ? '23:59' : h2, local: '', status: 'agendado', obs: '' };
+      if (dias.length > 1) o.serie = 'b' + base;
+      return o;
+    });
+    saveMany(lote).then(function () {
+      sel = d1; fecharBloq(); render(); toast(dias.length > 1 ? dias.length + ' dias bloqueados' : 'Horário bloqueado');
+    }, function () { toast('Não foi possível salvar. Tente de novo.'); });
+  });
+  $('b-del').addEventListener('click', function () {
+    if (!editingB) return;
+    if (!bDelArmed) { bDelArmed = true; this.textContent = 'Confirmar desbloqueio'; this.classList.add('armed'); return; }
+    remove(editingB.id).then(function () { fecharBloq(); toast('Dia desbloqueado'); }, function () { toast('Não foi possível excluir. Tente de novo.'); });
+  });
+  $('b-delall').addEventListener('click', function () {
+    if (!editingB || !editingB.serie) return;
+    var ids = appts.filter(function (x) { return x.serie === editingB.serie; }).map(function (x) { return x.id; });
+    if (this.getAttribute('data-armed') !== '1') { this.setAttribute('data-armed', '1'); this.textContent = 'Confirmar: desbloquear ' + ids.length + ' dias'; this.classList.add('armed'); return; }
+    this.removeAttribute('data-armed');
+    removeMany(ids).then(function () { fecharBloq(); toast(ids.length + ' dias desbloqueados'); }, function () { toast('Não foi possível excluir. Tente de novo.'); });
+  });
+
+  /* ---------- respostas dos pacientes pelo link de confirmação ---------- */
+  function renderConfAviso() {
+    var el = $('confaviso'); if (!el) return;
+    var hoje = ymd(new Date());
+    var l = appts.filter(function (a) { return a.tipo !== 'pessoal' && a.desmarcou && (a.status === 'agendado' || a.status === 'confirmado') && a.dia >= hoje; })
+      .sort(function (a, b) { return (a.dia + a.hora).localeCompare(b.dia + b.hora); });
+    el.hidden = !l.length;
+    el.innerHTML = l.slice(0, 5).map(function (a) {
+      return '<div class="warn"><span><b>' + esc(firstName(a.paciente)) + '</b> pediu para desmarcar a sessão de ' +
+        esc(parse(a.dia).toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '')) + ', ' + fmtBr(a.dia).slice(0, 5) + ' às ' + esc(a.hora) + '.</span>' +
+        '<button type="button" class="lnk" data-cav="' + esc(a.id) + '">Abrir</button></div>';
+    }).join('');
+  }
+  $('confaviso').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-cav]'); if (!b) return;
+    var a = appts.filter(function (x) { return x.id === b.getAttribute('data-cav'); })[0];
+    if (a) { sel = a.dia; openForm({ appt: a }); }
+  });
+  function buscarConfirmacoes() {
+    if (!confAtiva() || !loaded || store.mode !== 'local' || buscarConfirmacoes.busy || !navigator.onLine) return;
+    var tk = syToken(); if (!tk) return;
+    var ep = window.AGENDA_CFG.endpoint;
+    buscarConfirmacoes.busy = true;
+    fetch(ep + '?action=confirmacoes&token=' + encodeURIComponent(tk), { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (o) {
+        if (!o || !o.ok || !Array.isArray(o.itens)) return;
+        var mud = {}, ok = [], nSim = 0, nNao = 0;
+        o.itens.forEach(function (it) {
+          if (!it || !it.t || (it.r !== 'sim' && it.r !== 'nao')) return;
+          var a = mud[it.t] || appts.filter(function (x) { return x.ctok === it.t; })[0];
+          if (!a) { if (Date.now() - Date.parse(it.ts) > 30 * 864e5) ok.push(it.id); return; }
+          var c = Object.assign({}, a);
+          if (it.r === 'sim') { if (c.status === 'agendado') c.status = 'confirmado'; c.confEm = it.ts; delete c.desmarcou; nSim++; }
+          else { c.desmarcou = it.ts; nNao++; }
+          mud[it.t] = c; ok.push(it.id);
+        });
+        var lista = Object.keys(mud).map(function (k) { return mud[k]; });
+        return (lista.length ? saveAll(lista) : Promise.resolve()).then(function () {
+          if (nSim || nNao) toast((nSim ? nSim + (nSim === 1 ? ' confirmação' : ' confirmações') : '') + (nSim && nNao ? ' e ' : '') + (nNao ? nNao + (nNao === 1 ? ' pedido' : ' pedidos') + ' para desmarcar' : '') + ' pelo link');
+          if (ok.length) return fetch(ep + '?action=confirmacoes_ok&token=' + encodeURIComponent(tk) + '&ids=' + encodeURIComponent(ok.join(',')), { cache: 'no-store' });
+        });
+      })
+      .catch(function () {})
+      .then(function () { buscarConfirmacoes.busy = false; });
+  }
+  setTimeout(buscarConfirmacoes, 4000);
+  setInterval(function () { if (!document.hidden) buscarConfirmacoes(); }, 5 * 60 * 1000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) setTimeout(buscarConfirmacoes, 1500); });
+
   /* ---------- painéis em tela cheia e aviso de erro ---------- */
   function showErr(msg) {
     var b = $('errbar'); b.textContent = msg; b.hidden = false;
@@ -2220,7 +2550,7 @@ body.sheet-open .wrap { display: none; }
     clearTimeout(showErr.h); showErr.h = setTimeout(function () { b.hidden = true; }, 12000);
   }
   window.addEventListener('error', function (e) { showErr('Erro na página: ' + (e && e.message)); });
-  var sheets = ['overlay', 'poverlay', 'soverlay', 'yoverlay'].map(function (id) { return $(id); });
+  var sheets = ['overlay', 'poverlay', 'soverlay', 'yoverlay', 'boverlay'].map(function (id) { return $(id); });
   var savedY = 0;
   var mo = new MutationObserver(function () {
     var openEl = sheets.filter(function (o) { return !o.hidden; })[0];
@@ -2288,10 +2618,18 @@ body.sheet-open .wrap { display: none; }
     if (a) { closeP(); sel = a.dia; openForm({ appt: a }); }
   });
 
-  function markPaid(id) {
+  function pedirForma(btn) {
+    var id = btn.getAttribute('data-pay');
+    var curta = { 'Cartão de crédito': 'Crédito', 'Cartão de débito': 'Débito', 'Transferência': 'Transf.' };
+    var sp = document.createElement('span'); sp.className = 'payf'; sp.setAttribute('role', 'group'); sp.setAttribute('aria-label', 'Forma de pagamento');
+    sp.innerHTML = FORMAS.map(function (f) { return '<button type="button" class="lnk" data-payf="' + esc(id) + '" data-forma="' + esc(f) + '">' + esc(curta[f] || f) + '</button>'; }).join('');
+    btn.replaceWith(sp);
+    var first = sp.querySelector('button'); if (first) first.focus();
+  }
+  function markPaid(id, forma) {
     var a = appts.filter(function (x) { return x.id === id; })[0];
     if (!a) return;
-    save(Object.assign({}, a, { pago: true, forma: a.forma || 'Pix', pagoEm: ymd(new Date()) }))
+    save(Object.assign({}, a, { pago: true, forma: forma || a.forma || 'Pix', pagoEm: ymd(new Date()) }))
       .then(function () { toast('Pagamento registrado'); }, function () { toast('Não foi possível registrar o pagamento.'); });
   }
   function renderPFin() {
@@ -2311,7 +2649,8 @@ body.sheet-open .wrap { display: none; }
     }).join('') : '<div class="note">Nenhuma sessão com cobrança para este paciente.</div>';
   }
   $('pf-list').addEventListener('click', function (e) {
-    var p = e.target.closest('[data-pay]'); if (p) markPaid(p.getAttribute('data-pay'));
+    var pf = e.target.closest('[data-payf]'); if (pf) { markPaid(pf.getAttribute('data-payf'), pf.getAttribute('data-forma')); return; }
+    var p = e.target.closest('[data-pay]'); if (p) pedirForma(p);
   });
   function loadFin(f) {
     $('pf-servico').value = f.servico || '';
@@ -2473,8 +2812,10 @@ body.sheet-open .wrap { display: none; }
     renderFin();
   });
   $('flist').addEventListener('click', function (e) {
+    var pf = e.target.closest('[data-payf]');
+    if (pf) { markPaid(pf.getAttribute('data-payf'), pf.getAttribute('data-forma')); return; }
     var p = e.target.closest('[data-pay]');
-    if (p) { markPaid(p.getAttribute('data-pay')); return; }
+    if (p) { pedirForma(p); return; }
     var ed = e.target.closest('[data-edit]');
     if (ed) { var ae = appts.filter(function (x) { return x.id === ed.getAttribute('data-edit'); })[0]; if (ae) openForm({ appt: ae }); return; }
     var n = e.target.closest('.nm');
