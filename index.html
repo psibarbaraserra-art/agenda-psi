@@ -779,6 +779,10 @@ body.sheet-open .wrap { display: none; }
     <label for="f-paciente">Paciente
       <input id="f-paciente" type="text" maxlength="80" list="plist-dl" placeholder="Nome do paciente ou do casal" required>
     </label>
+    <label for="f-tel" id="lbl-tel">WhatsApp do paciente (opcional)
+      <input id="f-tel" type="tel" inputmode="tel" maxlength="20" placeholder="(92) 99999-9999">
+      <span class="hint">Para quem não tem ficha cadastrada. Fica guardado só nesta sessão, e o "Pedir confirmação" já vai para este número.</span>
+    </label>
     <label for="f-servico">Serviço
       <select id="f-servico"></select>
     </label>
@@ -979,6 +983,7 @@ body.sheet-open .wrap { display: none; }
       o.pago = !!a.pago; o.forma = a.forma || 'Pix'; o.pagoEm = a.pagoEm || '';
       if (a.ess) { o.ess = true; o.perc = a.perc == null ? null : +a.perc; }
       if (a.encaixe) o.encaixe = true;
+      if (a.tel) o.tel = a.tel;
       if (a.ctok) o.ctok = a.ctok;
       if (a.desmarcou) o.desmarcou = a.desmarcou;
       if (a.confEm) o.confEm = a.confEm;
@@ -1197,7 +1202,13 @@ body.sheet-open .wrap { display: none; }
     if (s.n > 1) txt += '\n\nEsta é a sessão ' + s.i + ' de ' + s.n + ' do ciclo atual.';
     var lk = linkConf(a, quem);
     if (lk) txt += '\n\nSe preferir, confirme ou desmarque por este link:\n' + lk;
-    return 'https://wa.me/?text=' + encodeURIComponent(txt);
+    return 'https://wa.me/' + waNum(a.tel) + '?text=' + encodeURIComponent(txt);
+  }
+  // mostra o campo de telefone só quando o paciente não tem ficha com WhatsApp
+  function telVis() {
+    var p = findPat($('f-paciente').value);
+    var tem = p && (waNum(p.tel) || waNum(p.rt) || waNum(p.tel2));
+    $('lbl-tel').hidden = !!tem;
   }
   function waSessao(a, idx) {
     if (!a || a.tipo === 'pessoal') return '';
@@ -1524,6 +1535,7 @@ body.sheet-open .wrap { display: none; }
     $('f-tipo').hidden = !!editing;
     $('formttl').textContent = (editing ? 'Editar ' : 'Novo ') + (t === 'pessoal' ? 'compromisso' : 'agendamento');
     $('f-paciente').value = a.paciente || '';
+    $('f-tel').value = a.tel || ''; telVis();
     $('f-titulo').value = a.titulo || '';
     $('f-cat').value = a.cat || 'Pessoal';
     $('f-fim').value = a.fim || '';
@@ -1629,6 +1641,9 @@ body.sheet-open .wrap { display: none; }
       a.titulo = tit; a.cat = $('f-cat').value; a.fim = $('f-fim').value; a.local = $('f-local').value.trim();
     } else {
       a.paciente = nome; a.servico = $('f-servico').value; a.snome = svcName(a.servico); a.modalidade = modality;
+      var tl = $('f-tel').value.trim();
+      if (!$('lbl-tel').hidden && tl && !waNum(tl)) { $('f-tel').focus(); toast('Telefone incompleto: use DDD + número'); return; }
+      if (!$('lbl-tel').hidden) { if (tl) a.tel = tl; } else if (editing && editing.tel) a.tel = editing.tel;
       a.valor = Math.max(0, parseFloat($('f-valor').value) || 0); a.pago = $('f-pago').checked;
       a.forma = $('f-forma').value;
       a.pagoEm = a.pago ? ((editing && editing.pagoEm) || ymd(new Date())) : '';
@@ -2690,6 +2705,7 @@ body.sheet-open .wrap { display: none; }
     suggestRep();
     hint();
   }
+  $('f-paciente').addEventListener('input', telVis);
   $('f-paciente').addEventListener('change', function () {
     if (!editing && tipo === 'sessao') applyFin(findPat($('f-paciente').value));
   });
