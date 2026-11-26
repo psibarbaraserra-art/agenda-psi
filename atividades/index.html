@@ -341,7 +341,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
         <button class="ghost" id="res-paste">Colar resposta do WhatsApp</button>
       </div>
       <div id="res-list" class="stack"></div>
-      <div class="small muted">As respostas ficam guardadas só neste aparelho. Depois de imprimir ou salvar em PDF no prontuário, você pode apagá-las daqui.</div>
+      <div class="small muted">As respostas novas chegam sozinhas quando você abre a Agenda ou esta página. Com a sincronização ativa, elas aparecem no celular e no computador. Depois de imprimir ou salvar em PDF no prontuário, você pode apagá-las daqui.</div>
     </div>
   </section>
 
@@ -443,6 +443,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
   <section class="panel stack" id="p-lista" hidden>
     <h2 id="p-lista-h">Para responder</h2>
     <div id="p-msg" class="info" hidden></div>
+    <div id="p-pend" hidden></div>
     <div class="progress" aria-hidden="true"><i id="p-prog"></i></div>
     <div class="alist" id="p-alist"></div>
     <button class="cta" id="p-enviar">Enviar para a psicóloga</button>
@@ -469,7 +470,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
     <h2 id="p-fim-h">Enviando…</h2>
     <div id="p-fim-ok" class="okbox" hidden>Suas respostas chegaram para a psicóloga. Vamos conversar sobre elas na próxima sessão. Obrigada pelo seu empenho!</div>
     <div id="p-fim-wa" class="stack" hidden>
-      <p style="margin:0">Não foi possível enviar direto. Envie pelo WhatsApp:</p>
+      <p style="margin:0" id="p-fim-wa-t">Não foi possível enviar direto. Envie pelo WhatsApp:</p>
       <ol style="margin:0;padding-left:20px">
         <li>Toque em <b>Abrir WhatsApp</b> e escolha a conversa com a psicóloga.</li>
         <li>Envie a mensagem sem alterar o texto.</li>
@@ -837,6 +838,12 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
         $('p-alist').appendChild(b);
       });
       $('p-prog').style.width = Math.round(n / ids.length * 100) + '%';
+      var temResp = ids.some(function (id) { return st.ans[id] && Object.keys(st.ans[id]).length; });
+      var pend = temResp && (st.pend || !st.enviado);
+      $('p-pend').hidden = !temResp;
+      $('p-pend').className = pend ? 'warnbox' : 'okbox';
+      $('p-pend').innerHTML = pend ? '<b>Suas respostas ainda não foram enviadas.</b> Quando terminar, toque em <b>Enviar para a psicóloga</b>, logo abaixo.'
+        : 'Respostas enviadas em ' + esc(fmtData(st.enviado)) + '. Se mudar alguma resposta, envie de novo.';
       show('p-lista');
     }
     function abrir(id) {
@@ -846,7 +853,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       $('p-nome').textContent = at.nome; $('p-badge').innerHTML = badge(at.ab);
       $('p-intro').textContent = at.intro + (at.complementar ? ' Este questionário apoia o seu atendimento e não é um teste: ele não faz diagnóstico.' : '');
       var form = $('p-form'); form.innerHTML = '';
-      renderFields(at.f, form, st.ans[id], save);
+      renderFields(at.f, form, st.ans[id], function () { st.pend = true; save(); });
       $('p-concluir').textContent = st.ok[id] ? 'Salvar e voltar' : 'Concluir ' + tipoDe(at).s;
       show('p-ativ');
     }
@@ -859,6 +866,10 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       var tp = tipoDe(byId[atual]);
       if (!Object.keys(a).length && !confirm('Você ainda não respondeu nada ' + (tp.f ? 'nesta ' : 'neste ') + tp.s + '. Marcar como ' + (tp.f ? 'concluída' : 'concluído') + ' mesmo assim?')) return;
       st.ok[atual] = true; save(); toast(cap(tp.s) + (tp.f ? ' concluída!' : ' concluído!')); lista();
+      var tudo = ids.every(function (id) { return st.ok[id]; });
+      if (tudo && (st.pend || !st.enviado)) setTimeout(function () {
+        if (confirm('Você concluiu tudo! Enviar agora suas respostas para a psicóloga?')) $('p-enviar').click();
+      }, 350);
     });
 
     function montar() {
@@ -883,11 +894,12 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       $('p-fim-h').textContent = 'Enviando…'; $('p-fim-ok').hidden = true; $('p-fim-wa').hidden = true;
       show('p-fim');
       var btn = $('p-enviar'); btn.disabled = true;
-      var fim = function (ok) {
+      var fim = function (ok, incerto) {
         btn.disabled = false;
         $('p-fim-h').textContent = ok ? 'Tudo certo!' : 'Quase pronto';
-        $('p-fim-ok').hidden = !ok; $('p-fim-wa').hidden = ok;
-        if (ok) { st.enviado = r.ts; save(); }
+        $('p-fim-ok').hidden = !ok; $('p-fim-wa').hidden = ok && !incerto;
+        $('p-fim-wa-t').textContent = incerto ? 'Para garantir que a psicóloga receba, envie também pelo WhatsApp:' : 'Não foi possível enviar direto. Envie pelo WhatsApp:';
+        if (ok) { st.enviado = r.ts; st.pend = false; save(); }
       };
       var code = 'AT1:' + enc(r);
       if (!CFG.endpoint || code.length > 45000) return fim(false);
@@ -899,7 +911,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
         var j = null; try { j = JSON.parse(t); } catch (e) {}
         clearTimeout(to); fim(!!(j && j.ok));
       }, function () {
-        fetch(CFG.endpoint, opts('no-cors')).then(function () { clearTimeout(to); fim(true); }, function () { clearTimeout(to); fim(false); });
+        fetch(CFG.endpoint, opts('no-cors')).then(function () { clearTimeout(to); fim(true, true); }, function () { clearTimeout(to); fim(false); });
       });
     });
     $('p-copy').addEventListener('click', function () { if (ultimo) copy(textoWa(ultimo)); });
@@ -1071,7 +1083,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       var lst = lerResp();
       var chave = (r.k || '') + '|' + r.ts;
       if (lst.some(function (x) { return ((x.r.k || '') + '|' + x.r.ts) === chave; })) return false;
-      lst.unshift({ id: rid() + Date.now().toString(36), em: new Date().toISOString(), origem: origem, r: r });
+      lst.unshift({ id: rid() + Date.now().toString(36), em: new Date().toISOString(), origem: origem, r: r, visto: false });
       if (!lsSet(LSK_RESP, lst)) { toast('Sem espaço no aparelho: apague respostas antigas.'); return false; }
       return true;
     }
@@ -1083,7 +1095,7 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
       lst.forEach(function (it) {
         var r = it.r, d = document.createElement('div'); d.className = 'resp';
         var nomes = (r.acts || []).map(function (x) { return (byId[x.id] || {}).nome || x.id; }).join(', ');
-        d.innerHTML = '<div class="rh"><b>' + esc(r.p || 'Paciente sem nome') + '</b><span class="small muted">Enviado em ' + esc(fmtData(r.ts)) + '</span></div><div class="small muted">' + esc(nomes) + '</div>' +
+        d.innerHTML = '<div class="rh"><b>' + esc(r.p || 'Paciente sem nome') + (it.visto === false ? ' <span class="badge b-aval">Nova</span>' : '') + '</b><span class="small muted">Enviado em ' + esc(fmtData(r.ts)) + '</span></div><div class="small muted">' + esc(nomes) + '</div>' +
           scoreResumo(r).map(function (t) { return '<div class="small" style="font-weight:600' + (t.indexOf('⚠') > -1 ? ';color:#a3162b' : '') + '">' + esc(t) + '</div>'; }).join('') +
           '<div class="row"><button class="cta" data-v>Ver respostas</button><button class="ghost" data-p>Imprimir / PDF</button><button class="ghost danger" data-d>Apagar</button></div><div class="ans" hidden></div>';
         var ans = d.querySelector('.ans');
@@ -1101,6 +1113,8 @@ dialog .db { padding: 16px; display: grid; gap: 14px; }
         });
         box.appendChild(d);
       });
+      // a partir daqui, contam como vistas (o selo "Nova" some na próxima abertura)
+      if (lst.some(function (x) { return x.visto === false; })) lsSet(LSK_RESP, lst.map(function (x) { return Object.assign({}, x, { visto: true }); }));
     }
     function extrair(txt) {
       var m = String(txt).match(/AT1:([A-Za-z0-9+/=\s]+)/);
