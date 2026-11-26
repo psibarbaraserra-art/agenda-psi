@@ -415,7 +415,7 @@ body.sheet-open .wrap { display: none; }
             <a class="cta" href="atividades/" style="text-align:center;text-decoration:none">Abrir atividades</a>
             <a class="ghost" href="atividades/#rastreios" style="text-align:center;text-decoration:none;color:inherit">Rastreios (escalas)</a>
             <a class="ghost" href="atividades/#documentos" style="text-align:center;text-decoration:none;color:inherit">Modelos de documentos</a>
-            <a class="ghost" href="atividades/#respostas" style="text-align:center;text-decoration:none;color:inherit">Ver respostas recebidas</a>
+            <a class="ghost" href="atividades/#respostas" style="text-align:center;text-decoration:none;color:inherit">Ver respostas recebidas<b id="resp-novas"></b></a>
           </div>
         </section>
       </aside>
@@ -1430,7 +1430,7 @@ body.sheet-open .wrap { display: none; }
   }
 
   function render() {
-    renderConfAviso(); renderKpis(); renderWeek(); renderDay(); renderBanner(); renderPatients(); renderPessoal(); renderFin(); renderEss();
+    renderConfAviso(); renderKpis(); renderWeek(); renderDay(); renderBanner(); renderPatients(); renderPessoal(); renderFin(); renderEss(); renderRespBadge();
     $('svclist').innerHTML = svcHtml(false);
     renderOrphans();
     if (!$('poverlay').hidden) { renderPSum(); renderEvList(); renderHist(); renderPFin(); }
@@ -2126,7 +2126,10 @@ body.sheet-open .wrap { display: none; }
   var LSY_CFG = 'agenda-barbara-serra-sync-v1';      // { on, salt, k (chave), ver, last }
   var LSY_META = 'agenda-barbara-serra-sync-meta-v1'; // { col: { id: { t, h } }, del: { col: { id: t } } }
   var LSY_TOKEN = 'agenda-barbara-serra-senha-v1';     // senha da planilha (a mesma do recebimento)
-  var SYNC_COLS = ['agenda', 'pacientes', 'evolucoes', 'tarefas'];
+  var SYNC_COLS = ['agenda', 'pacientes', 'evolucoes', 'tarefas', 'respostas'];
+  var LSK_RESP = 'atv-respostas-v1'; // respostas das atividades e rastreios (guardadas pela página de Atividades)
+  function respLer() { try { var v = JSON.parse(localStorage.getItem(LSK_RESP) || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
+  function respGravar(l) { try { localStorage.setItem(LSK_RESP, JSON.stringify(l)); return true; } catch (e) { return false; } }
   function syGet(k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
   function sySet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
   function syncAvail() { return STANDALONE && store.mode === 'local' && !!(window.AGENDA_CFG || {}).endpoint && !!(window.crypto && crypto.subtle); }
@@ -2136,7 +2139,7 @@ body.sheet-open .wrap { display: none; }
     if (SY.on) { clearTimeout(SY.timer); SY.timer = setTimeout(function () { syncNow(false); }, 4000); }
   }
   function syHash(s) { var h = 2166136261; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36) + s.length.toString(36); }
-  function syCols() { return { agenda: appts, pacientes: pats, evolucoes: C.evols.items, tarefas: C.tasks.items }; }
+  function syCols() { return { agenda: appts, pacientes: pats, evolucoes: C.evols.items, tarefas: C.tasks.items, respostas: respLer() }; }
 
   // estado deste aparelho: { recs: { col: { id: { t, d } } }, del: {...}, serv: { t, d } }
   function syLocalState() {
@@ -2180,6 +2183,7 @@ body.sheet-open .wrap { display: none; }
       var list = function (c) { var r = st.recs[c] || {}; return Object.keys(r).map(function (id) { return r[id].d; }); };
       appts = list('agenda'); pats = list('pacientes'); C.evols.items = list('evolucoes'); C.tasks.items = list('tarefas');
       lsSave(); plsSave(); clsSave(C.evols); clsSave(C.tasks);
+      respGravar(list('respostas').sort(function (x, y) { return String(y.em || '').localeCompare(String(x.em || '')); }));
       if (st.serv && Array.isArray(st.serv.d) && st.serv.d.length) { SERVICES = st.serv.d; try { localStorage.setItem(LSS, JSON.stringify(SERVICES)); } catch (e) {} fillServ(); }
       var meta = { inicio: 1, col: {}, del: st.del, serv: st.serv ? { t: st.serv.t, h: syHash(JSON.stringify(SERVICES)) } : null };
       SYNC_COLS.forEach(function (c) {
@@ -2352,7 +2356,8 @@ body.sheet-open .wrap { display: none; }
       } catch (e) { SY.on = false; }
     }
     renderSync();
-    if (SY.on) setTimeout(function () { syncNow(false); }, 1500);
+    setTimeout(function () { buscarAtiv().then(function () { if (SY.on) syncNow(false); }); }, 1500);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) buscarAtiv(); });
     // valem também quando a sincronização é ativada depois (syncNow não faz nada se estiver desligada)
     document.addEventListener('visibilitychange', function () { if (!document.hidden) syncNow(false); });
     window.addEventListener('online', function () { syncNow(false); });
@@ -2854,6 +2859,39 @@ body.sheet-open .wrap { display: none; }
       if (a2) openPatientByName(a2.paciente, 'fin');
     }
   });
+
+  /* ---------- respostas das atividades (busca também pela Agenda) ---------- */
+  var buscandoAtiv = false;
+  function buscarAtiv() {
+    var ep = (window.AGENDA_CFG || {}).endpoint, tk = ''; try { tk = localStorage.getItem('agenda-barbara-serra-senha-v1') || ''; } catch (e) {}
+    if (!STANDALONE || !ep || !tk || buscandoAtiv) return Promise.resolve(0);
+    buscandoAtiv = true;
+    var get = function (q) { return fetch(ep + '?' + q, { cache: 'no-store' }).then(function (r) { return r.text(); }).then(function (t) { try { return JSON.parse(t); } catch (e) { return { ok: false }; } }); };
+    return get('action=atividades&token=' + encodeURIComponent(tk)).then(function (j) {
+      if (!j || !j.ok) return 0;
+      var lst = respLer(), feitos = [], novos = 0;
+      (j.itens || []).forEach(function (it) {
+        var code = String(it.code || '');
+        if (code.indexOf('AT1:') !== 0) return;
+        var r = null; try { r = JSON.parse(decodeURIComponent(escape(atob(code.slice(4).replace(/\s+/g, ''))))); } catch (e) {}
+        feitos.push(it.id);
+        if (!r || !Array.isArray(r.acts)) return;
+        var chave = (r.k || '') + '|' + r.ts;
+        if (lst.some(function (x) { return x.r && ((x.r.k || '') + '|' + x.r.ts) === chave; })) return;
+        lst.unshift({ id: 'r' + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36), em: new Date().toISOString(), origem: 'planilha', r: r, visto: false });
+        novos++;
+      });
+      if (novos) { respGravar(lst); syncTouched(); toast(novos === 1 ? 'Nova resposta de atividade recebida' : novos + ' novas respostas de atividades'); }
+      if (feitos.length) get('action=atividades_ok&ids=' + encodeURIComponent(feitos.join(',')) + '&token=' + encodeURIComponent(tk)).catch(function () {});
+      renderRespBadge();
+      return novos;
+    }).catch(function () { return 0; }).then(function (n) { buscandoAtiv = false; return n; });
+  }
+  function renderRespBadge() {
+    var el = $('resp-novas'); if (!el) return;
+    var n = respLer().filter(function (x) { return x.visto === false; }).length;
+    el.textContent = n ? ' (' + n + (n === 1 ? ' nova)' : ' novas)') : '';
+  }
 
   /* ---------- Clínica Essência ---------- */
   var COR_SOCIAL = '#eadbb2', COR_PART = '#7d8a3c';
